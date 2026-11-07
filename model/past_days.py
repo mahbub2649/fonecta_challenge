@@ -36,7 +36,7 @@ CACHE = config.VAR_DIR / "model"
 SNAPSHOTS = {2024: date(2024, 11, 6), 2025: date(2025, 11, 6), 2026: date(2026, 11, 6)}
 STAGE_SEEDS = tuple(int(x) for x in os.environ.get("MODEL_STAGE1_SEEDS", "0").split(","))
 CATEGORICAL = ["day_key", "day_class", "day_type", "segment", "country", "tier"]
-NOT_FEATURES = {"entity_id", "date", "regular", "has_entry", "entry_hours", "entry_in_time", "truth", "cls", "fold", "season"}
+NOT_FEATURES = {"entity_id", "date", "regular", "has_entry", "entry_hours", "entry_in_time", "entry_at", "truth", "cls", "fold", "season", "retro"}
 PARAMS = dict(objective="multiclass", num_class=3, n_estimators=300, learning_rate=0.04, num_leaves=31, min_child_samples=30, subsample=0.8,
               subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=3 + int(os.environ.get("MODEL_SEED_SHIFT", "0")))
 
@@ -78,14 +78,39 @@ def main() -> None:
     past.loc[known & (past["truth"] == "closed"), "cls"] = 0
     past.loc[known & (past["truth"] != "closed") & (past["truth"] == past["regular"]), "cls"] = 1
     past.loc[known & (past["truth"] != "closed") & (past["truth"] != past["regular"]), "cls"] = 2
+    # Days whose hours the owner entered only on or after the day: the listing was wrong that day, so the day left the
+    # same traces as a hidden one, and the entry says what was true. They add training examples, mostly from non-dev
+    # businesses. Their own entry is taken out of the business-level counts first, so it can't give itself away.
+    past["retro"] = 0
+    if os.environ.get("MODEL_RETRO_ROWS", "1") == "1":
+        retro = (past["season"] == 2026) & (past["has_entry"] == 1) & (past["entry_in_time"] == 0)
+        unlabelled = retro & (past["cls"] < 0)  # Dev days keep their answer; the others take the entry.
+        hours = past["entry_hours"]
+        own_c = (hours == "closed").astype(int)
+        own_r = (hours == "REGULAR").astype(int)
+        own_s = ((hours != "closed") & (hours != "REGULAR")).astype(int)
+        past.loc[unlabelled & (hours == "closed"), "cls"] = 0
+        past.loc[unlabelled & ((hours == "REGULAR") | (hours == past["regular"])), "cls"] = 1
+        past.loc[unlabelled & (hours != "closed") & (hours != "REGULAR") & (hours != past["regular"]), "cls"] = 2
+        r = retro.to_numpy()
+        n = past["n_entries"].to_numpy(dtype=float)
+        for col, own in (("other_years_closed", own_c), ("other_years_special", own_s), ("other_years_regular", own_r)):
+            past.loc[retro, col] = past.loc[retro, col] - own[retro]
+        for col, own in (("closed_share", own_c), ("special_share", own_s)):
+            adjusted = np.where(n > 1, (past[col].to_numpy() * n - own.to_numpy()) / np.maximum(n - 1, 1), np.nan)
+            past.loc[retro, col] = adjusted[r]
+        past.loc[retro, "n_entries"] = n[r] - 1
+        past["retro"] = retro.astype(int)
+        print(f"retro rows added: {int(retro.sum())}, classes {past.loc[retro, 'cls'].value_counts().to_dict()}", flush=True)
     for col in CATEGORICAL:
         past[col] = pd.Categorical(past[col], categories=sorted(past[col].unique()))
     features = [c for c in past.columns if c not in NOT_FEATURES]
 
     # Train on the fullest view: the latest snapshot, days with no entry. These are the days whose truth is hidden.
-    train_mask = (past["season"] == 2026) & (past["cls"] >= 0) & (past["has_entry"] == 0)
+    train_mask = (past["season"] == 2026) & (past["cls"] >= 0) & ((past["has_entry"] == 0) | (past["retro"] == 1))
     if args.before:
         train_mask &= past["date"] < args.before
+        train_mask &= (past["retro"] == 0) | (past["entry_at"] < args.before)  # Late entries known by then only.
     print(f"first-stage training rows: {int(train_mask.sum())}, classes {past.loc[train_mask, 'cls'].value_counts().to_dict()}", flush=True)
 
     def fit_pass(columns: list) -> np.ndarray:

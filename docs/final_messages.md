@@ -53,6 +53,7 @@ Approve, edit or decline with no login: https://connect.example/o/abc123
 
 ```text
 Hei Aino! Kahvila Kipinä näkyy Googlessa näinä päivinä todennäköisesti väärin:
+• Jouluaatto to 24.12.: Google näyttää 8–17. Ehdotamme: kiinni. Perustuu tietoihimme yrityksestänne ja vastaavista yrityksistä.
 • Joulupäivä pe 25.12.: Google näyttää 8–17. Ehdotamme: kiinni. 86 % vastaavista yrityksistä, jotka merkitsivät aikansa, oli kiinni.
 • Tapaninpäivä la 26.12.: Google näyttää 10–16. Ehdotamme: kiinni. 62 % vastaavista yrityksistä, jotka merkitsivät aikansa, oli kiinni.
 Teiltä ei ole vielä aiempia poikkeusaikoja, joten vertasimme vastaaviin yrityksiin.

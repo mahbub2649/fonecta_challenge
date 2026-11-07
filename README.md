@@ -115,7 +115,7 @@ To learn the review keyword lists from data and test them at scale on the LUMI s
 The model only proposes. Nothing is published without the owner's approval or standing permission.
 
 1. **Review reader:** reads closed-door complaints, closing times, thanks for being open and new weekly hours, in Finnish, Swedish, Norwegian and English, and ties each statement to the day it's about.
-2. **Past-day estimator:** most special days never got an entry, so what the business really did is hidden. A LightGBM model estimates it from what the day left behind: reviews, user edits, and spikes in calls and clicks.
+2. **Past-day estimator:** most special days never got an entry, so what the business really did is hidden. A LightGBM model estimates it from what the day left behind: reviews, user edits, and spikes in calls and clicks. It also learns from about 3,800 days whose owners entered the hours only after the day: the listing was wrong then, so those days left the same traces, and the entry shows what was true. Each day's own entry is taken out of the business's counts first.
 3. **Open or closed model:** LightGBM and CatBoost, averaged, combine those estimates with history, peers, shopping centres, the 2025 pilot, events and weather. Besides the dev answers, it learns from about 9,500 days that other businesses' owners entered late: after a season's snapshot but before the day. At the snapshot those days looked just like the ones we predict, and the late entry shows what was true. Their features only use data from before the snapshot.
 4. **Hours picker:** builds candidate hours from every source and ranks them. The right hours are on the list 97% of the time.
 5. **Decision layer:** chooses the action with the highest expected points, and holds back hours it thinks have under a 25% chance of being exactly right.
@@ -138,14 +138,14 @@ Scored with the organisers' `evaluate.py`, on businesses each model never saw.
 
 | Measure | Package baseline | Connect Suggests |
 |---|---:|---:|
-| **Score, 2026 season** | 54.49 | **68.28** |
-| **Score, 2025 season** | 53.23 | **65.78** |
-| Score, 2025, trained only on data from before that snapshot | | 59.99 |
+| **Score, 2026 season** | 54.49 | **68.31** |
+| **Score, 2025 season** | 53.23 | **66.24** |
+| Score, 2025, trained only on data from before that snapshot | | 60.22 |
 | Exact recall, 2026 | 0.59 | 0.76 |
-| Exact precision, 2026 | 0.90 | 0.86 |
-| Search views protected, 2026 | 57.2% | 74.7% |
+| Exact precision, 2026 | 0.90 | 0.85 |
+| Search views protected, 2026 | 57.2% | 74.4% |
 | Closed-door views prevented, 2026 | 69.2% | 86.9% |
-| Wrong open or closed calls, 2026 | 224 | 382 |
+| Wrong open or closed calls, 2026 | 224 | 376 |
 
 We catch far more wrong hours, at the cost of more wrong calls, because the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions. These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
 
@@ -178,7 +178,7 @@ The review reader is built on the wording in this synthetic data. Real reviews a
 
 ## Customer with no history
 
-`FI-D0017` Kahvila Kipinä joined in October 2026. With no history of its own, the model leans on similar businesses. Connect says it has no earlier hours for them and asks instead of stating, and standing permission never applies a guess like this. On the other 10 days it stays quiet. Once the owner answers, later suggestions use that answer.
+`FI-D0017` Kahvila Kipinä joined in October 2026. With no history of its own, the model leans on similar businesses. Connect says it has no earlier hours for them and asks instead of stating, and standing permission never applies a guess like this. On the other 9 days it stays quiet. Once the owner answers, later suggestions use that answer.
 
 ## Final customer messages
 

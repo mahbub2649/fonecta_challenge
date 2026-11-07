@@ -801,6 +801,7 @@ def past_day_rows(data: Data, eid: str, asof: date) -> list:
             "weekday": p.weekday(), "month": p.month, "regular_closed": int(regular == "closed"), "regular": regular,
             "reg_len": span(regular)[1] - span(regular)[0], "has_entry": int(entry is not None),
             "entry_hours": entry["hours"] if entry else "", "entry_in_time": int(entry["at"][:10] < day_text) if entry else -1,
+            "entry_at": entry["at"][:10] if entry else "",
             "calls": calls, "views": views, "actions": actions, "calls_base": calls_base, "views_base": views_base,
             "calls_ratio": (calls + 1) / (calls_base + 1) if not np.isnan(calls) and not np.isnan(calls_base) else np.nan,
             "views_ratio": (views + 1) / (views_base + 1) if not np.isnan(views) and not np.isnan(views_base) else np.nan,
