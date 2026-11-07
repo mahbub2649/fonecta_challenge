@@ -15,14 +15,14 @@ The challenge data package is included in `fonecta_data/`, so the app runs strai
 ### 2. Start the app
 
 ```bash
-python3 run.py
+./run_webui.sh
 ```
 
-Then open http://127.0.0.1:8080. Press `Ctrl+C` in the terminal to stop.
+It opens http://127.0.0.1:8080 in your browser, or the next free port if that one's busy. Press `Ctrl+C` in the terminal to stop. Add `--sandbox` to also write to your Yext sandbox, or `--no-browser` to skip opening a browser. `python3 run.py` also works.
 
 | Optional setting | What it does |
 |---|---|
-| `YEXT_API_KEY` | Also writes to your Yext sandbox. Copy `.env.example` to `.env` and set it there. Without a key, writes go to the local mock, and the top of the page shows which is active |
+| `YEXT_API_KEY` | Your Yext sandbox key. Copy `.env.example` to `.env`, set it there, then use `./run_webui.sh --sandbox`. Otherwise writes go to the local mock, and the top of the page shows which is active |
 | `CONNECT_DATA_DIR` | Where the challenge package is, if not in `fonecta_data/` |
 | `CONNECT_PORT` | Uses another port instead of 8080 |
 | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
