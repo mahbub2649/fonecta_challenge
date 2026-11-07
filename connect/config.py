@@ -38,6 +38,11 @@ SANDBOX_KEY = "" if os.environ.get("CONNECT_NO_SANDBOX") else os.environ.get("YE
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
+ELEVENLABS_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
+ELEVENLABS_VOICE = os.environ.get("ELEVENLABS_VOICE_ID", "OEHTkiHZj6OczWZHu0Aj")
+ELEVENLABS_TTS_MODEL = os.environ.get("ELEVENLABS_TTS_MODEL", "eleven_flash_v2_5")
+ELEVENLABS_STT_MODEL = os.environ.get("ELEVENLABS_STT_MODEL", "scribe_v2")
+
 # Suggestions at or above this confidence are stated. Below it, they are asked as a question.
 SUGGEST_THRESHOLD = 0.90
 # Standing permission only applies changes at or above this confidence, and never from peers alone.

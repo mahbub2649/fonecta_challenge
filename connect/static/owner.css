@@ -151,3 +151,9 @@ button.primary .caption { color: #dfe3ff; }
 .plan-change strong { color: var(--brand); font-size: 18px; }
 .regular { margin: 0; padding: 0; list-style: none; }
 .regular li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+
+button.mic { display: block; width: 100%; margin-bottom: 10px; color: var(--brand); background: var(--brand-soft); border-color: var(--brand-soft); }
+button.mic.on { color: #fff; background: var(--bad); border-color: var(--bad); animation: mic-pulse 1.2s infinite; }
+button.link.hear { display: block; width: 100%; min-height: 40px; margin-top: 8px; color: var(--brand); background: none; border: 0; }
+@keyframes mic-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(163 35 29 / 45%); } 50% { box-shadow: 0 0 0 10px rgb(163 35 29 / 0%); } }
+@media (prefers-reduced-motion: reduce) { button.mic.on { animation: none; } }

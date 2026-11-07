@@ -26,6 +26,9 @@ class FakeService:
     def reset(self):
         FakeService.resets += 1
 
+    def transcribe_reply(self, token, audio, content_type):
+        return {"status": "heard", "text": f"{len(audio)} bytes of {content_type}"}
+
 
 class PasscodeGateTest(unittest.TestCase):
     def setUp(self):
@@ -78,9 +81,29 @@ class PasscodeGateTest(unittest.TestCase):
         self.assertEqual(FakeService.resets, 1)
         self.assertNotIn("open-sesame", cookie)
 
+    def test_mobile_needs_the_passcode(self):
+        self.assertIn("Demo passcode", self.call("/mobile")[1])
+        self.assertEqual(self.call("/mobile.js")[0], 404)
+        cookie = self.login()
+        self.assertIn("Connect for owners", self.call("/mobile", cookie=cookie)[1])
+        self.assertEqual(self.call("/mobile.js", cookie=cookie)[0], 200)
+
+    def test_future_mock_needs_the_passcode_and_says_what_it_is(self):
+        self.assertIn("Demo passcode", self.call("/future")[1])
+        self.assertEqual(self.call("/future.js")[0], 404)
+        cookie = self.login()
+        self.assertEqual(self.call("/future", cookie=cookie)[0], 200)
+        self.assertIn("Not built yet, and nothing is saved", self.call("/future.js", cookie=cookie)[1])
+
     def test_owner_links_stay_open_without_the_passcode(self):
         self.assertEqual(self.call("/api/o/abc")[0], 200)
         self.assertEqual(self.call("/o/abc")[0], 200)
+
+    def test_voice_upload_takes_audio_only(self):
+        request = urllib.request.Request(self.base + "/api/o/abc/transcribe", data=b"12345", headers={"Content-Type": "audio/webm;codecs=opus"})
+        with urllib.request.urlopen(request, timeout=5) as response:
+            self.assertEqual(json.loads(response.read())["text"], "5 bytes of audio/webm")
+        self.assertEqual(self.call("/api/o/abc/transcribe", {"a": 1})[0], 400)
 
     def test_repeated_wrong_passcodes_are_slowed_down(self):
         for _ in range(MAX_FAILED_LOGINS):

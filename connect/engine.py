@@ -70,7 +70,9 @@ class Engine:
             for line in f:
                 row = json.loads(line)
                 self.regular_history[row["entity_id"]].append(row)
-        self.calendar = self._csv(data / "calendar_special_days.csv")
+        # Public holidays come from the live source, saved by tools/live_calendar.py. The package's file is the fallback.
+        live_calendar = Path(__file__).parent / "live_calendar.csv"
+        self.calendar = self._csv(live_calendar if live_calendar.exists() and not data_dir else data / "calendar_special_days.csv")
         self.dates_by_key = defaultdict(list)
         self.calendar_names = {}
         for row in self.calendar:

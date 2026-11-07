@@ -15,7 +15,7 @@ import time
 import threading
 from datetime import date
 
-from . import config, messages, reply_agent
+from . import config, messages, reply_agent, voice as voice_api
 from .engine import Decision, Engine
 from .hours import day_to_string, edit_shift, is_valid
 from .store import Store, now
@@ -24,6 +24,8 @@ from .yext import YextClient, YextError
 AUTO_BASES = {"LAST_YEAR", "SHOPPING_CENTRE", "YOUR_CHOICE"}
 AGENT_CALLS_PER_MESSAGE = 25
 AGENT_CALLS_PER_HOUR = 400
+VOICE_CALLS_PER_HOUR = 300
+KEPT_SPEECH = 200
 DECLINE_REASONS = {"open_as_usual", "dont_ask", "wrong", "stop", ""}
 
 STORYLINES = {
@@ -58,10 +60,12 @@ QUIET_TEXT = {
 
 class Service:
     def __init__(self, engine: Engine, store: Store, mock: YextClient, sandbox: YextClient | None = None,
-                 public_url: str | None = None, agent=None):
+                 public_url: str | None = None, agent=None, voice=None):
         self.engine, self.store, self.mock, self.sandbox = engine, store, mock, sandbox
         self.agent = agent or (reply_agent.ask_gemini if config.GEMINI_KEY else None)
+        self.voice = voice or (voice_api.ElevenLabs() if config.ELEVENLABS_KEY else None)
         self._plans = {}
+        self._speech = {}
         self._agent_calls = {}
         self.public_url = (public_url or config.PUBLIC_URL).rstrip("/")
         self._overview = None
@@ -544,8 +548,56 @@ class Service:
         calls["all"] = calls.get("all", 0) + 1
         return True
 
-    def _plan_row(self, label: tuple, before: tuple, after: tuple) -> dict:
-        return {"label": label[0], "label_en": label[1], "before": before[0], "before_en": before[1], "after": after[0], "after_en": after[1]}
+    def _plan_row(self, label: tuple, before: tuple, after: tuple, spoken: str) -> dict:
+        return {"label": label[0], "label_en": label[1], "before": before[0], "before_en": before[1], "after": after[0], "after_en": after[1], "spoken": spoken}
+
+    def _remember_speech(self, token: str, text: str) -> str | None:
+        """Only text Connect wrote can be spoken, so a public link can't be used to read out anything else."""
+        if not self.voice or not text:
+            return None
+        speech_id = secrets.token_urlsafe(12)
+        self._speech[speech_id] = {"token": token, "text": text}
+        while len(self._speech) > KEPT_SPEECH:
+            del self._speech[next(iter(self._speech))]
+        return speech_id
+
+    def _voice_allowed(self) -> bool:
+        hour = int(time.time() // 3600)
+        calls = self._agent_calls
+        if calls.get("hour") != hour:
+            calls.clear()
+            calls["hour"] = hour
+        if calls.get("voice", 0) >= VOICE_CALLS_PER_HOUR:
+            return False
+        calls["voice"] = calls.get("voice", 0) + 1
+        return True
+
+    def transcribe_reply(self, token: str, audio: bytes, content_type: str) -> dict:
+        """Turn the owner's voice into text. It then goes through the same agent, checks and confirmation as typing."""
+        case = self._case_by_token(token)
+        if not case:
+            raise KeyError("Unknown link")
+        if self._expired(case):
+            raise PermissionError("expired")
+        if not self.voice or not self._voice_allowed():
+            return {"status": "unavailable"}
+        try:
+            text = self.voice.transcribe(audio, content_type)
+        except voice_api.VoiceUnavailable as error:
+            self.store.log("DECIDE", "voice", f"Couldn't hear the owner ({error}), so the buttons stay.", case["entity_id"], case["id"])
+            return {"status": "unavailable"}
+        return {"status": "heard", "text": text} if text else {"status": "unavailable"}
+
+    def speak(self, token: str, speech_id: str) -> bytes:
+        entry = self._speech.get(speech_id)
+        if not entry or entry["token"] != token:
+            raise ValueError("That speech is no longer available")
+        if not self.voice or not self._voice_allowed():
+            raise ValueError("Voice isn't available right now")
+        try:
+            return self.voice.speak(entry["text"])
+        except voice_api.VoiceUnavailable:
+            raise ValueError("Voice isn't available right now") from None
 
     def _plan_rows(self, plan: dict, case: dict, regular_now: dict) -> list:
         lang, eid, rows = case["language"], case["entity_id"], []
@@ -569,12 +621,21 @@ class Service:
                 after = hours(items[day]["proposed"])
             else:
                 after = (messages.UI[lang]["tell_no_change"], messages.UI["en"]["tell_no_change"])
-            rows.append(self._plan_row(date_label(day), hours(shown(day)), after))
+            if day in plan["dates"]:
+                said = messages.spoken_hours(plan["dates"][day])
+            elif plan["decisions"][day]["action"] == "approve":
+                said = messages.spoken_hours(items[day]["proposed"])
+            else:
+                said = "no change"
+            key, _ = self._day_key(eid, day)
+            rows.append(self._plan_row(date_label(day), hours(shown(day)), after, f"{messages.spoken_date(day, key)}: {said}."))
         for group in messages.group_weekdays(plan["regular"], regular_now):
-            rows.append(self._plan_row(tuple(messages.weekday_span(group["days"], code) for code in (lang, "en")), hours(group["before"]), hours(group["after"])))
+            rows.append(self._plan_row(tuple(messages.weekday_span(group["days"], code) for code in (lang, "en")), hours(group["before"]), hours(group["after"]),
+                                       f"{messages.spoken_days(group['days'])}: {messages.spoken_hours(group['after'])}."))
         if plan["standing"]:
             ui, ui_en = messages.UI[lang], messages.UI["en"]
-            rows.append(self._plan_row((ui["tell_holidays"], ui_en["tell_holidays"]), (ui["tell_ask_first"], ui_en["tell_ask_first"]), (ui["tell_automatic"], ui_en["tell_automatic"])))
+            rows.append(self._plan_row((ui["tell_holidays"], ui_en["tell_holidays"]), (ui["tell_ask_first"], ui_en["tell_ask_first"]), (ui["tell_automatic"], ui_en["tell_automatic"]),
+                                       "We'll handle public holidays for you from now on."))
         return rows
 
     def _day_key(self, eid: str, day: str) -> tuple:
@@ -627,13 +688,15 @@ class Service:
                 question = plan["question"] if not plan["problem"] else ui["tell_again"]
                 question_en = plan["question_en"] if not plan["problem"] else ui_en["tell_again"]
                 self.store.log("DECIDE", "reply_agent", f"Asked: {question_en or question}", eid, case["id"])
-                return {"status": "question", "question": question, "question_en": question_en, "reply_en": plan["reply_en"]}
+                return {"status": "question", "question": question, "question_en": question_en, "reply_en": plan["reply_en"],
+                        "speech_id": self._remember_speech(token, question_en)}
             plan_id = secrets.token_urlsafe(12)
             self._plans[plan_id] = {"token": token, "plan": plan}
             rows = self._plan_rows(plan, case, regular_now)
             self.store.log("DECIDE", "reply_agent", f"Understood {len(rows)} change(s) and asked the owner to confirm. Nothing written yet.", eid, case["id"],
                            {"dates": plan["dates"], "regular": plan["regular"], "decisions": plan["decisions"], "standing": plan["standing"]})
-            return {"status": "confirm", "plan_id": plan_id, "rows": rows, "reply_en": plan["reply_en"]}
+            return {"status": "confirm", "plan_id": plan_id, "rows": rows, "reply_en": plan["reply_en"],
+                    "speech_id": self._remember_speech(token, messages.spoken_plan([r["spoken"] for r in rows]))}
 
     def confirm_plan(self, token: str, plan_id: str) -> dict:
         """The owner tapped confirm. Dates go through the same path as the buttons: read-back, rollback, undo and learning."""
@@ -665,7 +728,11 @@ class Service:
             if decisions:
                 self.decide(token, decisions)
             self._finish_if_complete(case["id"])
-            return self.owner_view(token)
+            view = self.owner_view(token)
+            if view["listings"] or view["regular_updates"]:
+                listings = self.where_it_shows(eid)
+                view["speech_id"] = self._remember_speech(token, messages.spoken_saved(listings))
+            return view
 
     def _add_owner_item(self, case: dict, day: str, hours: str) -> int:
         """A date the owner brought up themselves. It becomes a normal item, so it can be undone like any other."""
@@ -768,7 +835,7 @@ class Service:
                 regular_updates.append({"days": messages.weekday_span(group["days"], lang), "days_en": messages.weekday_span(group["days"], "en"),
                                         "hours": messages.hours_label(group["after"], lang), "hours_en": messages.hours_label(group["after"], "en")})
         return {"business": self.engine.entities[eid]["name"], "first_name": self._first_name(eid), "language": lang,
-                "agent_enabled": bool(self.agent), "regular_updates": regular_updates,
+                "agent_enabled": bool(self.agent), "voice_enabled": bool(self.voice and self.agent), "regular_updates": regular_updates,
                 "ui": messages.UI[lang], "ui_en": messages.UI["en"], "status": case["status"], "expired": self._expired(case), "items": items,
                 "listings": listings, "standing": prefs["standing"], "opted_out": prefs["opted_out"]}
 
