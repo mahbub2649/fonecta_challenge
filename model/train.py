@@ -41,6 +41,7 @@ ROW_PARAMS = dict(objective="multiclass", num_class=3, n_estimators=450, learnin
 CAND_PARAMS = dict(objective="binary", n_estimators=350, learning_rate=0.04, num_leaves=31, min_child_samples=20,
                    subsample=0.8, subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=7)
 CLOSED, SAME, OTHER = 0, 1, 2
+EVAL_SEEDS = tuple(int(x) for x in os.environ.get("MODEL_SEEDS", "7,21,33").split(","))  # Averaged models for scoring.
 MIN_EXACT = 0.25  # The least chance of exactly right hours that justifies messaging an owner.
 
 
@@ -58,6 +59,51 @@ def near(a: str, b: str) -> bool:
     return SCORER.near(a, b)
 
 
+# What businesses with nothing entered really did, by type of business and day. The peer table only counts what
+# owners entered, which leans towards diligent owners. These rates come from the dev answers instead.
+TRUTH_RATE_GROUPS = {
+    "seg_day_cty": ["segment", "day_key", "country"],
+    "seg_day": ["segment", "day_key"],
+    "arch_day_cty": ["archetype", "day_key", "country"],
+    "seg_day_cty_tier": ["segment", "day_key", "country", "tier"],
+}
+TRUTH_RATE_SMOOTHING = 20  # Rows' worth of the day's overall rate mixed into each group, so small groups stay sensible.
+
+
+def add_truth_rates(rows: pd.DataFrame) -> None:
+    """Closed and other-hours rates on days that showed open with nothing entered, from the true answers.
+
+    Honest by construction: a row only sees answers from earlier seasons (dated before its snapshot), and a dev
+    business never sees answers from its own fold. Rows in the first season get none.
+    """
+    names = [f"tr_{g}_{s}" for g in TRUTH_RATE_GROUPS for s in ("closed", "other", "n")]
+    for name in names:
+        rows[name] = np.nan
+    source = rows[(rows["split"] == "dev") & (rows["cls"] >= 0) & (rows["shown"] != "closed") & (rows["has_entry_now"] == 0)]
+    source = source.assign(_c=(source["cls"] == CLOSED).astype(float), _o=(source["cls"] == OTHER).astype(float))
+    m = TRUTH_RATE_SMOOTHING
+    for season in sorted(rows["season"].unique()):
+        past = source[source["season"] < season]
+        if past.empty:
+            continue
+        in_season = rows["season"] == season
+        for fold in sorted(rows.loc[in_season, "fold"].unique()):
+            idx = rows.index[in_season & (rows["fold"] == fold)]
+            src = past if fold < 0 else past[past["fold"] != fold]
+            prior = src.groupby("day_key")[["_c", "_o"]].mean()
+            target = rows.loc[idx]
+            prior_c = target["day_key"].map(prior["_c"]).fillna(src["_c"].mean()).to_numpy()
+            prior_o = target["day_key"].map(prior["_o"]).fillna(src["_o"].mean()).to_numpy()
+            for group, cols in TRUTH_RATE_GROUPS.items():
+                stats = src.groupby(cols)[["_c", "_o"]].agg(["sum", "count"])
+                stats.columns = ["c_sum", "c_n", "o_sum", "o_n"]
+                joined = target[cols].merge(stats, left_on=cols, right_index=True, how="left")
+                n = joined["c_n"].fillna(0).to_numpy()
+                rows.loc[idx, f"tr_{group}_closed"] = (joined["c_sum"].fillna(0).to_numpy() + m * prior_c) / (n + m)
+                rows.loc[idx, f"tr_{group}_other"] = (joined["o_sum"].fillna(0).to_numpy() + m * prior_o) / (n + m)
+                rows.loc[idx, f"tr_{group}_n"] = n
+
+
 def load(soft: str | None = "soft.parquet") -> tuple:
     rows = pd.read_parquet(CACHE / "rows.parquet")
     cands = pd.read_parquet(CACHE / "candidates.parquet")
@@ -70,6 +116,8 @@ def load(soft: str | None = "soft.parquet") -> tuple:
     rows.loc[known & (rows["truth"] == "closed"), "cls"] = CLOSED
     rows.loc[known & (rows["truth"] != "closed") & (rows["truth"] == rows["shown"]), "cls"] = SAME
     rows.loc[known & (rows["truth"] != "closed") & (rows["truth"] != rows["shown"]), "cls"] = OTHER
+    if os.environ.get("MODEL_TRUTH_RATES") == "1":
+        add_truth_rates(rows)
     for col in CATEGORICAL:
         rows[col] = pd.Categorical(rows[col], categories=sorted(rows[col].dropna().unique()))
     extra = ["weekday", "peer_special", "peer_regular", "reg_len", "special_share", "n_entries_special", "in_mall", "y1_state"]
@@ -114,7 +162,30 @@ def fit_predict(rows_train, rows_pred, cands_train, cands_pred, seeds=(7,), min_
             close = lgb.LGBMClassifier(**{**CAND_PARAMS, "random_state": seed + 1})
             close.fit(other[c_cols], other["near"], categorical_feature=CATEGORICAL)
             p_near += close.predict_proba(cands_pred[c_cols])[:, 1] / len(seeds)
+    weight = float(os.environ.get("MODEL_CATBOOST_WEIGHT", "0.5"))
+    if weight > 0:  # A second kind of model for the open/closed/other call, averaged with LightGBM.
+        probs = (1 - weight) * probs + weight * catboost_probs(rows_train, rows_pred, r_cols)
     return probs, p_exact, p_near
+
+
+def catboost_probs(rows_train, rows_pred, columns: list) -> np.ndarray:
+    from catboost import CatBoostClassifier  # Apache 2.0. Only needed when the blend is switched on.
+
+    def prep(df: pd.DataFrame) -> pd.DataFrame:
+        x = df[columns].copy()
+        for col in CATEGORICAL:
+            x[col] = x[col].astype(str)
+        return x
+
+    model = CatBoostClassifier(loss_function="MultiClass", iterations=int(os.environ.get("MODEL_CATBOOST_ITERS", "800")), depth=6,
+                               learning_rate=0.06, l2_leaf_reg=5.0, random_seed=7 + int(os.environ.get("MODEL_SEED_SHIFT", "0")),
+                               thread_count=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=0, allow_writing_files=False)
+    model.fit(prep(rows_train), rows_train["cls"], cat_features=CATEGORICAL)
+    raw = model.predict_proba(prep(rows_pred))
+    out = np.zeros((len(rows_pred), 3))
+    for i, cls in enumerate(model.classes_):
+        out[:, int(cls)] = raw[:, i]
+    return out
 
 
 def choose(rows: pd.DataFrame, probs: np.ndarray, cands: pd.DataFrame, p_exact, p_near, knobs: dict) -> list:
@@ -223,7 +294,7 @@ def strict_2025(knobs) -> dict:
         te = target[target["fold"] == fold]
         ct = cands[(cands["season"] == 2024) & (cands["fold"] != fold) & (cands["fold"] >= 0) & (cands["aux"] == 0)]
         cp = cands[(cands["season"] == 2025) & (cands["fold"] == fold) & (cands["aux"] == 0)]
-        pr, pe, pn = fit_predict(tr, te, ct, cp, min_season=2024)
+        pr, pe, pn = fit_predict(tr, te, ct, cp, seeds=EVAL_SEEDS, min_season=2024)
         preds.update(to_preds(choose(te, pr, cp, pe, pn, knobs), te, knobs))
     return SCORER.score(preds, str(LABELS_2025))
 
@@ -246,7 +317,7 @@ def main() -> None:
     print(f"Our 'shown' matches the label's on {(joined['shown'] == joined['displayed_hours_at_snapshot']).mean():.2%} of 2026 rows", flush=True)
 
     knobs = {"margin": 0.0, "closed_margin": 0.0}
-    labelled, probs, cand_rows, p_exact, p_near = held_out(rows, cands)
+    labelled, probs, cand_rows, p_exact, p_near = held_out(rows, cands, seeds=EVAL_SEEDS)
     print(f"held-out models done at {time.time() - start:.0f}s", flush=True)
     results = evaluate(labelled, probs, cand_rows, p_exact, p_near, knobs)
     show("2026 held-out", results[2026])

@@ -75,7 +75,7 @@ python3 ../fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --p
 
 ### 6. Rebuild the model (optional)
 
-The trained model's output is already in this repository, so the app doesn't need this. It takes about 5 minutes on a laptop CPU, and the last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
+The trained model's output is already in this repository, so the app doesn't need this. It takes about 25 minutes on a laptop CPU, and the last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
 
 ```bash
 pip install -r model/requirements.txt
@@ -116,7 +116,7 @@ The model only proposes. Nothing is published without the owner's approval or st
 
 1. **Review reader:** reads closed-door complaints, closing times, thanks for being open and new weekly hours, in Finnish, Swedish, Norwegian and English, and ties each statement to the day it's about.
 2. **Past-day estimator:** most special days never got an entry, so what the business really did is hidden. A LightGBM model estimates it from what the day left behind: reviews, user edits, and spikes in calls and clicks.
-3. **Open or closed model:** LightGBM combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather.
+3. **Open or closed model:** LightGBM and CatBoost, averaged, combine those estimates with history, peers, shopping centres, the 2025 pilot, events and weather. Besides the dev answers, it learns from about 9,500 days that other businesses' owners entered late: after a season's snapshot but before the day. At the snapshot those days looked just like the ones we predict, and the late entry shows what was true. Their features only use data from before the snapshot.
 4. **Hours picker:** builds candidate hours from every source and ranks them. The right hours are on the list 97% of the time.
 5. **Decision layer:** chooses the action with the highest expected points, and holds back hours it thinks have under a 25% chance of being exactly right.
 
@@ -138,14 +138,14 @@ Scored with the organisers' `evaluate.py`, on businesses each model never saw.
 
 | Measure | Package baseline | Connect Suggests |
 |---|---:|---:|
-| **Score, 2026 season** | 54.49 | **67.66** |
-| **Score, 2025 season** | 53.23 | **65.67** |
-| Score, 2025, trained only on data from before that snapshot | | 59.41 |
+| **Score, 2026 season** | 54.49 | **68.28** |
+| **Score, 2025 season** | 53.23 | **65.78** |
+| Score, 2025, trained only on data from before that snapshot | | 59.99 |
 | Exact recall, 2026 | 0.59 | 0.76 |
-| Exact precision, 2026 | 0.90 | 0.85 |
-| Search views protected, 2026 | 57.2% | 74.0% |
-| Closed-door views prevented, 2026 | 69.2% | 86.5% |
-| Wrong open or closed calls, 2026 | 224 | 389 |
+| Exact precision, 2026 | 0.90 | 0.86 |
+| Search views protected, 2026 | 57.2% | 74.7% |
+| Closed-door views prevented, 2026 | 69.2% | 86.9% |
+| Wrong open or closed calls, 2026 | 224 | 382 |
 
 We catch far more wrong hours, at the cost of more wrong calls, because the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions. These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
 
@@ -161,6 +161,10 @@ We catch far more wrong hours, at the cost of more wrong calls, because the scor
 
 ## What we tried that didn't work
 
+- **Learned review keywords** (`model/keywords.py`): phrase lists learned from the dev answers, used with or instead of the hand-written ones. −0.08 on 2026. The hand-written phrases already catch every strongly predictive sentence, and only about 4% of past wrong-hours days have any review.
+- **Closed rates by business type and day from earlier seasons' answers** (`MODEL_TRUTH_RATES=1`). +0.16, within noise: the model already learns them from type and day.
+- **Averaging seeds in the past-day estimator**, **flagging uncertain rows** (+0.10, but 100+ extra rows for a person) and **sibling days entered this season** (only 54 of 11,100 dev rows have any entry). None beat the noise.
+- **Noise:** the same model with different seeds scores 67.11–67.66 on 2026, so we only count gains above about 0.5.
 - **A second pass of the past-day estimator**, letting each day read the business's other days. It made both seasons worse, by up to 1.5 points on 2025.
 - **Rating-only reviews and calls on neighbouring days.** They added nothing.
 - **Averaging more random seeds and tuning a decision margin.** Differences stayed within noise, so we kept the simpler version.
@@ -216,6 +220,7 @@ The loop isn't specific to hours: notice something, suggest it with a reason, ge
 | Rule ladder in `connect/engine.py` and client in `connect/yext.py`, adapted from the package's `examples/` | MIT, © 2026 Since AI ry |
 | Challenge data, including derived `connect/views.json`, `connect/model_decisions.json` and `predictions_2026.csv` | CC BY 4.0, "Connect Suggests simulator, Since AI ry 2026" |
 | `model/` and `tools/build_views.py` only: LightGBM | MIT |
+| `model/` only: CatBoost | Apache-2.0 |
 | `model/` and `tools/build_views.py` only: scikit-learn, pandas, NumPy | BSD-3-Clause |
 | `model/` and `tools/build_views.py` only: PyArrow | Apache-2.0 |
 

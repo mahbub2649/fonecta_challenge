@@ -34,6 +34,7 @@ from model.folds import N_FOLDS, fold_map  # noqa: E402
 
 CACHE = config.VAR_DIR / "model"
 SNAPSHOTS = {2024: date(2024, 11, 6), 2025: date(2025, 11, 6), 2026: date(2026, 11, 6)}
+STAGE_SEEDS = tuple(int(x) for x in os.environ.get("MODEL_STAGE1_SEEDS", "0").split(","))
 CATEGORICAL = ["day_key", "day_class", "day_type", "segment", "country", "tier"]
 NOT_FEATURES = {"entity_id", "date", "regular", "has_entry", "entry_hours", "entry_in_time", "truth", "cls", "fold", "season"}
 PARAMS = dict(objective="multiclass", num_class=3, n_estimators=300, learning_rate=0.04, num_leaves=31, min_child_samples=30, subsample=0.8,
@@ -92,9 +93,11 @@ def main() -> None:
         fold = past["fold"].to_numpy()
         for k in range(N_FOLDS):
             tr = past[train_mask & (past["fold"] != k)]
-            model = lgb.LGBMClassifier(**PARAMS)
-            model.fit(tr[columns], tr["cls"], categorical_feature=CATEGORICAL)
-            pred = model.predict_proba(past[columns])
+            pred = np.zeros((len(past), 3))
+            for offset in STAGE_SEEDS:  # Averaging models with different seeds steadies the estimates.
+                model = lgb.LGBMClassifier(**{**PARAMS, "random_state": PARAMS["random_state"] + offset})
+                model.fit(tr[columns], tr["cls"], categorical_feature=CATEGORICAL)
+                pred += model.predict_proba(past[columns]) / len(STAGE_SEEDS)
             probs[fold == k] = pred[fold == k]
             probs[fold == -1] += pred[fold == -1] / N_FOLDS
         return probs
