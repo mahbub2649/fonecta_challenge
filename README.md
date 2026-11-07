@@ -6,18 +6,76 @@ All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
 ## Run it
 
-You need Python 3.9 or newer, and nothing else. The challenge package should be at `../fonecta_data/FONECTA_CONNECT_SUGGESTS_2026`, or set `CONNECT_DATA_DIR` to its folder.
+### 1. Set up
 
-```bash
-python3 run.py                        # http://127.0.0.1:8080
-python3 -m unittest discover tests
+You need Python 3.9 or newer. The app uses only the standard library, so there's nothing to install (`requirements.txt` is there to confirm that).
+
+The repository doesn't include the challenge data package. Put it next to this folder:
+
+```text
+parent-folder/
+├── fonecta_challenge/                        # this repository
+└── fonecta_data/
+    └── FONECTA_CONNECT_SUGGESTS_2026/        # the challenge package
 ```
 
-To write to a real Yext sandbox, copy `.env.example` to `.env` and set `YEXT_API_KEY`. Without a key, writes go to the local mock, and the top of the page shows which is active.
+If it's somewhere else, set `CONNECT_DATA_DIR` to the `FONECTA_CONNECT_SUGGESTS_2026` folder.
 
-To try the owner page on a phone on the same network, set `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080`.
+### 2. Start the app
 
-To rebuild the model, which takes about 5 minutes on a laptop CPU:
+```bash
+python3 run.py
+```
+
+Then open http://127.0.0.1:8080. Press `Ctrl+C` in the terminal to stop.
+
+| Optional setting | What it does |
+|---|---|
+| `YEXT_API_KEY` | Also writes to your Yext sandbox. Copy `.env.example` to `.env` and set it there. Without a key, writes go to the local mock, and the top of the page shows which is active |
+| `CONNECT_DATA_DIR` | Where the challenge package is |
+| `CONNECT_PORT` | Uses another port instead of 8080 |
+| `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
+
+### 3. Use the web page
+
+1. Pick **Kahvila Aurora** on the left, then press **Run detection**.
+2. Press **Send by SMS**. The message appears on the on-screen phone.
+3. Tap the link in the message, then approve or edit.
+4. Steps 4 and 5 fill in beside the phone, and the audit trail records each step.
+5. Press **Detect the next dates** to see the next message use what the owner just said.
+
+Press **Reset demo** to start again.
+
+### 4. Or use the command line
+
+With the app running, a second terminal can drive the same chain through its local API:
+
+```bash
+B=http://127.0.0.1:8080
+J='Content-Type: application/json'
+
+curl -s -X POST -H "$J" -d '{}' $B/api/reset
+curl -s -X POST -H "$J" -d '{}' $B/api/business/FI-D0001/detect    # detect and suggest
+curl -s -X POST -H "$J" -d '{}' $B/api/case/1/send                 # contact: returns the message and owner link
+
+T=$(curl -s $B/api/business/FI-D0001 | python3 -c "import json,sys;print(json.load(sys.stdin)['cases'][0]['token'])")
+curl -s $B/api/o/$T                                                # the dates waiting for a decision
+
+curl -s -X POST -H "$J" \
+  -d '{"decisions":[{"item":1,"action":"edit","hours":"07:30-14:00"},{"item":2,"action":"approve"}]}' \
+  $B/api/o/$T/decide                                               # decide, apply and confirm
+```
+
+### 5. Run the tests and check the score
+
+```bash
+python3 -m unittest discover tests
+python3 ../fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
+```
+
+### 6. Rebuild the model (optional)
+
+The trained model's output is already in this repository, so the app doesn't need this. It takes about 5 minutes on a laptop CPU, and the last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
 
 ```bash
 pip install -r model/requirements.txt
@@ -25,10 +83,10 @@ python3 tools/build_views.py
 python3 model/build_dataset.py
 python3 model/past_days.py --before 2025-11-06    # first stage for the strict back-test
 python3 model/past_days.py
-python3 model/train.py --strict --write           # scores, predictions_2026.csv, connect/model_decisions.json
+python3 model/train.py --strict --write
 ```
 
-**Quick tour:** pick Kahvila Aurora, press **Run detection**, then **Send by SMS**. Tap the link on the on-screen phone and approve or edit. Then press **Detect the next dates** to see the next message use what the owner just said.
+### Businesses to try
 
 | Business | Shows |
 |---|---|
