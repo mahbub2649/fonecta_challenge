@@ -247,7 +247,7 @@ Vi fikk ikke lagret ennå, så ingenting er endret. Vi prøver igjen og sier fra
 Thanks Aleksi! We've updated Kahvila Aurora:
 • Christmas Eve Thu 24 Dec: 7:30–13
 • Christmas Day Fri 25 Dec: closed
-The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 days and 5 more.
+The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 day and 5 more.
 Want us to handle public holidays for you from now on? We always tell you about a change, and you can undo it in one tap: https://connect.example/o/abc123
 ```
 
@@ -257,7 +257,7 @@ Want us to handle public holidays for you from now on? We always tell you about 
 Thanks Aleksi! We've updated Kahvila Aurora:
 • Christmas Eve Thu 24 Dec: 7:30–14
 • Christmas Day Fri 25 Dec: closed
-The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 days and 5 more.
+The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 day and 5 more.
 ```
 
 ### After declining
@@ -272,7 +272,7 @@ OK Aleksi, we didn't change anything. We'll remember this next time.
 Hi Laura! With your permission, we've updated the holiday hours for Tilitoimisto Otso:
 • Christmas Eve Thu 24 Dec: 7:30–13
 • Christmas Day Fri 25 Dec: closed
-The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 days and 5 more.
+The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 day and 5 more.
 Wrong? Undo in one tap: https://connect.example/o/abc123
 ```
 

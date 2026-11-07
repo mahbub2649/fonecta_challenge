@@ -78,6 +78,13 @@ class PasscodeGateTest(unittest.TestCase):
         self.assertEqual(FakeService.resets, 1)
         self.assertNotIn("open-sesame", cookie)
 
+    def test_mobile_needs_the_passcode(self):
+        self.assertIn("Demo passcode", self.call("/mobile")[1])
+        self.assertEqual(self.call("/mobile.js")[0], 404)
+        cookie = self.login()
+        self.assertIn("Connect for owners", self.call("/mobile", cookie=cookie)[1])
+        self.assertEqual(self.call("/mobile.js", cookie=cookie)[0], 200)
+
     def test_owner_links_stay_open_without_the_passcode(self):
         self.assertEqual(self.call("/api/o/abc")[0], 200)
         self.assertEqual(self.call("/o/abc")[0], 200)

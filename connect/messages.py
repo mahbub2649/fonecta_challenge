@@ -284,7 +284,8 @@ def eta_label(seconds: int, lang: str) -> str:
         return minute.format(n=max(1, round(seconds / 60)))
     if seconds < 86400:
         return hour.format(n=round(seconds / 3600))
-    return day.format(n=round(seconds / 86400))
+    text = day.format(n=round(seconds / 86400))
+    return text.replace("1 days", "1 day") if lang == "en" else text
 
 
 def round_views(n: int) -> int:
