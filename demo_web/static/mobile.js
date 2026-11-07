@@ -52,6 +52,7 @@ async function showList() {
           captions = e.target.checked;
           try { localStorage.setItem("connect-captions", captions ? "on" : "off"); } catch { /* It still works for this visit. */ }
         }}), "English captions"),
+        el("a", {cls: "link", href: "/future", textContent: "Future plans"}),
         el("button", {type: "button", cls: "link", textContent: "Reset demo", on: async () => {
           if (confirm("Reset the demo for everyone using it?")) { await call("/api/reset", {}); showList(); }
         }}))));

@@ -28,7 +28,8 @@ from connect.web import make_handler  # noqa: E402
 STATIC = Path(__file__).parent / "static"
 COOKIE = "connect_demo"
 MOBILE = {"/mobile": ("mobile.html", "text/html; charset=utf-8"), "/mobile.css": ("mobile.css", "text/css; charset=utf-8"),
-          "/mobile.js": ("mobile.js", "text/javascript; charset=utf-8")}
+          "/mobile.js": ("mobile.js", "text/javascript; charset=utf-8"), "/future": ("future.html", "text/html; charset=utf-8"),
+          "/future.js": ("future.js", "text/javascript; charset=utf-8")}
 MAX_FAILED_LOGINS = 20
 FAILED_LOGIN_WINDOW = 600
 
@@ -67,7 +68,7 @@ def make_demo_handler(service, passcode: str):
             path = urlparse(self.path).path
             if path == "/healthz":
                 return self._reply(200, {"ok": True})
-            if path in ("/", "/mobile") and not self._is_local():
+            if path in ("/", "/mobile", "/future") and not self._is_local():
                 return self._send(200, (STATIC / "login.html").read_bytes(), "text/html; charset=utf-8")
             if path in MOBILE and self._is_local():
                 name, content_type = MOBILE[path]

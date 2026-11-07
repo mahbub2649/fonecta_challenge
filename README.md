@@ -32,7 +32,7 @@ python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --pred
 | **Suggestion quality** | A model blend that scores 68.62 against the baseline's 54.49. Every suggestion keeps its reason, and weak guesses stay quiet | [Results](#results) |
 | **Customer experience** | One short message per group of dates, no login, and three ways to answer: one tap, own words or voice | [Final customer messages](#final-customer-messages), [Replying in the owner's own words](#replying-in-the-owners-own-words) |
 | **Reliability** | Nothing is written without the owner's approval or standing permission. Every write is read back, a failed write leaves nothing behind, and changes to dates can be undone | [The five steps](#the-five-steps), [live Yext checks](#6-testing-against-a-real-yext-sandbox) |
-| **Extensibility** | The same loop already handles new weekly hours, and other suggestion types can reuse it | [Extensibility](#extensibility) |
+| **Extensibility** | The same loop already handles new weekly hours and owner-chosen dates. Two future plans go beyond posts and reviews, shown in a concept mock | [Extensibility](#extensibility) |
 | **Learning** | An owner's earlier choice is reused, and was exactly right on 80 of 89 dates. Standing permission covers recurring changes. We measured the rules and removed one that hurt | [How it learns](#how-it-learns) |
 | **All five steps** | All 17 demo businesses behave correctly through the whole chain on the real Yext sandbox | [Live Yext checks](#6-testing-against-a-real-yext-sandbox) |
 
@@ -44,6 +44,7 @@ The [public demo](https://connect-suggests-demo-905296230419.europe-north1.run.a
 
 - **The console** at `/` shows all five steps next to an on-screen phone.
 - **The owner's view** at [`/mobile`](https://connect-suggests-demo-905296230419.europe-north1.run.app/mobile) is built for a real phone: pick a business, read Connect's message, and answer.
+- **Future plans** at [`/future`](https://connect-suggests-demo-905296230419.europe-north1.run.app/future) is a concept mock of two ideas that aren't built.
 - **Everyone shares one demo,** so **Reset demo** clears it for everyone. It can also reset by itself after being idle.
 
 ### The laptop we use
@@ -425,8 +426,13 @@ The loop isn't specific to holiday hours: notice something, suggest it with a re
 | New weekly hours | **Working** when the owner asks in their own words, with the same confirmation, read-back and rollback. Connect doesn't suggest these on its own yet, and they don't have one-tap undo |
 | Dates the owner brings up, like "closed Saturdays in December" | **Working,** and each date can be undone like any other |
 | Business that looks closed for good | **Working,** and it goes to a person, not the owner |
-| Review replies | **Not built.** Gemini could draft a reply for the same approval page |
-| Automatic posts, like "we're closed on Christmas Eve" | **Not built.** An approved change could offer a ready-made post |
+
+Fonecta's automatic posts and review replies could also use this loop, so these are two further ideas of ours. **Both are future plans and aren't built.** The [concept mock](https://connect-suggests-demo-905296230419.europe-north1.run.app/future) at `/future` is a scripted click-through with synthetic businesses. It makes no server calls and saves nothing.
+
+| Future plan | Why it matters | How the loop would work |
+|---|---|---|
+| **"We're closed today"** | Illness or a burst pipe happens without warning, when logging in is hardest and the listing is about to send people to a closed door | The owner starts the loop by voice: "closed today, back on Monday". Connect works out the dates and asks them to confirm, and normal hours return by themselves |
+| **A shopping centre changes its hours** | One change can make every shop inside show the wrong hours | Connect finds the shops that follow the centre. Standing permission applies the change and tells the owner, others get one tap, and opted-out owners get nothing |
 
 ## Third-party code, data and licences
 
