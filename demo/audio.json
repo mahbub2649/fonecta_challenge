@@ -552,6 +552,78 @@
     "use_speaker_boost": true
    },
    "text": "And on summer nights, the terrace stays open late."
+  },
+  {
+   "name": "q1-demo",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "Now for a quick demonstration.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q2-detect",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "It finds two days that will show the wrong hours, with the evidence, and how sure it is.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q3-message",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "One message goes out, in the owner's own language. Here, Finnish.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q4-approve",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "The link opens a page with no login. Each day shows what Google says now, the suggestion and why. Approve, edit or decline.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q5-apply",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "Approved. Connect writes it to Yext, checks it saved, and shows where it goes live: Google, Bing, Apple Maps and more. Then it offers to handle holidays from now on.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q6-standing",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "The owner says yes. Next time, holidays just update, with a one-tap undo.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
   }
  ]
 }

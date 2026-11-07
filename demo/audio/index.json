@@ -376,5 +376,95 @@
    }
   },
   "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "9aa9558d3a45": {
+  "file": "q1-demo-9aa9558d.mp3",
+  "clip": "q1-demo",
+  "request": {
+   "text": "Now for a quick demonstration.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "a0e1dcebcf1e": {
+  "file": "q2-detect-a0e1dceb.mp3",
+  "clip": "q2-detect",
+  "request": {
+   "text": "It finds two days that will show the wrong hours, with the evidence, and how sure it is.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "4a850bfed6a3": {
+  "file": "q3-message-4a850bfe.mp3",
+  "clip": "q3-message",
+  "request": {
+   "text": "One message goes out, in the owner's own language. Here, Finnish.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "24fc1c633724": {
+  "file": "q4-approve-24fc1c63.mp3",
+  "clip": "q4-approve",
+  "request": {
+   "text": "The link opens a page with no login. Each day shows what Google says now, the suggestion and why. Approve, edit or decline.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "e09d21fbd398": {
+  "file": "q5-apply-e09d21fb.mp3",
+  "clip": "q5-apply",
+  "request": {
+   "text": "Approved. Connect writes it to Yext, checks it saved, and shows where it goes live: Google, Bing, Apple Maps and more. Then it offers to handle holidays from now on.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "b631b98730ba": {
+  "file": "q6-standing-b631b987.mp3",
+  "clip": "q6-standing",
+  "request": {
+   "text": "The owner says yes. Next time, holidays just update, with a one-tap undo.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
  }
 }
