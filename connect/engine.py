@@ -297,15 +297,12 @@ class Engine:
             decision.confidence = YOUR_CHOICE_CONFIDENCE
             decision.learning_notes.append(f"Uses the hours the owner chose earlier for {key}.")
         elif decision.action == "SUGGEST" and decision.hours != "closed" and decision.basis != "SHOPPING_CENTRE":
+            # Moving the suggestion after one edit made later suggestions worse when measured, so it's only offered.
             moved = shift(decision.hours, learned.get("open_shift", 0), learned.get("close_shift", 0))
-            if moved != decision.hours:
+            if moved not in (decision.hours, decision.shown):
                 decision.learning_notes.append(
-                    f"Moved {decision.hours} to {moved}, because the owner changed a similar day the same way.")
-                decision.evidence = {**decision.evidence, "shifted_from": decision.hours}
-                decision.hours = moved
-                if moved == decision.shown:
-                    decision.action, decision.hours, decision.quiet_reason = "NO_ACTION", "", "MATCHES_SHOWN"
-                    return decision
+                    f"Keeps {decision.hours} and offers {moved} in one tap, because the owner moved a similar day the same way.")
+                decision.evidence = {**decision.evidence, "alternative": moved}
         if decision.action == "SUGGEST" and decision.hours == "closed" and learned.get("closed_doubts", 0):
             if decision.basis == "PEERS":
                 decision.action, decision.hours, decision.quiet_reason = "NO_ACTION", "", "OWNER_DOUBTS_CLOSED"
@@ -313,6 +310,9 @@ class Engine:
                 return decision
             decision.confidence *= 0.6
             decision.learning_notes.append("Owner said they stayed open on a similar day, so Connect asks first.")
+        elif decision.action == "SUGGEST" and decision.hours == "closed" and learned.get("closed_asks", 0):
+            decision.confidence *= 0.6
+            decision.learning_notes.append("Owner opened on a day Connect thought was closed, so Connect asks first.")
         return decision
 
     # ------------------------------------------------------------ for one business

@@ -8,20 +8,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
-def _load_env_file() -> None:
-    path = Path(os.environ.get("CONNECT_ENV_FILE", ROOT / ".env"))
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            key, value = line.split("=", 1)
-            os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+def _load_env_files() -> None:
+    """CONNECT_ENV_FILE can list several files, and the first one to set a value wins."""
+    for name in os.environ.get("CONNECT_ENV_FILE", str(ROOT / ".env")).split(os.pathsep):
+        path = Path(name)
+        if not path.is_file():
+            continue
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
 
-_load_env_file()
+_load_env_files()
 
-DATA_DIR = Path(os.environ.get("CONNECT_DATA_DIR", ROOT.parent / "fonecta_data" / "FONECTA_CONNECT_SUGGESTS_2026"))
+DATA_DIR = Path(os.environ.get("CONNECT_DATA_DIR", ROOT / "fonecta_data" / "FONECTA_CONNECT_SUGGESTS_2026"))
 VAR_DIR = Path(os.environ.get("CONNECT_VAR_DIR", ROOT / "var"))
 HOST = os.environ.get("CONNECT_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CONNECT_PORT", "8080"))
@@ -31,7 +33,10 @@ PUBLIC_URL = os.environ.get("CONNECT_PUBLIC_URL", f"http://127.0.0.1:{PORT}").rs
 TODAY = date.fromisoformat(os.environ.get("CONNECT_TODAY", "2026-11-06"))
 
 SANDBOX_URL = os.environ.get("YEXT_BASE_URL", "https://sbx-api.yextapis.com").rstrip("/")
-SANDBOX_KEY = os.environ.get("YEXT_API_KEY") or os.environ.get("API_KEY") or ""
+SANDBOX_KEY = "" if os.environ.get("CONNECT_NO_SANDBOX") else os.environ.get("YEXT_API_KEY") or os.environ.get("API_KEY") or ""
+
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 # Suggestions at or above this confidence are stated. Below it, they are asked as a question.
 SUGGEST_THRESHOLD = 0.90

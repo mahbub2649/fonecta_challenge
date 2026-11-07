@@ -6,6 +6,8 @@ let view = null;
 let open = {}; // Which card is showing its edit or decline form: {itemId: "edit" | "decline"}.
 let hideOffer = false;
 let busy = false;
+let tell = {state: "idle", text: ""}; // The "in your own words" box: idle, busy, confirm, question or unavailable.
+const captions = new URLSearchParams(location.search).get("captions") === "1"; // For reviewers. Owners see only their own language.
 
 function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
@@ -18,11 +20,47 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
+function englishFor() {
+  const map = new Map();
+  const sameHours = (a, b) => a.replaceAll(".", ":") === b.replaceAll(".", ":"); // 7.30–13 and 7:30–13 need no caption.
+  const add = (text, english) => { if (text && english && !sameHours(text, english)) map.set(text, english); };
+  for (const [key, text] of Object.entries(view.ui)) add(text, view.ui_en[key]);
+  const count = String(pendingItems().length);
+  add(view.ui.approve_all_n.replace("{n}", count), view.ui_en.approve_all_n.replace("{n}", count));
+  for (const item of view.items) {
+    for (const key of ["day", "date", "shown", "proposed_label", "reason", "final_label"]) add(item[key], item.en[key]);
+    if (item.final_label) add(`✓ ${item.final_label}`, `✓ ${item.en.final_label}`);
+    if (item.views) add(view.ui.views.replace("{n}", item.views), view.ui_en.views.replace("{n}", item.views));
+    if (item.alternative) add(view.ui.alternative.replace("{hours}", item.alternative_label), view.ui_en.alternative.replace("{hours}", item.en.alternative_label));
+  }
+  for (const listing of view.listings) add(listing.eta, listing.eta_en);
+  for (const update of view.regular_updates) { add(update.days, update.days_en); add(update.hours, update.hours_en); }
+  for (const row of tell.rows || []) { add(row.label, row.label_en); add(row.before, row.before_en); add(row.after, row.after_en); }
+  if (tell.question) add(tell.question, tell.question_en);
+  if (tell.text) add(tell.text, tell.reply_en);
+  return map;
+}
+
+// Puts a small English line under any text that has a translation. It doesn't change what the buttons do.
+function addCaptions(root) {
+  if (!captions || !view || view.language === "en") return;
+  const map = englishFor();
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const english = map.get(node.textContent.trim());
+    if (!english || node.parentElement.classList.contains("caption") || node.nextSibling?.classList?.contains("caption")) continue;
+    node.after(el("small", {cls: "caption", textContent: english}));
+  }
+}
+
 async function post(path, body) {
   if (busy) return;
   busy = true;
   // Nothing redraws while saving, so a form keeps what the owner typed if the save fails.
   const notice = el("div", {cls: "saving", role: "status", textContent: view.ui.saving});
+  addCaptions(notice);
   document.body.append(notice);
   app.inert = true;
   let errorText = null;
@@ -41,7 +79,9 @@ async function post(path, body) {
   app.inert = false;
   notice.remove();
   if (errorText) {
-    app.prepend(el("p", {cls: "error", role: "alert", textContent: errorText}));
+    const problem = el("p", {cls: "error", role: "alert", textContent: errorText});
+    addCaptions(problem);
+    app.prepend(problem);
     window.scrollTo(0, 0);
   } else {
     render();
@@ -79,6 +119,7 @@ function editForm(item) {
         el("input", {type: "checkbox", checked: closed, onchange: (e) => { closed = e.target.checked; paint(); }}),
         ui.closed_toggle),
       inputs ?? "");
+    addCaptions(body);
   }
   paint();
 
@@ -111,6 +152,54 @@ function declineForm(item) {
     choice("", ui.skip));
 }
 
+async function askAgent(text) {
+  tell = {state: "busy", text};
+  render();
+  try {
+    const response = await fetch(`${api}/interpret`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({text})});
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+    tell = {state: data.status, text, ...data};
+  } catch {
+    tell = {state: "unavailable", text};
+  }
+  render();
+}
+
+function tellCard() {
+  const ui = view.ui;
+  if (!view.agent_enabled) return null;
+  if (tell.state === "confirm") {
+    return el("section", {cls: "card tell"},
+      el("h2", {textContent: ui.tell_check}),
+      el("p", {cls: "said"}, el("small", {textContent: ui.tell_you}), el("span", {textContent: tell.text})),
+      el("div", {cls: "plan"}, ...tell.rows.map((row) => el("div", {cls: "plan-row"},
+        el("div", {cls: "plan-day", textContent: row.label}),
+        el("div", {cls: "plan-change"},
+          el("span", {cls: "was", textContent: row.before}),
+          el("span", {cls: "arrow", textContent: "→", ariaHidden: "true"}),
+          el("strong", {textContent: row.after}))))),
+      el("div", {cls: "row"},
+        el("button", {type: "button", cls: "primary", textContent: ui.tell_yes, on: () => {
+          const planId = tell.plan_id;
+          tell = {state: "idle", text: ""};
+          post("/confirm", {plan_id: planId});
+        }}),
+        el("button", {type: "button", cls: "quiet", textContent: ui.tell_wrong, on: () => { tell = {state: "idle", text: tell.text}; render(); }})));
+  }
+  const box = el("textarea", {rows: 2, maxLength: 500, placeholder: ui.tell_ph, value: tell.state === "question" ? "" : tell.text, disabled: tell.state === "busy", ariaLabel: ui.tell_title});
+  return el("form", {cls: "card tell", onsubmit: (event) => {
+    event.preventDefault();
+    const text = box.value.trim();
+    if (text) askAgent(text);
+  }},
+    el("h2", {textContent: ui.tell_title}),
+    tell.state === "question" ? el("p", {cls: "ask", textContent: tell.question}) : null,
+    tell.state === "unavailable" ? el("p", {cls: "error", role: "alert", textContent: ui.tell_unavailable}) : null,
+    box,
+    el("button", {type: "submit", cls: "primary", disabled: tell.state === "busy", textContent: tell.state === "busy" ? ui.tell_busy : ui.tell_send}));
+}
+
 function stateLine(item) {
   const ui = view.ui;
   if (item.decision === "DECLINED") return el("div", {cls: "state off"}, ui.decline);
@@ -140,6 +229,9 @@ function card(item, multiple) {
     !pending ? stateLine(item) : null,
     pending && form === "edit" ? editForm(item) : null,
     pending && form === "decline" ? declineForm(item) : null,
+    pending && !form && item.alternative ? el("button", {type: "button", cls: "alternative",
+      textContent: ui.alternative.replace("{hours}", item.alternative_label),
+      on: () => decide([{item: item.id, action: "edit", hours: item.alternative}])}) : null,
     pending && !form ? el("div", {cls: "row"},
       multiple ? el("button", {type: "button", textContent: ui.approve,
         on: () => decide([{item: item.id, action: "approve"}])}) : null,
@@ -155,6 +247,7 @@ function render() {
   document.title = `${ui.title}: ${view.business}`;
   if (view.expired) {
     app.replaceChildren(el("p", {cls: "center", textContent: ui.expired}));
+    addCaptions(app);
     return;
   }
   const pending = pendingItems();
@@ -171,6 +264,12 @@ function render() {
       el("h2", {textContent: view.opted_out ? ui.stopped : ui.declined_title})));
   }
 
+  nodes.push(tellCard());
+  if (view.regular_updates.length) {
+    nodes.push(el("section", {cls: "card done"}, el("h2", {textContent: ui.tell_regular}),
+      el("ul", {cls: "regular"}, ...view.regular_updates.map((update) => el("li", {},
+        el("span", {textContent: update.days}), el("strong", {textContent: update.hours}))))));
+  }
   view.items.forEach((item) => nodes.push(card(item, pending.length > 1)));
 
   if (written && view.listings.length) {
@@ -193,13 +292,15 @@ function render() {
       el("div", {cls: "row"}, el("button", {type: "button", cls: "quiet", textContent: ui.standing_off,
         on: () => post("/standing", {enabled: false})}))));
   }
-  if (pending.length && !pending.some((i) => open[i.id])) {
+  // While the owner checks their own words, "approve all" would mean something else, so it steps aside.
+  if (pending.length && !pending.some((i) => open[i.id]) && tell.state !== "confirm") {
     nodes.push(el("div", {cls: "sticky"}, el("div", {},
       el("button", {type: "button", cls: "primary",
         textContent: pending.length > 1 ? ui.approve_all_n.replace("{n}", pending.length) : ui.approve_all,
         on: () => decide(pending.map((i) => ({item: i.id, action: "approve"})))}))));
   }
-  app.replaceChildren(...nodes);
+  app.replaceChildren(...nodes.filter(Boolean));
+  addCaptions(app);
 }
 
 fetch(api).then((r) => (r.ok ? r.json() : Promise.reject())).then((data) => { view = data; render(); })

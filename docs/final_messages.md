@@ -53,7 +53,6 @@ Approve, edit or decline with no login: https://connect.example/o/abc123
 
 ```text
 Hei Aino! Kahvila Kipinä näkyy Googlessa näinä päivinä todennäköisesti väärin:
-• Jouluaatto to 24.12.: Google näyttää 8–17. Ehdotamme: kiinni. Perustuu tietoihimme yrityksestänne ja vastaavista yrityksistä.
 • Joulupäivä pe 25.12.: Google näyttää 8–17. Ehdotamme: kiinni. 86 % vastaavista yrityksistä, jotka merkitsivät aikansa, oli kiinni.
 • Tapaninpäivä la 26.12.: Google näyttää 10–16. Ehdotamme: kiinni. 62 % vastaavista yrityksistä, jotka merkitsivät aikansa, oli kiinni.
 Teiltä ei ole vielä aiempia poikkeusaikoja, joten vertasimme vastaaviin yrityksiin.
@@ -83,7 +82,7 @@ Hyväksy, muokkaa tai kieltäydy ilman kirjautumista: https://connect.example/o/
 Kiitos Aleksi! Päivitimme yrityksen Kahvila Aurora tiedot:
 • Jouluaatto to 24.12.: 7.30–13
 • Joulupäivä pe 25.12.: kiinni
-Uudet ajat näkyvät: Google (Search & Maps) noin 2 min, Finder.fi / Fonecta.fi noin 10 min, Bing noin 1 pv, Apple Maps noin 2 pv.
+Uudet ajat näkyvät: Google (Search & Maps) noin 2 min, Finder.fi / Fonecta.fi noin 10 min, Fonecta Caller noin 1 t, Bing noin 1 pv ja 5 muuta.
 Hoidetaanko jatkossa juhlapyhät puolestasi? Kerromme aina muutoksesta, ja voit perua sen yhdellä napautuksella: https://connect.example/o/abc123
 ```
 
@@ -93,7 +92,7 @@ Hoidetaanko jatkossa juhlapyhät puolestasi? Kerromme aina muutoksesta, ja voit 
 Kiitos Aleksi! Päivitimme yrityksen Kahvila Aurora tiedot:
 • Jouluaatto to 24.12.: 7.30–14
 • Joulupäivä pe 25.12.: kiinni
-Uudet ajat näkyvät: Google (Search & Maps) noin 2 min, Finder.fi / Fonecta.fi noin 10 min, Bing noin 1 pv, Apple Maps noin 2 pv.
+Uudet ajat näkyvät: Google (Search & Maps) noin 2 min, Finder.fi / Fonecta.fi noin 10 min, Fonecta Caller noin 1 t, Bing noin 1 pv ja 5 muuta.
 ```
 
 ### After declining
@@ -108,7 +107,7 @@ Selvä Aleksi, emme muuttaneet mitään. Muistamme tämän seuraavalla kerralla.
 Hei Laura! Päivitimme luvallasi yrityksen Tilitoimisto Otso juhlapyhien ajat:
 • Jouluaatto to 24.12.: 7.30–13
 • Joulupäivä pe 25.12.: kiinni
-Uudet ajat näkyvät: Google (Search & Maps) noin 2 min, Finder.fi / Fonecta.fi noin 10 min, Bing noin 1 pv, Apple Maps noin 2 pv.
+Uudet ajat näkyvät: Google (Search & Maps) noin 2 min, Finder.fi / Fonecta.fi noin 10 min, Fonecta Caller noin 1 t, Bing noin 1 pv ja 5 muuta.
 Väärin? Peru yhdellä napautuksella: https://connect.example/o/abc123
 ```
 
@@ -138,7 +137,7 @@ Tallennus ei vielä onnistunut, joten mitään ei muutettu. Yritämme uudelleen 
 Tack Aleksi! Vi har uppdaterat Kahvila Aurora:
 • Julafton tors 24/12: 7.30–13
 • Juldagen fre 25/12: stängt
-De nya tiderna syns: Google (Search & Maps) cirka 2 min, Finder.fi / Fonecta.fi cirka 10 min, Bing cirka 1 dygn, Apple Maps cirka 2 dygn.
+De nya tiderna syns: Google (Search & Maps) cirka 2 min, Finder.fi / Fonecta.fi cirka 10 min, Fonecta Caller cirka 1 tim, Bing cirka 1 dygn och 5 till.
 Ska vi sköta helgdagarna åt dig i fortsättningen? Vi berättar alltid om ändringen, och du kan ångra den med ett tryck: https://connect.example/o/abc123
 ```
 
@@ -148,7 +147,7 @@ Ska vi sköta helgdagarna åt dig i fortsättningen? Vi berättar alltid om änd
 Tack Aleksi! Vi har uppdaterat Kahvila Aurora:
 • Julafton tors 24/12: 7.30–14
 • Juldagen fre 25/12: stängt
-De nya tiderna syns: Google (Search & Maps) cirka 2 min, Finder.fi / Fonecta.fi cirka 10 min, Bing cirka 1 dygn, Apple Maps cirka 2 dygn.
+De nya tiderna syns: Google (Search & Maps) cirka 2 min, Finder.fi / Fonecta.fi cirka 10 min, Fonecta Caller cirka 1 tim, Bing cirka 1 dygn och 5 till.
 ```
 
 ### After declining
@@ -163,7 +162,7 @@ Okej Aleksi, vi ändrade ingenting. Vi kommer ihåg det till nästa gång.
 Hej Laura! Med ditt tillstånd har vi uppdaterat helgtiderna för Tilitoimisto Otso:
 • Julafton tors 24/12: 7.30–13
 • Juldagen fre 25/12: stängt
-De nya tiderna syns: Google (Search & Maps) cirka 2 min, Finder.fi / Fonecta.fi cirka 10 min, Bing cirka 1 dygn, Apple Maps cirka 2 dygn.
+De nya tiderna syns: Google (Search & Maps) cirka 2 min, Finder.fi / Fonecta.fi cirka 10 min, Fonecta Caller cirka 1 tim, Bing cirka 1 dygn och 5 till.
 Fel? Ångra med ett tryck: https://connect.example/o/abc123
 ```
 
@@ -193,7 +192,7 @@ Det gick inte att spara ännu, så inget har ändrats. Vi försöker igen och h�
 Takk Aleksi! Vi har oppdatert Kahvila Aurora:
 • Julaften tor 24.12.: 7.30–13
 • 1. juledag fre 25.12.: stengt
-De nye tidene vises: Google (Search & Maps) omtrent 2 min, Finder.fi / Fonecta.fi omtrent 10 min, Bing omtrent 1 døgn, Apple Maps omtrent 2 døgn.
+De nye tidene vises: Google (Search & Maps) omtrent 2 min, Finder.fi / Fonecta.fi omtrent 10 min, Fonecta Caller omtrent 1 t, Bing omtrent 1 døgn og 5 til.
 Skal vi ta oss av helligdagene for deg fra nå av? Vi sier alltid fra om endringen, og du kan angre med ett trykk: https://connect.example/o/abc123
 ```
 
@@ -203,7 +202,7 @@ Skal vi ta oss av helligdagene for deg fra nå av? Vi sier alltid fra om endring
 Takk Aleksi! Vi har oppdatert Kahvila Aurora:
 • Julaften tor 24.12.: 7.30–14
 • 1. juledag fre 25.12.: stengt
-De nye tidene vises: Google (Search & Maps) omtrent 2 min, Finder.fi / Fonecta.fi omtrent 10 min, Bing omtrent 1 døgn, Apple Maps omtrent 2 døgn.
+De nye tidene vises: Google (Search & Maps) omtrent 2 min, Finder.fi / Fonecta.fi omtrent 10 min, Fonecta Caller omtrent 1 t, Bing omtrent 1 døgn og 5 til.
 ```
 
 ### After declining
@@ -218,7 +217,7 @@ Greit Aleksi, vi endret ingenting. Vi husker det til neste gang.
 Hei Laura! Med din tillatelse har vi oppdatert helligdagstidene for Tilitoimisto Otso:
 • Julaften tor 24.12.: 7.30–13
 • 1. juledag fre 25.12.: stengt
-De nye tidene vises: Google (Search & Maps) omtrent 2 min, Finder.fi / Fonecta.fi omtrent 10 min, Bing omtrent 1 døgn, Apple Maps omtrent 2 døgn.
+De nye tidene vises: Google (Search & Maps) omtrent 2 min, Finder.fi / Fonecta.fi omtrent 10 min, Fonecta Caller omtrent 1 t, Bing omtrent 1 døgn og 5 til.
 Feil? Angre med ett trykk: https://connect.example/o/abc123
 ```
 
@@ -248,7 +247,7 @@ Vi fikk ikke lagret ennå, så ingenting er endret. Vi prøver igjen og sier fra
 Thanks Aleksi! We've updated Kahvila Aurora:
 • Christmas Eve Thu 24 Dec: 7:30–13
 • Christmas Day Fri 25 Dec: closed
-The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Bing about 1 days, Apple Maps about 2 days.
+The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 days and 5 more.
 Want us to handle public holidays for you from now on? We always tell you about a change, and you can undo it in one tap: https://connect.example/o/abc123
 ```
 
@@ -258,7 +257,7 @@ Want us to handle public holidays for you from now on? We always tell you about 
 Thanks Aleksi! We've updated Kahvila Aurora:
 • Christmas Eve Thu 24 Dec: 7:30–14
 • Christmas Day Fri 25 Dec: closed
-The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Bing about 1 days, Apple Maps about 2 days.
+The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 days and 5 more.
 ```
 
 ### After declining
@@ -273,7 +272,7 @@ OK Aleksi, we didn't change anything. We'll remember this next time.
 Hi Laura! With your permission, we've updated the holiday hours for Tilitoimisto Otso:
 • Christmas Eve Thu 24 Dec: 7:30–13
 • Christmas Day Fri 25 Dec: closed
-The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Bing about 1 days, Apple Maps about 2 days.
+The new hours will show: Google (Search & Maps) about 2 min, Finder.fi / Fonecta.fi about 10 min, Fonecta Caller about 1 h, Bing about 1 days and 5 more.
 Wrong? Undo in one tap: https://connect.example/o/abc123
 ```
 

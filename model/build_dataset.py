@@ -6,7 +6,6 @@ Answers are joined here only as a separate column for dev rows. Features are com
 from __future__ import annotations
 
 import csv
-import os
 import sys
 import time
 from datetime import date
@@ -58,6 +57,12 @@ def main() -> None:
         if season in (2024, 2025) and r["entity_id"] in dev:
             wanted[(r["entity_id"], r["date"])] = (r["day_key"], r["event_id"], season, "dev")
             truth[(r["entity_id"], r["date"])] = r["truth_hours"]
+        elif season is None and r["entity_id"] in dev:
+            # Other special days of the year, seen from the latest snapshot before them. Only used for training.
+            snap = 2025 if d > SNAPSHOTS[2025] else (2024 if d > SNAPSHOTS[2024] else None)
+            if snap:
+                wanted[(r["entity_id"], r["date"])] = (r["day_key"], r["event_id"], snap, "extra")
+                truth[(r["entity_id"], r["date"])] = r["truth_hours"]
     for r in read_csv(root / "evaluation" / "targets_2025_backtest.csv"):
         wanted.setdefault((r["entity_id"], r["date"]), (r["day_key"], r["event_id"], 2025, "dev"))
     for name in ("dev_labels_2025_backtest.csv", "dev_labels_2026.csv"):
@@ -77,28 +82,7 @@ def main() -> None:
                 wanted[(eid, r["date"])] = (r["key"], "", 2025, "aux")
                 truth[(eid, r["date"])] = r["hours"]
                 aux.add((eid, r["date"]))
-    # Late entries on non-dev businesses: entered after a season's snapshot but before the day. At the snapshot the
-    # listing still showed what it showed, so each one is an honest example of a day whose truth was hidden then.
-    # They train the open/closed model, not just the hours picker. MODEL_LATE_ROWS=0 turns them off.
-    late_rows = os.environ.get("MODEL_LATE_ROWS", "1") == "1"
-    late = 0
-    if late_rows:
-        for eid, entries in data.hol.items():
-            ent = data.ents.get(eid)
-            if eid in dev or not ent or ent.get("c_segment") == "shopping_centre":
-                continue
-            latest = {}
-            for r in entries:
-                latest[r["date"]] = r
-            for r in latest.values():
-                season = season_of(date.fromisoformat(r["date"]))
-                if season not in (2024, 2025) or r["hours"] == "REGULAR" or (eid, r["date"]) in wanted:
-                    continue
-                if SNAPSHOTS[season].isoformat() <= r["at"][:10] < r["date"]:
-                    wanted[(eid, r["date"])] = (r["key"], "", season, "aux_late")
-                    truth[(eid, r["date"])] = r["hours"]
-                    late += 1
-    print(f"{len(wanted)} rows to build, {len(aux)} from entries on non-dev businesses, {late} late entries", flush=True)
+    print(f"{len(wanted)} rows to build, {len(aux)} from entries on non-dev businesses", flush=True)
 
     modes = {s: PopulationModes(data, snap) for s, snap in SNAPSHOTS.items()}
     print(f"population modes done at {time.time() - start:.0f}s", flush=True)
@@ -109,8 +93,6 @@ def main() -> None:
         d = date.fromisoformat(d_text)
         row, candidates, _ = build_row(data, modes[season], eid, d, key, event_id, SNAPSHOTS[season])
         row.update(season=season, split=split, row_id=n, truth=truth.get((eid, d_text)))
-        if late_rows:
-            row["late_row"] = int(split == "aux_late")  # Lets the model allow for owners who enter only changes.
         for cand, sources in candidates.items():
             cands.append({"row_id": n, **candidate_features(cand, sources, row)})
         row.pop("_shares", None)

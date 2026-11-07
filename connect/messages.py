@@ -49,10 +49,11 @@ TEXT = {
         "LAST_YEAR": "Viime vuonna: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share} % vastaavista yrityksistä, jotka merkitsivät aikansa, oli kiinni",
         "OLDER_YEAR": "Kaksi vuotta sitten: {older}", "REVIEW_TIME": "Asiakkaan mukaan suljitte viime vuonna klo {close}", "REVIEW_CLOSED": "Asiakkaat löysivät ovet kiinni viime vuonna", "REVIEW_WEEK": "Asiakkaan mukaan aukiolonne ovat nyt {week}", "PATTERN": "Perustuu tietoihimme yrityksestänne ja vastaavista yrityksistä",
-        "YOUR_CHOICE": "Aiempi valintanne: {your}", "shifted": "Huomioimme aiemman muokkauksenne",
+        "YOUR_CHOICE": "Aiempi valintanne: {your}",
         "confirm": "Kiitos {first}! Päivitimme yrityksen {business} tiedot:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "Uudet ajat näkyvät: {places}.",
+        "more_places": "ja {n} muuta",
         "failed": "Tallennus ei vielä onnistunut, joten mitään ei muutettu. Yritämme uudelleen ja kerromme, kun se on tehty.",
         "standing_offer": "Hoidetaanko jatkossa juhlapyhät puolestasi? Kerromme aina muutoksesta, ja voit perua sen yhdellä napautuksella: {link}",
         "declined": "Selvä {first}, emme muuttaneet mitään. Muistamme tämän seuraavalla kerralla.",
@@ -74,10 +75,11 @@ TEXT = {
         "LAST_YEAR": "Förra året: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share} % av liknande företag som angav sina tider hade stängt",
         "OLDER_YEAR": "För två år sedan: {older}", "REVIEW_TIME": "Enligt en kund stängde ni {close} förra året", "REVIEW_CLOSED": "Kunder stod framför stängd dörr förra året", "REVIEW_WEEK": "Enligt en kund har ni nu öppet {week}", "PATTERN": "Bygger på vad vi vet om ert företag och liknande företag",
-        "YOUR_CHOICE": "Ert tidigare val: {your}", "shifted": "Vi tog hänsyn till er tidigare ändring",
+        "YOUR_CHOICE": "Ert tidigare val: {your}",
         "confirm": "Tack {first}! Vi har uppdaterat {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "De nya tiderna syns: {places}.",
+        "more_places": "och {n} till",
         "failed": "Det gick inte att spara ännu, så inget har ändrats. Vi försöker igen och hör av oss när det är klart.",
         "standing_offer": "Ska vi sköta helgdagarna åt dig i fortsättningen? Vi berättar alltid om ändringen, och du kan ångra den med ett tryck: {link}",
         "declined": "Okej {first}, vi ändrade ingenting. Vi kommer ihåg det till nästa gång.",
@@ -99,10 +101,11 @@ TEXT = {
         "LAST_YEAR": "I fjor: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share} % av lignende bedrifter som oppga tidene sine, holdt stengt",
         "OLDER_YEAR": "For to år siden: {older}", "REVIEW_TIME": "Ifølge en kunde stengte dere {close} i fjor", "REVIEW_CLOSED": "Kunder sto foran stengt dør i fjor", "REVIEW_WEEK": "Ifølge en kunde har dere nå åpent {week}", "PATTERN": "Basert på det vi vet om bedriften deres og lignende bedrifter",
-        "YOUR_CHOICE": "Deres tidligere valg: {your}", "shifted": "Vi tok hensyn til den tidligere endringen deres",
+        "YOUR_CHOICE": "Deres tidligere valg: {your}",
         "confirm": "Takk {first}! Vi har oppdatert {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "De nye tidene vises: {places}.",
+        "more_places": "og {n} til",
         "failed": "Vi fikk ikke lagret ennå, så ingenting er endret. Vi prøver igjen og sier fra når det er gjort.",
         "standing_offer": "Skal vi ta oss av helligdagene for deg fra nå av? Vi sier alltid fra om endringen, og du kan angre med ett trykk: {link}",
         "declined": "Greit {first}, vi endret ingenting. Vi husker det til neste gang.",
@@ -124,10 +127,11 @@ TEXT = {
         "LAST_YEAR": "Last year: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share}% of similar businesses that entered their hours were closed",
         "OLDER_YEAR": "Two years ago: {older}", "REVIEW_TIME": "A customer says you closed at {close} last year", "REVIEW_CLOSED": "Customers found you closed last year", "REVIEW_WEEK": "A customer says you're now open {week}", "PATTERN": "Based on what we know about your business and similar ones",
-        "YOUR_CHOICE": "Your earlier choice: {your}", "shifted": "We took your earlier edit into account",
+        "YOUR_CHOICE": "Your earlier choice: {your}",
         "confirm": "Thanks {first}! We've updated {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "The new hours will show: {places}.",
+        "more_places": "and {n} more",
         "failed": "We couldn't save this yet, so nothing has changed. We'll try again and tell you when it's done.",
         "standing_offer": "Want us to handle public holidays for you from now on? We always tell you about a change, and you can undo it in one tap: {link}",
         "declined": "OK {first}, we didn't change anything. We'll remember this next time.",
@@ -141,7 +145,7 @@ TEXT = {
 
 # The words on the owner's approval page.
 UI = {
-    "fi": {"title": "Tarkista aukioloajat", "shown": "Google näyttää nyt", "suggest": "Ehdotus", "why": "Miksi",
+    "fi": {"tell_title": "Tai kerro omin sanoin", "tell_ph": "Esim. jouluaattona suljetaan kahdelta, muuten ok", "tell_send": "Lähetä", "tell_busy": "Luetaan viestiäsi…", "tell_check": "Ymmärsinkö oikein?", "tell_yes": "Kyllä, tallenna", "tell_wrong": "Ei, korjaan", "tell_unavailable": "Emme saaneet tästä selvää juuri nyt. Voit käyttää painikkeita.", "tell_regular": "Normaalit aukioloajat päivitetty", "tell_you": "Kirjoitit", "tell_again": "Kerrothan vielä päivän ja kellonajan.", "tell_no_change": "Ei muutosta", "tell_holidays": "Juhlapyhät", "tell_ask_first": "Kysytään ensin", "tell_automatic": "Hoidetaan puolestasi", "tell_before": "Ennen", "tell_after": "Jälkeen", "alternative": "Siirrä kuten viimeksi: {hours}", "title": "Tarkista aukioloajat", "shown": "Google näyttää nyt", "suggest": "Ehdotus", "why": "Miksi",
            "approve_all": "Hyväksy", "approve_all_n": "Hyväksy kaikki ({n})", "approve": "Hyväksy", "edit": "Muokkaa",
            "decline": "Ei kiitos", "closed_toggle": "Kiinni koko päivän", "from": "Avataan", "to": "Suljetaan",
            "add_period": "Lisää toinen aukiolojakso", "remove_period": "Poista toinen jakso", "save": "Tallenna",
@@ -158,7 +162,7 @@ UI = {
            "saving": "Tallennetaan…", "failed": "Tallennus ei onnistunut, joten mitään ei muutettu. Yritämme uudelleen.",
            "invalid": "Tarkista ajat.", "expired": "Tämä linkki ei ole enää voimassa.",
            "stopped": "Selvä, emme lähetä näitä viestejä enää.", "pending_write": "Odottaa tallennusta"},
-    "sv": {"title": "Kontrollera öppettiderna", "shown": "Google visar nu", "suggest": "Förslag", "why": "Varför",
+    "sv": {"tell_title": "Eller säg det med egna ord", "tell_ph": "T.ex. på julafton stänger vi klockan två, annars ok", "tell_send": "Skicka", "tell_busy": "Läser ditt meddelande…", "tell_check": "Förstod jag rätt?", "tell_yes": "Ja, spara", "tell_wrong": "Nej, jag ändrar", "tell_unavailable": "Vi kunde inte tolka det just nu. Du kan använda knapparna.", "tell_regular": "De vanliga öppettiderna är uppdaterade", "tell_you": "Du skrev", "tell_again": "Berätta gärna vilken dag och vilken tid du menar.", "tell_no_change": "Ingen ändring", "tell_holidays": "Helgdagar", "tell_ask_first": "Vi frågar först", "tell_automatic": "Vi sköter det åt dig", "tell_before": "Före", "tell_after": "Efter", "alternative": "Flytta som förra gången: {hours}", "title": "Kontrollera öppettiderna", "shown": "Google visar nu", "suggest": "Förslag", "why": "Varför",
            "approve_all": "Godkänn", "approve_all_n": "Godkänn alla ({n})", "approve": "Godkänn", "edit": "Ändra",
            "decline": "Nej tack", "closed_toggle": "Stängt hela dagen", "from": "Öppnar", "to": "Stänger",
            "add_period": "Lägg till en andra öppettid", "remove_period": "Ta bort den andra öppettiden", "save": "Spara",
@@ -175,7 +179,7 @@ UI = {
            "saving": "Sparar…", "failed": "Det gick inte att spara, så inget har ändrats. Vi försöker igen.",
            "invalid": "Kontrollera tiderna.", "expired": "Den här länken gäller inte längre.",
            "stopped": "Okej, vi skickar inga fler sådana meddelanden.", "pending_write": "Väntar på att sparas"},
-    "nb": {"title": "Sjekk åpningstidene", "shown": "Google viser nå", "suggest": "Forslag", "why": "Hvorfor",
+    "nb": {"tell_title": "Eller si det med egne ord", "tell_ph": "F.eks. på julaften stenger vi klokka to, ellers ok", "tell_send": "Send", "tell_busy": "Leser meldingen din…", "tell_check": "Forsto jeg riktig?", "tell_yes": "Ja, lagre", "tell_wrong": "Nei, jeg endrer", "tell_unavailable": "Vi fikk ikke tak i det akkurat nå. Du kan bruke knappene.", "tell_regular": "De vanlige åpningstidene er oppdatert", "tell_you": "Du skrev", "tell_again": "Si gjerne hvilken dag og hvilket klokkeslett du mener.", "tell_no_change": "Ingen endring", "tell_holidays": "Helligdager", "tell_ask_first": "Vi spør først", "tell_automatic": "Vi ordner det for deg", "tell_before": "Før", "tell_after": "Etter", "alternative": "Flytt som sist: {hours}", "title": "Sjekk åpningstidene", "shown": "Google viser nå", "suggest": "Forslag", "why": "Hvorfor",
            "approve_all": "Godkjenn", "approve_all_n": "Godkjenn alle ({n})", "approve": "Godkjenn", "edit": "Endre",
            "decline": "Nei takk", "closed_toggle": "Stengt hele dagen", "from": "Åpner", "to": "Stenger",
            "add_period": "Legg til en åpningsperiode til", "remove_period": "Fjern den andre perioden", "save": "Lagre",
@@ -192,7 +196,7 @@ UI = {
            "saving": "Lagrer…", "failed": "Vi fikk ikke lagret, så ingenting er endret. Vi prøver igjen.",
            "invalid": "Sjekk tidene.", "expired": "Denne lenken gjelder ikke lenger.",
            "stopped": "Greit, vi sender ikke flere slike meldinger.", "pending_write": "Venter på lagring"},
-    "en": {"title": "Check your opening hours", "shown": "Google shows now", "suggest": "Suggestion", "why": "Why",
+    "en": {"tell_title": "Or say it in your own words", "tell_ph": "E.g. we close at two on Christmas Eve, otherwise fine", "tell_send": "Send", "tell_busy": "Reading your message…", "tell_check": "Did I get that right?", "tell_yes": "Yes, save it", "tell_wrong": "No, let me change it", "tell_unavailable": "We couldn't work that out just now. You can use the buttons.", "tell_regular": "Regular hours updated", "tell_you": "You wrote", "tell_again": "Please tell us which day and what time you mean.", "tell_no_change": "No change", "tell_holidays": "Public holidays", "tell_ask_first": "We ask first", "tell_automatic": "We handle them for you", "tell_before": "Before", "tell_after": "After", "alternative": "Move like last time: {hours}", "title": "Check your opening hours", "shown": "Google shows now", "suggest": "Suggestion", "why": "Why",
            "approve_all": "Approve", "approve_all_n": "Approve all ({n})", "approve": "Approve", "edit": "Edit",
            "decline": "No thanks", "closed_toggle": "Closed all day", "from": "Opens", "to": "Closes",
            "add_period": "Add a second opening period", "remove_period": "Remove the second period", "save": "Save",
@@ -271,8 +275,6 @@ def reason(item: dict, lang: str) -> str:
         text = t[basis]
     else:
         return ""
-    if evidence.get("shifted_from"):
-        text += f". {t['shifted']}"
     return text
 
 
@@ -321,7 +323,9 @@ def _final_lines(items: list, lang: str) -> list:
 
 
 def places_label(listings: list, lang: str) -> str:
-    return ", ".join(f"{x['name']} {eta_label(x['seconds'], lang)}" for x in listings[:4])
+    label = ", ".join(f"{x['name']} {eta_label(x['seconds'], lang)}" for x in listings[:4])
+    extra = len(listings) - 4
+    return f"{label} {TEXT[lang]['more_places'].format(n=extra)}" if extra > 0 else label
 
 
 def confirmation(first: str, business: str, items: list, listings: list, lang: str, standing_link: str | None = None) -> str:
@@ -331,6 +335,36 @@ def confirmation(first: str, business: str, items: list, listings: list, lang: s
         parts.append(t["where"].format(places=places_label(listings, lang)))
     if standing_link:
         parts.append(t["standing_offer"].format(link=standing_link))
+    return "\n".join(parts)
+
+
+def group_weekdays(after: dict, before: dict) -> list:
+    """Neighbouring weekdays with the same change become one line: Mon-Fri."""
+    order = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    groups = []
+    for day in order:
+        if day not in after:
+            continue
+        last = groups[-1] if groups else None
+        if last and last["after"] == after[day] and last["before"] == before.get(day) and order.index(last["days"][-1]) == order.index(day) - 1:
+            last["days"].append(day)
+        else:
+            groups.append({"days": [day], "after": after[day], "before": before.get(day)})
+    return groups
+
+
+def weekday_span(days: list, lang: str) -> str:
+    order = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    names = [WEEKDAYS[lang][order.index(day)] for day in days]
+    return names[0] if len(names) == 1 else f"{names[0]}–{names[-1]}"
+
+
+def regular_confirmation(first: str, business: str, groups: list, listings: list, lang: str) -> str:
+    t = TEXT[lang]
+    parts = [t["confirm"].format(first=first, business=business)]
+    parts += [f"• {weekday_span(g['days'], lang)}: {hours_label(g['after'], lang)}" for g in groups]
+    if listings:
+        parts.append(t["where"].format(places=places_label(listings, lang)))
     return "\n".join(parts)
 
 

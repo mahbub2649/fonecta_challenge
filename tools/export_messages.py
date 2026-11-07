@@ -14,8 +14,12 @@ from connect import messages  # noqa: E402
 from connect.engine import Engine  # noqa: E402
 
 LINK = "https://connect.example/o/abc123"
+# Kahvila Aurora's live publishers in data/listings.json, fastest first.
 LISTINGS = [{"name": "Google (Search & Maps)", "seconds": 120}, {"name": "Finder.fi / Fonecta.fi", "seconds": 600},
-            {"name": "Bing", "seconds": 86400}, {"name": "Apple Maps", "seconds": 172800}]
+            {"name": "Fonecta Caller", "seconds": 3600}, {"name": "Bing", "seconds": 86400},
+            {"name": "Apple Maps", "seconds": 172800}, {"name": "Waze (via Google)", "seconds": 172800},
+            {"name": "Tripadvisor", "seconds": 259200}, {"name": "Foursquare", "seconds": 604800},
+            {"name": "AI assistants (via Bing/Apple data)", "seconds": 604800}]
 OFFERS = [("FI-D0001", "fi", "Finnish, Kahvila Aurora"), ("SE-D0008", "sv", "Swedish, Kafé Linnea (email, so it has a subject line)"),
           ("NO-D0009", "nb", "Norwegian, Bakeri Fjord"), ("FI-D0001", "en", "English, Kahvila Aurora"),
           ("FI-D0017", "fi", "No history, Kahvila Kipinä: asked, not stated"), ("FI-D0004", "fi", "Shopping centre, Muoti Lyhty")]

@@ -62,6 +62,14 @@ class YextClient:
         after = {h.get("date"): h for h in self.get_entity(entity_id).get("hours", {}).get("holidayHours", [])}
         return {day: after.get(day) for day in changes}
 
+    def write_regular(self, entity_id: str, changes: dict) -> dict:
+        """Read, merge, write the full hours object, then read back. `changes` maps a weekday to hours."""
+        full_hours = self.get_entity(entity_id).get("hours", {})
+        full_hours.update({day: string_to_day(hours) for day, hours in changes.items()})
+        self._request("PUT", f"entities/{urllib.parse.quote(entity_id)}", body={"hours": full_hours})
+        after = self.get_entity(entity_id).get("hours", {})
+        return {day: after.get(day) for day in changes}
+
     def clear_holidays(self, entity_id: str) -> None:
         full_hours = self.get_entity(entity_id).get("hours", {})
         full_hours["holidayHours"] = []
@@ -69,14 +77,16 @@ class YextClient:
 
     # -- Only on the challenge's local mock
 
-    def _mock_post(self, path: str, body: dict) -> dict:
-        request = urllib.request.Request(f"{self.base}{path}", method="POST", data=json.dumps(body).encode(),
+    def _mock_post(self, path: str, body: dict | None = None) -> dict:
+        request = urllib.request.Request(f"{self.base}{path}", method="POST", data=json.dumps(body).encode() if body is not None else None,
                                          headers={"Content-Type": "application/json"})
         try:
             with urllib.request.urlopen(request, timeout=10) as response:
                 return json.loads(response.read().decode())["response"]
         except urllib.error.HTTPError as error:
             raise YextError(error.code, error.read().decode(errors="replace")[:300]) from None
+        except OSError as error:
+            raise YextError(0, f"could not connect: {error}") from None
 
     def owner_response(self, entity_id: str, day: str, proposed: str, channel: str | None = None) -> dict:
         body = {"entityId": entity_id, "date": day, "proposedHours": proposed}
@@ -85,4 +95,5 @@ class YextClient:
         return self._mock_post("/sim/v1/owner-response", body)
 
     def reset(self) -> None:
-        self._mock_post("/mock/reset", {})
+        # No body: the mock replies without reading one, and some networks then drop the connection.
+        self._mock_post("/mock/reset")

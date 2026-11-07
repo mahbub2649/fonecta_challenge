@@ -126,3 +126,6 @@ summary { cursor: pointer; color: var(--muted); font-weight: 600; }
   .top { flex-direction: column; align-items: flex-start; }
   .list { max-height: 220px; overflow-y: auto; }
 }
+
+.caption-switch { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+.bubble-en { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--line); color: var(--muted); font-size: 12px; font-style: italic; }

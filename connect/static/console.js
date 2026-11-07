@@ -8,6 +8,8 @@ let lastPayload = "";
 let quietResult = {};
 let phoneLink = null;
 let phoneTab = "message";
+let captionsOn = true;
+try { captionsOn = localStorage.getItem("connect-captions") !== "off"; } catch { /* Stored settings can be blocked. */ }
 let shownMessages = 0;
 
 function el(tag, props = {}, ...children) {
@@ -136,7 +138,7 @@ function contactStep(biz, kase) {
   }
   return step(3, "Contact", header, true,
     el("p", {cls: "sub", textContent: "The message is on the phone. It states the suggestion and the reason."}),
-    firstMessage && firstMessage.language !== "en" ? el("details", {}, el("summary", {textContent: "English translation, for reviewers"}), el("pre", {cls: "msg", textContent: firstMessage.body_en})) : null);
+    firstMessage && !captionsOn && firstMessage.language !== "en" ? el("details", {}, el("summary", {textContent: "English translation, for reviewers"}), el("pre", {cls: "msg", textContent: firstMessage.body_en})) : null);
 }
 
 function decisionText(item) {
@@ -230,14 +232,16 @@ function renderPhone() {
   } else {
     screen.replaceChildren(...sent.flatMap((m) => [
       el("div", {cls: "bubble-meta", textContent: `${m.channel} · ${m.kind.replaceAll("_", " ").toLowerCase()}`}),
-      el("div", {cls: "bubble"}, ...linkedText(m.body, kase.link))]));
+      el("div", {cls: "bubble"}, ...linkedText(m.body, kase.link),
+        captionsOn && m.language !== "en" && m.body_en ? el("div", {cls: "bubble-en"}, ...linkedText(m.body_en, kase.link)) : null)]));
     if (sent.length !== shownMessages) screen.scrollTop = screen.scrollHeight;
   }
   shownMessages = sent.length;
   const link = kase?.status !== "DETECTED" && kase?.link ? kase.link : null;
-  if (link !== phoneLink) {
-    phoneLink = link;
-    $("phone-page").src = link || "about:blank";
+  const pageSrc = link && captionsOn ? `${link}?captions=1` : link;
+  if (pageSrc !== phoneLink) {
+    phoneLink = pageSrc;
+    $("phone-page").src = pageSrc || "about:blank";
   }
   if (!link && phoneTab === "page") showTab("message");
 }
@@ -292,6 +296,12 @@ async function detect(id) {
 
 $("tab-message").addEventListener("click", () => showTab("message"));
 $("tab-page").addEventListener("click", () => { if (phoneLink) showTab("page"); });
+$("captions").checked = captionsOn;
+$("captions").addEventListener("change", (event) => {
+  captionsOn = event.target.checked;
+  try { localStorage.setItem("connect-captions", captionsOn ? "on" : "off"); } catch { /* It still works for this visit. */ }
+  refresh(true).catch(() => {});
+});
 $("reset").addEventListener("click", async () => {
   await call("/api/reset", "POST");
   quietResult = {};

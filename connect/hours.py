@@ -16,7 +16,7 @@ def from_minutes(minutes: int) -> str:
 
 
 def is_valid(hours: str) -> bool:
-    """Accept 'closed' or ordered, non-overlapping intervals. A close past midnight is allowed."""
+    """Accept 'closed' or ordered intervals with a gap between them, as Yext requires. A close past midnight is allowed."""
     if hours == "closed":
         return True
     if not isinstance(hours, str) or not hours:
@@ -29,7 +29,7 @@ def is_valid(hours: str) -> bool:
         if start == end:
             return False
         spans.append((start, end if end > start else end + 1440))
-    return all(a[1] <= b[0] for a, b in zip(spans, spans[1:]))
+    return all(a[1] < b[0] for a, b in zip(spans, spans[1:]))
 
 
 def day_to_string(obj: dict | None) -> str:

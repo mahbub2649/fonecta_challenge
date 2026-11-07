@@ -1,0 +1,5 @@
+# Only for rerunning the neural parts of the blend (model/neural.py and model/history_transformer.py). Needs a GPU with about 4 GB of memory.
+-r requirements.txt
+torch
+tabicl
+pytabkit

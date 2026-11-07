@@ -98,9 +98,13 @@ def make_handler(service: Service):
         def _post(self):
             path = urlparse(self.path).path
             body = self._body()
-            match = re.fullmatch(r"/api/o/([\w-]+)/(decide|standing|undo)", path)
+            match = re.fullmatch(r"/api/o/([\w-]+)/(decide|standing|undo|interpret|confirm)", path)
             if match:
                 token, action = match.groups()
+                if action == "interpret":
+                    return self._json(200, service.interpret_reply(token, body.get("text", "")))
+                if action == "confirm":
+                    return self._json(200, service.confirm_plan(token, str(body.get("plan_id", ""))))
                 if action == "decide":
                     return self._json(200, service.decide(token, body.get("decisions", [])))
                 if action == "standing":

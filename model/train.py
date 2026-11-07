@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
-import os
 import sys
 import time
 from pathlib import Path
@@ -37,12 +36,12 @@ LABELS_2025 = config.DATA_DIR / "labels" / "dev_labels_2025_backtest.csv"
 CATEGORICAL = ["day_key", "segment", "country", "tier", "archetype", "day_class", "day_type"]
 ID_COLUMNS = {"entity_id", "date", "shown", "season", "split", "row_id", "truth", "cls", "fold", "listing_closed", "aux"}
 ROW_PARAMS = dict(objective="multiclass", num_class=3, n_estimators=450, learning_rate=0.03, num_leaves=15, min_child_samples=25,
-                  subsample=0.8, subsample_freq=1, colsample_bytree=0.3, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=7)
+                  subsample=0.8, subsample_freq=1, colsample_bytree=0.3, reg_lambda=5.0, n_jobs=10, verbose=-1, random_state=7)
 CAND_PARAMS = dict(objective="binary", n_estimators=350, learning_rate=0.04, num_leaves=31, min_child_samples=20,
-                   subsample=0.8, subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=7)
+                   subsample=0.8, subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=10, verbose=-1, random_state=7)
 CLOSED, SAME, OTHER = 0, 1, 2
-EVAL_SEEDS = tuple(int(x) for x in os.environ.get("MODEL_SEEDS", "7,21,33").split(","))  # Averaged models for scoring.
 MIN_EXACT = 0.25  # The least chance of exactly right hours that justifies messaging an owner.
+AUX, EXTRA = 1, 2  # Values of "aux": test businesses' own entries, and dev businesses' other special days. Neither is ever scored.
 
 
 def load_scorer():
@@ -59,65 +58,20 @@ def near(a: str, b: str) -> bool:
     return SCORER.near(a, b)
 
 
-# What businesses with nothing entered really did, by type of business and day. The peer table only counts what
-# owners entered, which leans towards diligent owners. These rates come from the dev answers instead.
-TRUTH_RATE_GROUPS = {
-    "seg_day_cty": ["segment", "day_key", "country"],
-    "seg_day": ["segment", "day_key"],
-    "arch_day_cty": ["archetype", "day_key", "country"],
-    "seg_day_cty_tier": ["segment", "day_key", "country", "tier"],
-}
-TRUTH_RATE_SMOOTHING = 20  # Rows' worth of the day's overall rate mixed into each group, so small groups stay sensible.
-
-
-def add_truth_rates(rows: pd.DataFrame) -> None:
-    """Closed and other-hours rates on days that showed open with nothing entered, from the true answers.
-
-    Honest by construction: a row only sees answers from earlier seasons (dated before its snapshot), and a dev
-    business never sees answers from its own fold. Rows in the first season get none.
-    """
-    names = [f"tr_{g}_{s}" for g in TRUTH_RATE_GROUPS for s in ("closed", "other", "n")]
-    for name in names:
-        rows[name] = np.nan
-    source = rows[(rows["split"] == "dev") & (rows["cls"] >= 0) & (rows["shown"] != "closed") & (rows["has_entry_now"] == 0)]
-    source = source.assign(_c=(source["cls"] == CLOSED).astype(float), _o=(source["cls"] == OTHER).astype(float))
-    m = TRUTH_RATE_SMOOTHING
-    for season in sorted(rows["season"].unique()):
-        past = source[source["season"] < season]
-        if past.empty:
-            continue
-        in_season = rows["season"] == season
-        for fold in sorted(rows.loc[in_season, "fold"].unique()):
-            idx = rows.index[in_season & (rows["fold"] == fold)]
-            src = past if fold < 0 else past[past["fold"] != fold]
-            prior = src.groupby("day_key")[["_c", "_o"]].mean()
-            target = rows.loc[idx]
-            prior_c = target["day_key"].map(prior["_c"]).fillna(src["_c"].mean()).to_numpy()
-            prior_o = target["day_key"].map(prior["_o"]).fillna(src["_o"].mean()).to_numpy()
-            for group, cols in TRUTH_RATE_GROUPS.items():
-                stats = src.groupby(cols)[["_c", "_o"]].agg(["sum", "count"])
-                stats.columns = ["c_sum", "c_n", "o_sum", "o_n"]
-                joined = target[cols].merge(stats, left_on=cols, right_index=True, how="left")
-                n = joined["c_n"].fillna(0).to_numpy()
-                rows.loc[idx, f"tr_{group}_closed"] = (joined["c_sum"].fillna(0).to_numpy() + m * prior_c) / (n + m)
-                rows.loc[idx, f"tr_{group}_other"] = (joined["o_sum"].fillna(0).to_numpy() + m * prior_o) / (n + m)
-                rows.loc[idx, f"tr_{group}_n"] = n
-
-
 def load(soft: str | None = "soft.parquet") -> tuple:
     rows = pd.read_parquet(CACHE / "rows.parquet")
     cands = pd.read_parquet(CACHE / "candidates.parquet")
     if soft and (CACHE / soft).exists():
         rows = rows.merge(pd.read_parquet(CACHE / soft), on="row_id", how="left")
     rows["fold"] = rows["entity_id"].map(json.loads((CACHE / "folds.json").read_text())).fillna(-1).astype(int)
-    rows["aux"] = (rows["split"] == "aux").astype(int)
+    rows["aux"] = (rows["split"] == "aux").astype(int) * AUX + (rows["split"] == "extra").astype(int) * EXTRA
+    regular = rows["truth"] == "REGULAR"  # An entry saying "regular hours" means the truth is what's listed.
+    rows.loc[regular, "truth"] = rows.loc[regular, "shown"]
     rows["cls"] = -1
     known = rows["truth"].notna()
     rows.loc[known & (rows["truth"] == "closed"), "cls"] = CLOSED
     rows.loc[known & (rows["truth"] != "closed") & (rows["truth"] == rows["shown"]), "cls"] = SAME
     rows.loc[known & (rows["truth"] != "closed") & (rows["truth"] != rows["shown"]), "cls"] = OTHER
-    if os.environ.get("MODEL_TRUTH_RATES") == "1":
-        add_truth_rates(rows)
     for col in CATEGORICAL:
         rows[col] = pd.Categorical(rows[col], categories=sorted(rows[col].dropna().unique()))
     extra = ["weekday", "peer_special", "peer_regular", "reg_len", "special_share", "n_entries_special", "in_mall", "y1_state"]
@@ -151,7 +105,6 @@ def fit_predict(rows_train, rows_pred, cands_train, cands_pred, seeds=(7,), min_
     # The 2024 season has too little history behind it, so it would teach the wrong lesson.
     other = cands_train[(cands_train["cls"] == OTHER) & (cands_train["season"] >= min_season)]
     for seed in seeds:
-        seed += int(os.environ.get("MODEL_SEED_SHIFT", "0"))  # For measuring noise. 0 keeps the published model.
         model = lgb.LGBMClassifier(**{**ROW_PARAMS, "random_state": seed})
         model.fit(rows_train[r_cols], rows_train["cls"], categorical_feature=CATEGORICAL)
         probs += model.predict_proba(rows_pred[r_cols]) / len(seeds)
@@ -162,30 +115,7 @@ def fit_predict(rows_train, rows_pred, cands_train, cands_pred, seeds=(7,), min_
             close = lgb.LGBMClassifier(**{**CAND_PARAMS, "random_state": seed + 1})
             close.fit(other[c_cols], other["near"], categorical_feature=CATEGORICAL)
             p_near += close.predict_proba(cands_pred[c_cols])[:, 1] / len(seeds)
-    weight = float(os.environ.get("MODEL_CATBOOST_WEIGHT", "0.5"))
-    if weight > 0:  # A second kind of model for the open/closed/other call, averaged with LightGBM.
-        probs = (1 - weight) * probs + weight * catboost_probs(rows_train, rows_pred, r_cols)
     return probs, p_exact, p_near
-
-
-def catboost_probs(rows_train, rows_pred, columns: list) -> np.ndarray:
-    from catboost import CatBoostClassifier  # Apache 2.0. Only needed when the blend is switched on.
-
-    def prep(df: pd.DataFrame) -> pd.DataFrame:
-        x = df[columns].copy()
-        for col in CATEGORICAL:
-            x[col] = x[col].astype(str)
-        return x
-
-    model = CatBoostClassifier(loss_function="MultiClass", iterations=int(os.environ.get("MODEL_CATBOOST_ITERS", "800")), depth=6,
-                               learning_rate=0.06, l2_leaf_reg=5.0, random_seed=7 + int(os.environ.get("MODEL_SEED_SHIFT", "0")),
-                               thread_count=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=0, allow_writing_files=False)
-    model.fit(prep(rows_train), rows_train["cls"], cat_features=CATEGORICAL)
-    raw = model.predict_proba(prep(rows_pred))
-    out = np.zeros((len(rows_pred), 3))
-    for i, cls in enumerate(model.classes_):
-        out[:, int(cls)] = raw[:, i]
-    return out
 
 
 def choose(rows: pd.DataFrame, probs: np.ndarray, cands: pd.DataFrame, p_exact, p_near, knobs: dict) -> list:
@@ -249,18 +179,24 @@ def show(name: str, result: dict) -> None:
           f"redundant {b.get('redundant_confirm', 0)} flag {b.get('flag_correct', 0)}/{b.get('unneeded_flag', 0)}", flush=True)
 
 
-def held_out(rows, cands, seeds=(7,), use_aux=True) -> tuple:
+def extra_rows(rows: pd.DataFrame) -> pd.DataFrame:
+    """Past special days outside the scored November to January window. They train the open-or-closed model only."""
+    return rows[(rows["cls"] >= 0) & (rows["aux"] == EXTRA)]
+
+
+def held_out(rows, cands, seeds=(7,), use_aux=True, use_extra=False) -> tuple:
     """Out-of-fold predictions: no business is ever predicted by a model trained on it. Folds match the first stage."""
     labelled = rows[(rows["cls"] >= 0) & (rows["aux"] == 0)].copy()
+    extra = extra_rows(rows) if use_extra else rows.iloc[0:0]
     probs = np.zeros((len(labelled), 3))
     cand_rows = cands[(cands["cls"] >= 0) & (cands["aux"] == 0)]
-    aux = cands[(cands["aux"] == 1) & (cands["cls"] == OTHER)] if use_aux else cands.iloc[0:0]
+    aux = cands[(cands["aux"] == AUX) & (cands["cls"] == OTHER)] if use_aux else cands.iloc[0:0]
     p_exact = np.zeros(len(cand_rows))
     p_near = np.zeros(len(cand_rows))
     row_fold = labelled["fold"].to_numpy()
     cand_fold = cand_rows["fold"].to_numpy()
     for fold in sorted(set(row_fold)):
-        tr, te = labelled[row_fold != fold], labelled[row_fold == fold]
+        tr, te = pd.concat([labelled[row_fold != fold], extra[extra["fold"] != fold]]), labelled[row_fold == fold]
         ct = pd.concat([cand_rows[cand_fold != fold], aux])
         cp = cand_rows[cand_fold == fold]
         pr, pe, pn = fit_predict(tr, te, ct, cp, seeds)
@@ -282,9 +218,9 @@ def evaluate(labelled, probs, cand_rows, p_exact, p_near, knobs) -> dict:
     return results
 
 
-def strict_2025(knobs) -> dict:
+def strict_2025(knobs, soft="soft_strict.parquet") -> dict:
     """Both stages trained only on what was knowable before 6 Nov 2025, and on other businesses."""
-    rows, cands = load("soft_strict.parquet")
+    rows, cands = load(soft)
     labelled = rows[(rows["cls"] >= 0) & (rows["aux"] == 0)]
     target = labelled[labelled["season"] == 2025]
     preds = {}
@@ -294,7 +230,7 @@ def strict_2025(knobs) -> dict:
         te = target[target["fold"] == fold]
         ct = cands[(cands["season"] == 2024) & (cands["fold"] != fold) & (cands["fold"] >= 0) & (cands["aux"] == 0)]
         cp = cands[(cands["season"] == 2025) & (cands["fold"] == fold) & (cands["aux"] == 0)]
-        pr, pe, pn = fit_predict(tr, te, ct, cp, seeds=EVAL_SEEDS, min_season=2024)
+        pr, pe, pn = fit_predict(tr, te, ct, cp, min_season=2024)
         preds.update(to_preds(choose(te, pr, cp, pe, pn, knobs), te, knobs))
     return SCORER.score(preds, str(LABELS_2025))
 
@@ -303,10 +239,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Also run the strict 2025 back-test")
-    parser.add_argument("--results", default=None, help="Also save the scores to this JSON file")
+    parser.add_argument("--soft", default="soft.parquet", help="Which first-stage feature file to use")
     args = parser.parse_args()
     start = time.time()
-    rows, cands = load()
+    rows, cands = load(args.soft)
     labelled = rows[(rows["cls"] >= 0) & (rows["aux"] == 0)]
     print(f"{len(rows)} rows, {len(cands)} candidates, {labelled['cls'].value_counts().to_dict()}", flush=True)
     other = labelled[labelled["cls"] == OTHER]
@@ -317,16 +253,16 @@ def main() -> None:
     print(f"Our 'shown' matches the label's on {(joined['shown'] == joined['displayed_hours_at_snapshot']).mean():.2%} of 2026 rows", flush=True)
 
     knobs = {"margin": 0.0, "closed_margin": 0.0}
-    labelled, probs, cand_rows, p_exact, p_near = held_out(rows, cands, seeds=EVAL_SEEDS)
+    labelled, probs, cand_rows, p_exact, p_near = held_out(rows, cands)
+    other_cands = (cand_rows["cls"] == OTHER).to_numpy()
+    top = cand_rows[other_cands].assign(_p=p_exact[other_cands]).sort_values("_p", ascending=False).drop_duplicates("row_id")
+    print(f"Hours picker: exact on {top['exact'].mean():.3f} of 'other hours' rows", {int(k): round(v, 3) for k, v in top.groupby("y1_state")["exact"].mean().items()}, flush=True)
     print(f"held-out models done at {time.time() - start:.0f}s", flush=True)
     results = evaluate(labelled, probs, cand_rows, p_exact, p_near, knobs)
     show("2026 held-out", results[2026])
     show("2025 held-out", results[2025])
     if args.strict:
-        results["strict_2025"] = strict_2025(knobs)
-        show("2025 strict (past only)", results["strict_2025"])
-    if args.results:
-        Path(args.results).write_text(json.dumps({str(k): v for k, v in results.items()}, indent=1, default=float))
+        show("2025 strict (past only)", strict_2025(knobs, args.soft.replace(".parquet", "_strict.parquet")))
     np.savez(CACHE / "oof.npz", probs=probs, p_exact=p_exact, p_near=p_near)
     if args.write:
         write_outputs(rows, cands, labelled, probs, cand_rows, p_exact, p_near, knobs)
@@ -341,7 +277,7 @@ def write_outputs(rows, cands, labelled, probs, cand_rows, p_exact, p_near, knob
     target = rows[(rows["season"] == 2026) & (rows["cls"] < 0)]
     ids = set(target["row_id"])
     cp = cands[cands["row_id"].isin(ids)]
-    train_cands = pd.concat([cand_rows, cands[(cands["aux"] == 1) & (cands["cls"] == OTHER)]])
+    train_cands = pd.concat([cand_rows, cands[(cands["aux"] == AUX) & (cands["cls"] == OTHER)]])
     pr, pe, pn = fit_predict(labelled, target, train_cands, cp, seeds=(7, 21, 33))
 
     dev_mask = (labelled["season"] == 2026).to_numpy()

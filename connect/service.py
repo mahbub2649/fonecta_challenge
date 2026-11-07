@@ -11,16 +11,19 @@ from __future__ import annotations
 
 import json
 import secrets
+import time
 import threading
 from datetime import date
 
-from . import config, messages
+from . import config, messages, reply_agent
 from .engine import Decision, Engine
 from .hours import day_to_string, edit_shift, is_valid
 from .store import Store, now
 from .yext import YextClient, YextError
 
 AUTO_BASES = {"LAST_YEAR", "SHOPPING_CENTRE", "YOUR_CHOICE"}
+AGENT_CALLS_PER_MESSAGE = 25
+AGENT_CALLS_PER_HOUR = 400
 DECLINE_REASONS = {"open_as_usual", "dont_ask", "wrong", "stop", ""}
 
 STORYLINES = {
@@ -55,8 +58,11 @@ QUIET_TEXT = {
 
 class Service:
     def __init__(self, engine: Engine, store: Store, mock: YextClient, sandbox: YextClient | None = None,
-                 public_url: str | None = None):
+                 public_url: str | None = None, agent=None):
         self.engine, self.store, self.mock, self.sandbox = engine, store, mock, sandbox
+        self.agent = agent or (reply_agent.ask_gemini if config.GEMINI_KEY else None)
+        self._plans = {}
+        self._agent_calls = {}
         self.public_url = (public_url or config.PUBLIC_URL).rstrip("/")
         self._overview = None
         self._lock = threading.RLock()
@@ -357,10 +363,10 @@ class Service:
                     learned["open_shift"], learned["close_shift"] = open_by, close_by
                     self.store.log("LEARN", "connect",
                                    f"Owner moved the opening by {open_by:+d} min and the closing by {close_by:+d} min. "
-                                   "Later suggestions for this owner move the same way.", eid, case["id"])
+                                   "Later suggestions offer the same move in one tap.", eid, case["id"])
                 if proposed == "closed" and final != "closed":
-                    learned["closed_doubts"] = learned.get("closed_doubts", 0) + 1
-                    self.store.log("LEARN", "connect", "Owner opens on a day Connect thought was closed. Later 'closed' guesses need more proof.", eid, case["id"])
+                    learned["closed_asks"] = learned.get("closed_asks", 0) + 1
+                    self.store.log("LEARN", "connect", "Owner opens on a day Connect thought was closed. Later 'closed' guesses are asked as questions.", eid, case["id"])
             if item["decision"] == "DECLINED":
                 why = item.get("decline_reason")
                 if why in ("open_as_usual", "dont_ask"):
@@ -429,15 +435,21 @@ class Service:
         eid = case["entity_id"]
         items = [self.store.one("SELECT * FROM items WHERE id = ?", (i,)) for i in item_ids]
         changes = {i["date"]: i["final_hours"] for i in items}
+        sandbox_id, restore = None, None
         try:
             entries = self.mock.get_entity(eid).get("hours", {}).get("holidayHours", [])
             before = {h["date"]: day_to_string(h) for h in entries if not h.get("isRegularHours")}
             sandbox_after = {}
             if self.sandbox:
-                sandbox_after = self.sandbox.write_holidays(self._sandbox_id(eid), changes)
+                sandbox_id = self._sandbox_id(eid)
+                current = self.sandbox.get_entity(sandbox_id).get("hours", {}).get("holidayHours", [])
+                current = {h["date"]: day_to_string(h) for h in current if not h.get("isRegularHours")}
+                restore = {day: current.get(day) for day in changes}
+                sandbox_after = self.sandbox.write_holidays(sandbox_id, changes)
                 self._check_readback(sandbox_after, changes, "sandbox ")
             self._check_readback(self.mock.write_holidays(eid, changes), changes, "")
         except YextError as error:
+            self._put_back(restore, sandbox_id, eid, case["id"])
             for item in items:
                 self.store.execute("UPDATE items SET write_status = 'FAILED', write_error = ? WHERE id = ?", (str(error)[:300], item["id"]))
             self.store.log("APPLY", "connect", f"Write failed for {', '.join(changes)}, so the owner is told nothing changed. {error}", eid, case["id"])
@@ -450,6 +462,15 @@ class Service:
             self.store.log("APPLY", "connect", f"{item['date']}: wrote {item['final_hours']} to {target}. Read-back matches.", eid, case["id"],
                            {"sandbox_readback": readback})
         return items
+
+    def _put_back(self, restore: dict | None, sandbox_id: str | None, eid: str, case_id: int) -> None:
+        """A failed write must leave nothing behind, because the owner is told nothing changed."""
+        if not restore:
+            return
+        try:
+            self.sandbox.write_holidays(sandbox_id, restore)
+        except YextError as error:
+            self.store.log("APPLY", "connect", f"Could not put the sandbox back, so a person must check {sandbox_id}. {error}", eid, case_id)
 
     @staticmethod
     def _check_readback(after: dict, changes: dict, label: str) -> None:
@@ -477,12 +498,16 @@ class Service:
             if not item or item["write_status"] != "WRITTEN":
                 raise ValueError("That change can't be undone")
             eid = case["entity_id"]
+            sandbox_id, restore = None, None
             try:
                 change = {item["date"]: item["previous_hours"]}
                 if self.sandbox:
-                    self.sandbox.write_holidays(self._sandbox_id(eid), change)
+                    sandbox_id = self._sandbox_id(eid)
+                    restore = {item["date"]: item["final_hours"]}
+                    self.sandbox.write_holidays(sandbox_id, change)
                 self.mock.write_holidays(eid, change)
             except YextError as error:
+                self._put_back(restore, sandbox_id, eid, case["id"])
                 self.store.log("APPLY", "connect", f"{item['date']}: undo failed. {error}", eid, case["id"])
                 raise ValueError("The undo didn't go through. Nothing else changed.") from None
             self.store.execute("UPDATE items SET decision = 'UNDONE', write_status = 'UNDONE' WHERE id = ?", (item_id,))
@@ -503,6 +528,185 @@ class Service:
         live.sort(key=lambda x: x["typicalUpdateSpeedSeconds"])
         return [{"name": x["publisherName"], "seconds": x["typicalUpdateSpeedSeconds"], "url": x.get("listingUrl"),
                  "expected_live_by": x.get("expectedLiveBy")} for x in live]
+
+    # ------------------------------------------------------------ replies in the owner's own words
+
+    def _agent_allowed(self, token: str) -> bool:
+        """Caps per message and overall, so a public link can't run up the bill."""
+        hour = int(time.time() // 3600)
+        calls = self._agent_calls
+        if calls.get("hour") != hour:
+            calls.clear()
+            calls["hour"] = hour
+        if calls.get(token, 0) >= AGENT_CALLS_PER_MESSAGE or calls.get("all", 0) >= AGENT_CALLS_PER_HOUR:
+            return False
+        calls[token] = calls.get(token, 0) + 1
+        calls["all"] = calls.get("all", 0) + 1
+        return True
+
+    def _plan_row(self, label: tuple, before: tuple, after: tuple) -> dict:
+        return {"label": label[0], "label_en": label[1], "before": before[0], "before_en": before[1], "after": after[0], "after_en": after[1]}
+
+    def _plan_rows(self, plan: dict, case: dict, regular_now: dict) -> list:
+        lang, eid, rows = case["language"], case["entity_id"], []
+        items = {i["date"]: i for i in self._items(case["id"])}
+        live = self.live_holidays(eid)
+
+        def hours(value: str) -> tuple:
+            return messages.hours_label(value, lang), messages.hours_label(value, "en")
+
+        def date_label(day: str) -> tuple:
+            key, name = self._day_key(eid, day)
+            return tuple(f"{messages.day_name(key, code, name)} {messages.date_label(day, code)}".strip() for code in (lang, "en"))
+
+        def shown(day: str) -> str:
+            return items[day]["shown"] if day in items else self.engine.shown(eid, date.fromisoformat(day), live)
+
+        for day in sorted(set(plan["dates"]) | set(plan["decisions"])):
+            if day in plan["dates"]:
+                after = hours(plan["dates"][day])
+            elif plan["decisions"][day]["action"] == "approve":
+                after = hours(items[day]["proposed"])
+            else:
+                after = (messages.UI[lang]["tell_no_change"], messages.UI["en"]["tell_no_change"])
+            rows.append(self._plan_row(date_label(day), hours(shown(day)), after))
+        for group in messages.group_weekdays(plan["regular"], regular_now):
+            rows.append(self._plan_row(tuple(messages.weekday_span(group["days"], code) for code in (lang, "en")), hours(group["before"]), hours(group["after"])))
+        if plan["standing"]:
+            ui, ui_en = messages.UI[lang], messages.UI["en"]
+            rows.append(self._plan_row((ui["tell_holidays"], ui_en["tell_holidays"]), (ui["tell_ask_first"], ui_en["tell_ask_first"]), (ui["tell_automatic"], ui_en["tell_automatic"])))
+        return rows
+
+    def _day_key(self, eid: str, day: str) -> tuple:
+        """A date's special-day key and local name, if it's one of the business's special days."""
+        for row in self.engine.targets.get(eid, []):
+            if row["date"] == day:
+                country = self.engine.entities[eid]["meta"]["countryCode"]
+                return row["day_key"], self.engine.calendar_names.get((country, day), "")
+        return "OWNER_DATE", ""
+
+    def _agent_context(self, case: dict, regular_now: dict) -> dict:
+        lang = case["language"]
+        items = [{"date": i["date"], "day": messages.day_name(i["day_key"], "en", i["day_name_local"]), "shown": i["shown"], "proposed": i["proposed"],
+                  "pending": i["decision"] in ("PENDING", "NO_REPLY")} for i in self._items(case["id"])]
+        eid = case["entity_id"]
+        country = self.engine.entities[eid]["meta"]["countryCode"]
+        special = [{"date": row["date"], "name": self.engine.calendar_names.get((country, row["date"]), ""), "name_en": messages.day_name(row["day_key"], "en", "")}
+                   for row in self.engine.targets.get(eid, [])]
+        return {"today": self.engine.today.isoformat(), "language": lang, "regular": regular_now, "items": items, "special_days": special}
+
+    def interpret_reply(self, token: str, text: str) -> dict:
+        """Read the owner's words and return a plan to confirm. This never writes anything."""
+        with self._lock:
+            case = self._case_by_token(token)
+            if not case:
+                raise KeyError("Unknown link")
+            if self._expired(case):
+                raise PermissionError("expired")
+            text = str(text or "").strip()
+            if not text or len(text) > reply_agent.MAX_REPLY:
+                raise ValueError("Please write a short message")
+            if not self.agent or not self._agent_allowed(token):
+                return {"status": "unavailable"}
+            eid = case["entity_id"]
+            current = self.mock.get_entity(eid).get("hours", {})
+            regular_now = {day: day_to_string(current.get(day)) for day in reply_agent.DAYS}
+            context = self._agent_context(case, regular_now)
+        try:
+            raw = self.agent(text, context)
+        except reply_agent.AgentUnavailable as error:
+            self.store.log("DECIDE", "reply_agent", f"Couldn't read the owner's words ({error}), so the buttons stay.", eid, case["id"])
+            return {"status": "unavailable"}
+        plan = reply_agent.build_plan(raw, context)
+        with self._lock:
+            self.store.log("DECIDE", "owner", f"Wrote: {text}", eid, case["id"], {"reply_en": plan["reply_en"]})
+            if plan["problem"] or plan["question"]:
+                if plan["problem"]:
+                    self.store.log("DECIDE", "reply_agent", f"Refused the model's plan: {plan['problem']}. Asked again, nothing changed.", eid, case["id"])
+                ui, ui_en = messages.UI[case["language"]], messages.UI["en"]
+                question = plan["question"] if not plan["problem"] else ui["tell_again"]
+                question_en = plan["question_en"] if not plan["problem"] else ui_en["tell_again"]
+                self.store.log("DECIDE", "reply_agent", f"Asked: {question_en or question}", eid, case["id"])
+                return {"status": "question", "question": question, "question_en": question_en, "reply_en": plan["reply_en"]}
+            plan_id = secrets.token_urlsafe(12)
+            self._plans[plan_id] = {"token": token, "plan": plan}
+            rows = self._plan_rows(plan, case, regular_now)
+            self.store.log("DECIDE", "reply_agent", f"Understood {len(rows)} change(s) and asked the owner to confirm. Nothing written yet.", eid, case["id"],
+                           {"dates": plan["dates"], "regular": plan["regular"], "decisions": plan["decisions"], "standing": plan["standing"]})
+            return {"status": "confirm", "plan_id": plan_id, "rows": rows, "reply_en": plan["reply_en"]}
+
+    def confirm_plan(self, token: str, plan_id: str) -> dict:
+        """The owner tapped confirm. Dates go through the same path as the buttons: read-back, rollback, undo and learning."""
+        with self._lock:
+            case = self._case_by_token(token)
+            if not case:
+                raise KeyError("Unknown link")
+            if self._expired(case):
+                raise PermissionError("expired")
+            entry = self._plans.get(plan_id)
+            if not entry or entry["token"] != token:
+                raise ValueError("That plan is no longer available")
+            del self._plans[plan_id]
+            plan, eid = entry["plan"], case["entity_id"]
+            items = {i["date"]: i for i in self._items(case["id"])}
+            decisions = []
+            for day, hours in plan["dates"].items():
+                if day in items:
+                    decisions.append({"item": items[day]["id"], "action": "edit", "hours": hours})
+                else:
+                    decisions.append({"item": self._add_owner_item(case, day, hours), "action": "approve"})
+            for day, choice in plan["decisions"].items():
+                decisions.append({"item": items[day]["id"], **choice})
+            if plan["regular"]:
+                self._write_regular(case, plan["regular"])
+            if plan["standing"]:
+                self._set_pref(eid, "standing_permission", 1)
+                self.store.log("LEARN", "owner", "Owner gave standing permission for public holidays, in their own words.", eid, case["id"])
+            if decisions:
+                self.decide(token, decisions)
+            self._finish_if_complete(case["id"])
+            return self.owner_view(token)
+
+    def _add_owner_item(self, case: dict, day: str, hours: str) -> int:
+        """A date the owner brought up themselves. It becomes a normal item, so it can be undone like any other."""
+        eid = case["entity_id"]
+        key, name = self._day_key(eid, day)
+        shown = self.engine.shown(eid, date.fromisoformat(day), self.live_holidays(eid))
+        return self.store.execute(
+            "INSERT INTO items (case_id, entity_id, date, day_key, day_name_local, shown, proposed, basis, mode, confidence, evidence, learning_notes, expected_views, views_from_last_year) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (case["id"], eid, day, key, name, shown, hours, "OWNER_REQUEST", "SUGGEST", 1.0, "{}", "[]", 0, 0)).lastrowid
+
+    def _write_regular(self, case: dict, changes: dict) -> bool:
+        """Write new weekly hours: sandbox first, then Connect's record. A failure leaves nothing behind."""
+        eid, sandbox_id, restore = case["entity_id"], None, None
+        lang = case["language"]
+        try:
+            current = self.mock.get_entity(eid).get("hours", {})
+            previous = {day: day_to_string(current.get(day)) for day in changes}
+            if self.sandbox:
+                sandbox_id = self._sandbox_id(eid)
+                held = self.sandbox.get_entity(sandbox_id).get("hours", {})
+                restore = {day: day_to_string(held.get(day)) for day in changes}
+                self._check_readback(self.sandbox.write_regular(sandbox_id, changes), changes, "sandbox ")
+            self._check_readback(self.mock.write_regular(eid, changes), changes, "")
+        except YextError as error:
+            if restore and sandbox_id:
+                try:
+                    self.sandbox.write_regular(sandbox_id, restore)
+                except YextError as undo_error:
+                    self.store.log("APPLY", "connect", f"Could not put the sandbox back, so a person must check {sandbox_id}. {undo_error}", eid, case["id"])
+            self.store.log("APPLY", "connect", f"Write of regular hours failed, so the owner is told nothing changed. {error}", eid, case["id"])
+            self._save_message(case, "WRITE_FAILED", messages.write_failed(lang), messages.write_failed("en"))
+            return False
+        target = "the Yext sandbox and Connect's record" if self.sandbox else "the local Yext mock (no sandbox key set)"
+        groups = messages.group_weekdays(changes, previous)
+        self.store.log("APPLY", "owner_regular", f"Regular hours: wrote {changes} to {target}. Read-back matches.", eid, case["id"], {"regular_groups": groups})
+        first, business = self._first_name(eid), self.engine.entities[eid]["name"]
+        listings = self.where_it_shows(eid)
+        self._save_message(case, "CONFIRMATION", messages.regular_confirmation(first, business, groups, listings, lang),
+                           messages.regular_confirmation(first, business, groups, listings, "en"))
+        return True
 
     # ------------------------------------------------------------ the mock's owner simulator
 
@@ -544,15 +748,28 @@ class Service:
                 "id": item["id"], "day": messages.day_name(item["day_key"], lang, item["day_name_local"]),
                 "date": messages.date_label(item["date"], lang), "shown": messages.hours_label(item["shown"], lang),
                 "proposed": item["proposed"], "proposed_label": messages.hours_label(item["proposed"], lang),
+                "alternative": item["evidence"].get("alternative"),
+                "alternative_label": messages.hours_label(item["evidence"]["alternative"], lang) if item["evidence"].get("alternative") else None,
                 "reason": messages.reason(item, lang), "mode": item["mode"], "decision": item["decision"],
                 "final_label": messages.hours_label(item["final_hours"], lang) if item["final_hours"] else None,
                 "write_status": item["write_status"], "views": item["expected_views"] if item["views_from_last_year"] else None,
+                "en": {"day": messages.day_name(item["day_key"], "en", item["day_name_local"]), "date": messages.date_label(item["date"], "en"),
+                       "shown": messages.hours_label(item["shown"], "en"), "proposed_label": messages.hours_label(item["proposed"], "en"),
+                       "alternative_label": messages.hours_label(item["evidence"]["alternative"], "en") if item["evidence"].get("alternative") else None,
+                       "reason": messages.reason(item, "en"), "final_label": messages.hours_label(item["final_hours"], "en") if item["final_hours"] else None},
             })
         prefs = self._prefs(eid)
         written = any(i["write_status"] == "WRITTEN" for i in items)
-        listings = [{"name": x["name"], "eta": messages.eta_label(x["seconds"], lang)} for x in self.where_it_shows(eid)] if written else []
+        listings = [{"name": x["name"], "eta": messages.eta_label(x["seconds"], lang), "eta_en": messages.eta_label(x["seconds"], "en")}
+                    for x in self.where_it_shows(eid)] if written else []
+        regular_updates = []
+        for row in self.store.all("SELECT data FROM events WHERE case_id = ? AND actor = 'owner_regular' ORDER BY id", (case["id"],)):
+            for group in json.loads(row["data"])["regular_groups"]:
+                regular_updates.append({"days": messages.weekday_span(group["days"], lang), "days_en": messages.weekday_span(group["days"], "en"),
+                                        "hours": messages.hours_label(group["after"], lang), "hours_en": messages.hours_label(group["after"], "en")})
         return {"business": self.engine.entities[eid]["name"], "first_name": self._first_name(eid), "language": lang,
-                "ui": messages.UI[lang], "status": case["status"], "expired": self._expired(case), "items": items,
+                "agent_enabled": bool(self.agent), "regular_updates": regular_updates,
+                "ui": messages.UI[lang], "ui_en": messages.UI["en"], "status": case["status"], "expired": self._expired(case), "items": items,
                 "listings": listings, "standing": prefs["standing"], "opted_out": prefs["opted_out"]}
 
     def case_view(self, case_id: int) -> dict:

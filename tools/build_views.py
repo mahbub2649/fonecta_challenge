@@ -14,7 +14,7 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA = Path(os.environ.get("CONNECT_DATA_DIR", ROOT.parent / "fonecta_data" / "FONECTA_CONNECT_SUGGESTS_2026"))
+DATA = Path(os.environ.get("CONNECT_DATA_DIR", ROOT / "fonecta_data" / "FONECTA_CONNECT_SUGGESTS_2026"))
 
 
 def main() -> None:
