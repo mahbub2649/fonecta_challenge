@@ -120,26 +120,6 @@
   },
   "seconds": 8.3
  },
- "1433a750ee69": {
-  "file": "s50-office-1433a750.jpg",
-  "scene": "s50-office",
-  "model": "p-image",
-  "input": {
-   "prompt": "A bright, calm Nordic office with plants and large windows overlooking a Helsinki street, a woman in her thirties with short blonde hair and a navy sweater sits at a desk working on a computer with a large monitor, looking at a clean dashboard, focused and relaxed; the screen content is soft and unreadable. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
-   "aspect_ratio": "16:9"
-  },
-  "seconds": 3.6
- },
- "c2ea07ffd108": {
-  "file": "s56-office-smile-c2ea07ff.jpg",
-  "scene": "s56-office-smile",
-  "model": "p-image",
-  "input": {
-   "prompt": "Close-up of a woman in her thirties with short blonde hair and a navy sweater in a bright Nordic office, smiling at her computer monitor as she clicks, soft window light, the screen is out of focus. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
-   "aspect_ratio": "16:9"
-  },
-  "seconds": 3.5
- },
  "4dd463faa6c5": {
   "file": "v11-emma-walk-4dd463fa.mp4",
   "scene": "v11-emma-walk",
@@ -218,32 +198,6 @@
   },
   "seconds": 21.7
  },
- "df74fa83bc3b": {
-  "file": "v50-office-df74fa83.mp4",
-  "scene": "v50-office",
-  "model": "p-video-2-pro",
-  "input": {
-   "image": "@demo/assets/s50-office-1433a750.jpg",
-   "prompt": "In a bright calm Nordic office, the woman works at her computer, scrolling and clicking through a dashboard, focused and relaxed, soft daylight from the windows. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
-   "duration": 5,
-   "resolution": "768p",
-   "mode": "speed"
-  },
-  "seconds": 23.2
- },
- "1d601978ed75": {
-  "file": "v56-office-smile-1d601978.mp4",
-  "scene": "v56-office-smile",
-  "model": "p-video-2-pro",
-  "input": {
-   "image": "@demo/assets/s56-office-smile-c2ea07ff.jpg",
-   "prompt": "Close-up: the woman smiles at her computer monitor and points at something on the screen, soft window light, relaxed and pleased. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
-   "duration": 5,
-   "resolution": "768p",
-   "mode": "speed"
-  },
-  "seconds": 21.9
- },
  "011beffa61e8": {
   "file": "s43-terrace-night-011beffa.jpg",
   "scene": "s43-terrace-night",
@@ -308,5 +262,67 @@
    "mode": "quality"
   },
   "seconds": 26.9
+ },
+ "d0d3030d0268": {
+  "file": "ref-linnea-d0d3030d.jpg",
+  "scene": "ref-linnea",
+  "model": "p-image",
+  "input": {
+   "prompt": "Photorealistic cinematic portrait of a fictional Finnish woman around 30, shoulder-length light brown hair, natural make-up, a calm confident smile, wearing a cream knitted sweater, standing at a standing desk in a bright modern Nordic office, large windows with a soft view of the Helsinki skyline in late afternoon light, plants, a laptop and a large monitor beside her (screen out of view), shallow depth of field, 50mm, natural skin texture, film still.",
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 4.0
+ },
+ "788100d4fd1c": {
+  "file": "n1-wide-788100d4.jpg",
+  "scene": "n1-wide",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Wide shot of the same woman working at a height-adjustable standing desk in a bright modern Nordic office, seen from the side at a three-quarter angle, a large monitor and a laptop in front of her facing her (screens turned away from the camera), a cup of coffee on the desk, large windows behind with the Helsinki skyline at dusk, plants, calm and focused. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, warm late-afternoon light, 16:9.",
+   "images": [
+    "@demo/assets/ref-linnea-d0d3030d.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.5
+ },
+ "efb9a15dd34b": {
+  "file": "n7b-wide-end-efb9a15d.jpg",
+  "scene": "n7b-wide-end",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Wide shot of the same woman standing in her bright office next to her standing desk, holding a cup of coffee in both hands, turned towards the large windows and looking out at the Helsinki skyline at dusk, a relaxed satisfied smile, her monitor and laptop on the desk beside her, plants, calm warm atmosphere. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, warm late-afternoon light, 16:9. Only one person in the image. No mirrors, no reflections of people, no duplicate figures.",
+   "images": [
+    "@demo/assets/ref-linnea-d0d3030d.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.7
+ },
+ "ff75bffc8fd8": {
+  "file": "vn7-end-ff75bffc.mp4",
+  "scene": "vn7-end",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/n7b-wide-end-efb9a15d.jpg",
+   "prompt": "The woman takes a slow sip of her coffee and looks out of the window at the city at dusk, smiling, content; slow gentle camera pull-back. Only one person. Cinematic, photorealistic, natural human motion, smooth camera, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 22.0
+ },
+ "45ecdead1168": {
+  "file": "vn1b-wide-45ecdead.mp4",
+  "scene": "vn1b-wide",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/n1-wide-788100d4.jpg",
+   "prompt": "Slow, smooth dolly-in towards the woman as she types on her laptop and glances up at her monitor, focused; city lights slowly come on outside at dusk. The coffee cup on the desk is still: no steam, no smoke, nothing rising from it. Only one person. Cinematic, photorealistic, natural human motion, smooth camera, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 32.5
  }
 }

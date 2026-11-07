@@ -1,34 +1,10 @@
 {
- "90af06801d86": {
-  "file": "n11-title-90af0680.mp3",
-  "clip": "n11-title",
-  "request": {
-   "text": "Connect suggests. ... The owner decides.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.3,
-    "similarity_boost": 0.75,
-    "style": 0.1,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
  "8e061b11ab0a": {
   "file": "sfx02-cafe-busy-8e061b11.mp3",
   "clip": "sfx02-cafe-busy",
   "request": {
    "text": "Busy small cafe behind the counter: espresso machine hiss, cups clattering, murmur of customers",
    "duration_seconds": 6
-  },
-  "path": "/sound-generation"
- },
- "17ebf2936186": {
-  "file": "sfx05-tone-17ebf293.mp3",
-  "clip": "sfx05-tone",
-  "request": {
-   "text": "Single soft warm ambient synth tone, gentle swell, calm and confident, for an end title",
-   "duration_seconds": 3
   },
   "path": "/sound-generation"
  },
@@ -42,111 +18,6 @@
     "stability": 0.25,
     "similarity_boost": 0.75,
     "style": 0.15,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "a3403208b609": {
-  "file": "p51-idea-a3403208.mp3",
-  "clip": "p51-idea",
-  "request": {
-   "text": "That's the idea. Here's what's already working.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "d30457adb4cd": {
-  "file": "p52-detect-d30457ad.mp3",
-  "clip": "p52-detect",
-  "request": {
-   "text": "Connect watches every listing: last year's hours, reviews, calls, similar businesses, shopping centres and local events.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "34d2963805bc": {
-  "file": "p53-suggest-34d29638.mp3",
-  "clip": "p53-suggest",
-  "request": {
-   "text": "It only states a suggestion when it's confident. Otherwise it asks... or stays quiet.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "b9a3b9dff668": {
-  "file": "p54-message-b9a3b9df.mp3",
-  "clip": "p54-message",
-  "request": {
-   "text": "One message, in the owner's language. Approve, edit or decline. No login.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "890223e9aa64": {
-  "file": "p55-apply-890223e9.mp3",
-  "clip": "p55-apply",
-  "request": {
-   "text": "Approved changes go to Yext, get checked, and the owner's told where they're live.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "ebdce14628a0": {
-  "file": "p56-learn-ebdce146.mp3",
-  "clip": "p56-learn",
-  "request": {
-   "text": "Every answer teaches it. Owners can even hand over holidays completely... with one-tap undo.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
-    "use_speaker_boost": true
-   }
-  },
-  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "d110868ec803": {
-  "file": "p57-value-d110868e.mp3",
-  "clip": "p57-value",
-  "request": {
-   "text": "Tested on the challenge data, it protects three quarters of the searches at risk. And the same loop works for reviews and posts next.",
-   "model_id": "eleven_multilingual_v2",
-   "voice_settings": {
-    "stability": 0.45,
-    "similarity_boost": 0.75,
-    "style": 0.05,
     "use_speaker_boost": true
    }
   },
@@ -462,6 +333,90 @@
     "stability": 0.45,
     "similarity_boost": 0.75,
     "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "35527b3b4f65": {
+  "file": "music-a-long-35527b3b.mp3",
+  "clip": "music-a-long",
+  "request": {
+   "text": "Hopeful, uplifting instrumental music: gentle piano melody with soft strings slowly building, warm and forward-looking, cinematic, no drums, no vocals",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
+ },
+ "889191087f3e": {
+  "file": "w1-next-88919108.mp3",
+  "clip": "w1-next",
+  "request": {
+   "text": "So... what's next?",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "38104a86b11b": {
+  "file": "w2-signals-38104a86.mp3",
+  "clip": "w2-signals",
+  "request": {
+   "text": "Connect already sees how every owner replies: how fast, what they approve, who hands over their holidays. Over half of last year's pilot messages got no reply.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "d116feff90b8": {
+  "file": "w3-churn-d116feff.mp3",
+  "clip": "w3-churn",
+  "request": {
+   "text": "Owners who go quiet get less from Connect, and they're the ones who leave. We can spot them early.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "0d84f249deaf": {
+  "file": "w4-revenue-0d84f249.mp3",
+  "clip": "w4-revenue",
+  "request": {
+   "text": "Then show them the visits we protected, and offer paid auto-updates. A cost, turned into revenue.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "c1adaaea48b0": {
+  "file": "w5-connect-c1adaaea.mp3",
+  "clip": "w5-connect",
+  "request": {
+   "text": "Let's connect.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.2,
     "use_speaker_boost": true
    }
   },

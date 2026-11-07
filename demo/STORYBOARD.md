@@ -1,3 +1,6 @@
+> **Note:** this is the early plan. The final film (story, demo of the real app, what's next) and how it was made are
+> described in [GENERATIVE_AI.md](GENERATIVE_AI.md).
+
 # Connect Suggests: "Open Doors" (3:00 = 2:00 story film + 1:00 platform)
 
 **Part 1 (0:00–2:00)** is a cinematic concept film that sells the idea and the feeling, winter against summer: a

@@ -624,6 +624,90 @@
     "style": 0.05,
     "use_speaker_boost": true
    }
+  },
+  {
+   "name": "music-a-piano",
+   "kind": "sfx",
+   "duration_seconds": 10,
+   "text": "Hopeful, uplifting instrumental music: gentle piano melody with soft strings slowly building, warm and forward-looking, cinematic, no drums, no vocals"
+  },
+  {
+   "name": "music-b-electronic",
+   "kind": "sfx",
+   "duration_seconds": 10,
+   "text": "Uplifting modern instrumental music: light electronic pulse, airy synth pads, soft plucks, optimistic tech momentum, forward-looking, no vocals"
+  },
+  {
+   "name": "music-c-acoustic",
+   "kind": "sfx",
+   "duration_seconds": 10,
+   "text": "Warm, optimistic instrumental music: bright acoustic guitar picking with soft hand claps and light percussion, friendly Nordic indie feel, forward-looking, no vocals"
+  },
+  {
+   "name": "music-a-long",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Hopeful, uplifting instrumental music: gentle piano melody with soft strings slowly building, warm and forward-looking, cinematic, no drums, no vocals"
+  },
+  {
+   "name": "w1-next",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "So... what's next?"
+  },
+  {
+   "name": "w2-signals",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "Connect already sees how every owner replies: how fast, what they approve, who hands over their holidays. Over half of last year's pilot messages got no reply."
+  },
+  {
+   "name": "w3-churn",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "Owners who go quiet get less from Connect, and they're the ones who leave. We can spot them early."
+  },
+  {
+   "name": "w4-revenue",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "Then show them the visits we protected, and offer paid auto-updates. A cost, turned into revenue."
+  },
+  {
+   "name": "w5-connect",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "Let's connect.",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.2,
+    "use_speaker_boost": true
+   }
   }
  ]
 }
