@@ -1,4 +1,6 @@
-# Connect Suggests
+# MVP ENGINEERS – Connect Suggests
+
+**Challenge provider:** [Fonecta](https://www.fonecta.fi), at the Since AI Hackathon 2026
 
 Wrong holiday hours send customers to a closed door, and most owners never get round to logging in to fix them. So Connect does the noticing: it spots hours that are about to be wrong and sends the owner a ready-made suggestion with the reason. The owner taps once, with no login, and Connect writes the change to Yext and says where it will show.
 
