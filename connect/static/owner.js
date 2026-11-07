@@ -230,7 +230,7 @@ function tellCard() {
   if (tell.state === "confirm") {
     return el("section", {cls: "card tell"},
       el("h2", {textContent: ui.tell_check}),
-      el("p", {cls: "said"}, el("small", {textContent: ui.tell_you}), el("span", {textContent: tell.text})),
+      el("p", {cls: "said"}, el("small", {textContent: spokenReply ? ui.tell_said : ui.tell_you}), el("span", {textContent: tell.text})),
       el("div", {cls: "plan"}, ...tell.rows.map((row) => el("div", {cls: "plan-row"},
         el("div", {cls: "plan-day", textContent: row.label}),
         el("div", {cls: "plan-change"},

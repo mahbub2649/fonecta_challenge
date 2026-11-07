@@ -58,7 +58,7 @@ Businesses are like users, holidays are like items, and entered hours are like r
 
 | Source | What we learned |
 |---|---|
-| [Nager.Date public holidays API](https://date.nager.at) | Every live holiday for FI, SE and NO in 2025 and 2026 is already in the package's calendar, so it adds nothing to the score |
+| [Nager.Date public holidays API](https://date.nager.at) | Every live holiday for FI, SE and NO from 2024 to 6 January 2027 is already in the package's calendar, so it adds nothing to the score. The app now uses it for public holidays, as the [README](README.md#bonus-live-source) explains |
 | [GeoNames](https://www.geonames.org) (CC BY 4.0) | Real population matched 25 of 28 cities. With computed daylight hours, it gave no clear gain, since the hidden answers are synthetic |
 
 ## Experiment results

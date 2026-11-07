@@ -11,7 +11,9 @@ All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 | **What it does** | Spots holiday hours that are about to be wrong, asks the owner in one tap, then writes the change to Yext and confirms it |
 | **The AI** | A transformer blend: LightGBM (48%), TabICLv2 (32%) and our own history transformers (20%) |
 | **Score on the organisers' `evaluate.py`** | **68.62** on 2026 and **66.27** on 2025, against the package baseline's 54.49 and 53.23 |
+| **How owners answer** | One tap, their own words, or their voice, in Finnish, Swedish, Norwegian or English, using Gemini and ElevenLabs |
 | **Trained on** | One gaming laptop with a 4 GB GPU |
+| **Try it online** | [Public demo](https://connect-suggests-demo-905296230419.europe-north1.run.app), with a passcode we share with the judges. Phone view at [`/mobile`](https://connect-suggests-demo-905296230419.europe-north1.run.app/mobile) |
 
 The quickest way we check all of this, from a fresh clone:
 
@@ -23,7 +25,26 @@ python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --pred
 ./run_webui.sh
 ```
 
+## How we meet the judging criteria
+
+| Criterion | What we built | Evidence |
+|---|---|---|
+| **Suggestion quality** | A model blend that scores 68.62 against the baseline's 54.49. Every suggestion keeps its reason, and weak guesses stay quiet | [Results](#results) |
+| **Customer experience** | One short message per group of dates, no login, and three ways to answer: one tap, own words or voice | [Final customer messages](#final-customer-messages), [Replying in the owner's own words](#replying-in-the-owners-own-words) |
+| **Reliability** | Nothing is written without the owner's approval or standing permission. Every write is read back, a failed write leaves nothing behind, and changes to dates can be undone | [The five steps](#the-five-steps), [live Yext checks](#6-testing-against-a-real-yext-sandbox) |
+| **Extensibility** | The same loop already handles new weekly hours, and other suggestion types can reuse it | [Extensibility](#extensibility) |
+| **Learning** | An owner's earlier choice is reused, and was exactly right on 80 of 89 dates. Standing permission covers recurring changes. We measured the rules and removed one that hurt | [How it learns](#how-it-learns) |
+| **All five steps** | All 17 demo businesses behave correctly through the whole chain on the real Yext sandbox | [Live Yext checks](#6-testing-against-a-real-yext-sandbox) |
+
 ## How we run it
+
+### The public demo
+
+The [public demo](https://connect-suggests-demo-905296230419.europe-north1.run.app) needs no setup, only the passcode we share with the judges. It runs on Google Cloud Run with synthetic businesses, and it writes to the mock, not Yext. It's a temporary demo, and we'll take it down after the hackathon. Everything below also runs locally.
+
+- **The console** at `/` shows all five steps next to an on-screen phone.
+- **The owner's view** at [`/mobile`](https://connect-suggests-demo-905296230419.europe-north1.run.app/mobile) is built for a real phone: pick a business, read Connect's message, and answer.
+- **Everyone shares one demo,** so **Reset demo** clears it for everyone. It can also reset by itself after being idle.
 
 ### The laptop we use
 
@@ -69,6 +90,7 @@ cp .env.example .env
 |---|---|
 | `YEXT_API_KEY` | The Yext sandbox key, set in `.env` |
 | `GEMINI_API_KEY` | Lets owners reply in their own words. Without it, the buttons still work |
+| `ELEVENLABS_API_KEY` | Lets owners reply by voice, together with the Gemini key. Without it, typing still works |
 | `CONNECT_DATA_DIR` | Where the challenge package is, if not in `fonecta_data/` |
 | `CONNECT_PORT` | Uses another port instead of 8080 |
 | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
@@ -116,7 +138,7 @@ python3 -m unittest discover tests
 python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
 ```
 
-The tests report `Ran 35 tests` and `OK`, and the scorer reports `Score: 68.62 / 100` on the dev labels.
+The tests report `Ran 61 tests` and `OK`, and the scorer reports `Score: 68.62 / 100` on the dev labels.
 
 `predictions_2026.csv` also holds our predictions for every test and demo row, so the same scorer works on the hidden test by pointing it at those labels:
 
@@ -132,7 +154,7 @@ The normal tests never touch the sandbox. For the real write path, we put a sand
 python3 tests/live_yext_check.py
 ```
 
-This runs 33 live checks in about 11 minutes, and all of them pass. They write every hours format the model can suggest, take all 17 demo businesses through the five steps, and check the result with a separate client. They also cover failures such as a wrong key or an unreachable sandbox. The script only changes records whose ID starts with `connect-`, and it cleans up after itself.
+This runs 35 live checks in about 13 minutes, and all of them pass. They write every hours format the model can suggest, take all 17 demo businesses through the five steps, and check the result with a separate client. They also cover failures such as a wrong key or an unreachable sandbox. The script only changes records whose ID starts with `connect-`, and it cleans up after itself.
 
 ### Businesses we test with
 
@@ -177,9 +199,11 @@ No business is ever scored by a model trained on it, and features only use data 
 
 The models run ahead of time and their decisions are saved to a file, so the web app needs no machine-learning libraries. The code that trains them is in `model/`. The research we considered, and what we tested from it, is in [REFERENCES.md](REFERENCES.md).
 
-## Replying in your own words
+## Replying in the owner's own words
 
-Owners don't have to use the buttons. They can write "we close at two on Christmas Eve, otherwise fine" in Finnish, Swedish, Norwegian or English.
+Owners don't have to use the buttons. They can write or say "we close at two on Christmas Eve, otherwise fine" in Finnish, Swedish, Norwegian or English.
+
+**By voice:** the owner taps the mic and speaks. ElevenLabs turns it into text, which then goes through exactly the same steps as typing. Connect reads back what it understood in English, and says where the change will show once it's saved. If the mic or voice isn't available, typing and the buttons still work.
 
 1. **Gemini reads it:** it proposes changes in a strict format, or asks one question if the reply is unclear. "Close early" gets "What time?".
 2. **Our code checks it:** dates must make sense, hours must pass the same rules as a manual edit, and a bad plan is refused as a whole.
@@ -194,7 +218,7 @@ We check it on real Gemini with 36 messy replies in four languages, and it gets 
 python3 tools/check_reply_agent.py
 ```
 
-It uses Gemini 3.5 Flash-Lite and needs `GEMINI_API_KEY` in `.env`. Without a key, or if Gemini is down, the buttons work as usual. Calls are capped per message and per hour. New weekly hours don't yet change the "Google shows" values in later suggestions.
+It uses Gemini 3.5 Flash-Lite and needs `GEMINI_API_KEY` in `.env`, and voice also needs `ELEVENLABS_API_KEY`. Without them, or if either service is down, the buttons work as usual. Calls are capped per hour, and Gemini calls per message too. New weekly hours don't yet change the "Google shows" values in later suggestions.
 
 ## How it learns
 
@@ -352,7 +376,31 @@ Hyväksy, muokkaa tai kieltäydy ilman kirjautumista: <link>
 
 ## Bonus: live source
 
-Not attempted.
+We replaced the public holidays in `data/calendar_special_days.csv` with live data from the [Nager.Date](https://date.nager.at) API for Finland, Sweden and Norway. The app now reads `connect/live_calendar.csv`, and this command fetches it again and prints the comparison:
+
+```bash
+python3 tools/live_calendar.py
+```
+
+We saved the result rather than calling the API on every start, so a network problem can't stop the demo. If the saved file is missing, the app uses the package's calendar.
+
+| What we checked | Result |
+|---|---|
+| **Coverage:** public-holiday dates from January 2024 to 6 January 2027 | 137 live dates, and all of them are in the package |
+| **Coverage:** the package's official holidays missing from the live source | 0 of 125 |
+| **Coverage:** special-day rows this season (7 Nov 2026 to 6 Jan 2027) | Only 16 of 39 |
+| **Quality:** holiday names that differ | 12, such as "2. pääsiäispäivä" and "Toinen pääsiäispäivä" |
+| **Quality:** dates the live source lists but the package doesn't count as official | 12, such as Julafton and Midsommarafton |
+| **Effect:** decisions that changed, across 3,017 businesses | 0 of 41,755 |
+
+**What we learned:**
+
+- **The dates are reliable.** Every date agreed, so a live source can safely keep a calendar up to date.
+- **The gaps matter most.** The 23 uncovered rows this season are 9 in-between days, 6 commercial days such as Black Friday, 4 eves and 4 observances. These are often when hours change, so we kept those rows from the package.
+- **"Public" doesn't mean the same everywhere.** Swedish eves are listed as public, and Norway's Christmas Eve appears as a bank holiday. So we use the live source for dates and names, and kept the package's own day types.
+- **It doesn't raise the score.** The hidden answers are synthetic, and the calendar already had every date.
+
+**We also tried the Yext sandbox as a live source.** A new test business returned no reviews, listings or publisher suggestions, which matches the challenge's warning that test businesses have little data. That's why our confirmation uses the package's `listings.json`.
 
 ## What's real and what's simulated
 
@@ -360,13 +408,25 @@ Not attempted.
 |---|---|
 | Sandbox write and read-back | Real, on labelled `TEST` businesses we create |
 | Model, approval page, decisions, learning, audit trail | Real |
+| Understanding owners' words and voice | Real, using the Gemini and ElevenLabs APIs |
+| Public holidays | Real, from Nager.Date. Other special days come from the package |
+| Public demo's writes | To the mock. The real Yext write runs from a laptop with `--sandbox` |
 | Message delivery | Simulated, on the on-screen phone |
 | Publisher timing in the confirmation | From the package's simulated listings, because the sandbox has none |
 | Business history | The package's local Yext mock, because the sandbox has none |
 
 ## Extensibility
 
-The loop isn't specific to hours: notice something, suggest it with a reason, get one tap, write it, confirm it, learn. Review replies and automatic posts fit the same flow. Each needs its own detection and wording, and reuses the approval page, standing permission, audit trail and undo.
+The loop isn't specific to holiday hours: notice something, suggest it with a reason, get one tap, write it, confirm it, learn. Each new use needs its own detection and wording, and reuses the approval page, standing permission, audit trail and undo.
+
+| Use | Status |
+|---|---|
+| Holiday and special-day hours | **Working,** with the full chain on the Yext sandbox |
+| New weekly hours | **Working** when the owner asks in their own words, with the same confirmation, read-back and rollback. Connect doesn't suggest these on its own yet, and they don't have one-tap undo |
+| Dates the owner brings up, like "closed Saturdays in December" | **Working,** and each date can be undone like any other |
+| Business that looks closed for good | **Working,** and it goes to a person, not the owner |
+| Review replies | **Not built.** Gemini could draft a reply for the same approval page |
+| Automatic posts, like "we're closed on Christmas Eve" | **Not built.** An approved change could offer a ready-made post |
 
 ## Third-party code, data and licences
 
@@ -384,5 +444,10 @@ The loop isn't specific to hours: notice something, suggest it with a reason, ge
 | `model/neural.py` only: pytabkit, for the RealMLP test | Apache-2.0 |
 | `tools/make_charts.py` only: seaborn | BSD-3-Clause |
 | `tools/make_charts.py` only: Matplotlib | Matplotlib License, BSD-style |
+| Public-holiday data in `connect/live_calendar.csv`, from Nager.Date | The project is MIT. We found no separate terms for the API's data |
+| Gemini API, ElevenLabs API and Google Cloud Run | Online services we call, under their own terms. Their code isn't in this repository |
+| NVIDIA CUDA libraries, installed with PyTorch's GPU build | NVIDIA's proprietary licence. Only used for local training, and not in this repository or the demo |
 
-The web app runs on the Python standard library alone. No GPL or AGPL components. No code from before the event is used.
+The web app runs on the Python standard library alone. No code from before the event is used.
+
+**Licence scan:** we checked the licence details of every Python package installed in our training environments, 115 in one and 71 in the other, and none declares GPL or AGPL. `cuda-toolkit` declares no licence there, and it's only used for local training. This scan reads what each package declares, so it can't see inside compiled libraries bundled in a package. The public demo's container uses the official Python image on Debian, whose system tools include GPL software. That image is only our hosting environment: it isn't in this repository, and we don't distribute it.

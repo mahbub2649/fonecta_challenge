@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 os.environ["MOCK_QUIET"] = "1"
 
+import csv  # noqa: E402
 import urllib.request  # noqa: E402
 
 from connect import config, messages, reply_agent  # noqa: E402
@@ -387,6 +388,17 @@ class ChainTest(unittest.TestCase):
         self.assertEqual(messages.spoken_hours("18:00-00:00"), "6 PM to 12 AM")
         self.assertEqual(messages.spoken_days(["monday", "tuesday", "wednesday", "thursday", "friday"]), "Monday to Friday")
         self.assertIn("And 2 more.", messages.spoken_plan(["a", "b", "c", "d", "e"]))
+
+    def test_live_calendar_only_changes_public_holiday_names(self):
+        path = Path(__file__).resolve().parent.parent / "connect" / "live_calendar.csv"
+        with path.open(encoding="utf-8") as f:
+            live = list(csv.DictReader(f))
+        with (config.DATA_DIR / "data" / "calendar_special_days.csv").open(encoding="utf-8") as f:
+            package = list(csv.DictReader(f))
+        self.assertEqual([(r["country"], r["date"], r["day_key"]) for r in live], [(r["country"], r["date"], r["day_key"]) for r in package])
+        sources = {r["source"].split()[0] for r in live}
+        self.assertEqual(sources, {"Nager.Date", "challenge"})
+        self.assertTrue(all(r["name_local"] for r in live))
 
     def test_reset_sends_no_body_to_the_mock(self):
         sent = []
