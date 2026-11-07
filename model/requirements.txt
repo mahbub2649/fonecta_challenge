@@ -4,3 +4,5 @@ pyarrow
 numpy
 scikit-learn
 lightgbm
+seaborn
+matplotlib

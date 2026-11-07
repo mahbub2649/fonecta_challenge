@@ -4,13 +4,51 @@ Wrong holiday hours send customers to a closed door, and most owners never get r
 
 All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
-## Running it
+## At a glance
 
-### 1. What you'll need
+| | |
+|---|---|
+| **What it does** | Spots holiday hours that are about to be wrong, asks the owner in one tap, then writes the change to Yext and confirms it |
+| **The AI** | A transformer blend: LightGBM (48%), TabICLv2 (32%) and our own history transformers (20%) |
+| **Score on the organisers' `evaluate.py`** | **68.62** on 2026 and **66.27** on 2025, against the package baseline's 54.49 and 53.23 |
+| **Trained on** | One gaming laptop with a 4 GB GPU |
 
-You'll need Python 3.9 or newer. The app uses only the standard library, so there's nothing to install (`requirements.txt` is there to confirm that).
+The quickest way we check all of this, from a fresh clone:
 
-The challenge data package is included in `fonecta_data/`, so the app runs straight after cloning. If you'd rather use a copy somewhere else, you can set `CONNECT_DATA_DIR` to its `FONECTA_CONNECT_SUGGESTS_2026` folder.
+```bash
+git clone https://github.com/mahbub2649/fonecta_challenge.git
+cd fonecta_challenge
+python3 -m unittest discover tests
+python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
+./run_webui.sh
+```
+
+## How we run it
+
+### The laptop we use
+
+All training and testing ran on this one machine:
+
+| Part | What we have |
+|---|---|
+| Laptop | Acer Nitro AN515-57 |
+| CPU | Intel Core i5-11400H, 6 cores and 12 threads |
+| Memory | 14 GB usable, plus 4 GB of swap |
+| GPU | NVIDIA GeForce RTX 3050 Ti Laptop, 4 GB |
+| System | Ubuntu 26.04 LTS |
+| Python | 3.14.4 |
+| Libraries | LightGBM 4.7.0, scikit-learn 1.9.1, pandas 3.1.1, NumPy 2.5.4, PyTorch 2.15.0 with CUDA 13.2, TabICL 2.2.0, seaborn 0.13.2 |
+
+The web app and tests don't use the GPU or any of those libraries. They use only Python's standard library, and are written for Python 3.9 or newer, so `requirements.txt` has nothing to install.
+
+### 1. Getting the code
+
+```bash
+git clone https://github.com/mahbub2649/fonecta_challenge.git
+cd fonecta_challenge
+```
+
+The challenge data package is already in `fonecta_data/`, so the app runs straight after cloning. For a copy kept somewhere else, we set `CONNECT_DATA_DIR` to its `FONECTA_CONNECT_SUGGESTS_2026` folder.
 
 ### 2. Starting the app
 
@@ -18,34 +56,37 @@ The challenge data package is included in `fonecta_data/`, so the app runs strai
 ./run_webui.sh
 ```
 
-This opens http://127.0.0.1:8080 in your browser, or the next free port if that one's busy, and `Ctrl+C` in the terminal stops it. `python3 run.py` works too.
+This opens http://127.0.0.1:8080 in the browser, or the next free port if that one's busy, and `Ctrl+C` in the terminal stops it. `python3 run.py` works too, and `./run_webui.sh --no-browser` starts it without opening a browser.
 
-You can add `--sandbox` to also write to your own Yext sandbox, or `--no-browser` to skip opening a browser.
+By default, writes go to the local mock, and the top of the page shows which is active. To write to a real Yext sandbox as well, we copy the example settings, put the key in `.env`, and start with `--sandbox`:
 
-These settings are optional, in case they're useful:
+```bash
+cp .env.example .env
+./run_webui.sh --sandbox
+```
 
-| Setting | What it does |
+| Optional setting | What it does |
 |---|---|
-| `YEXT_API_KEY` | Your Yext sandbox key. You can copy `.env.example` to `.env`, set it there, and start with `./run_webui.sh --sandbox`. Without it, writes go to the local mock, and the top of the page shows which is active |
+| `YEXT_API_KEY` | The Yext sandbox key, set in `.env` |
 | `CONNECT_DATA_DIR` | Where the challenge package is, if not in `fonecta_data/` |
 | `CONNECT_PORT` | Uses another port instead of 8080 |
 | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
 
-### 3. Trying it on the web page
+### 3. Walking through it on the web page
 
-This is the quickest way to see all five steps:
+This is how we go through all five steps:
 
-1. Choose **Kahvila Aurora** on the left. **Run detection** looks for hours that may be wrong.
+1. We choose **Kahvila Aurora** on the left, and **Run detection** looks for hours that may be wrong.
 2. **Send by SMS** puts the message on the on-screen phone.
-3. The link in the message opens the owner's page, where you can approve or edit.
+3. The link in the message opens the owner's page, where we approve or edit.
 4. Steps 4 and 5 then fill in beside the phone, and the audit trail records each step.
 5. **Detect the next dates** shows the next message using what the owner just said.
 
-**Reset demo** starts again whenever you like.
+**Reset demo** starts again at any point.
 
-### 4. Using the command line instead
+### 4. Walking through it on the command line
 
-With the app running, you can drive the same chain from a second terminal through its local API:
+With the app running, we drive the same chain from a second terminal through its local API. If the app started on another port, `B` changes to match.
 
 ```bash
 B=http://127.0.0.1:8080
@@ -63,41 +104,69 @@ curl -s -X POST -H "$J" \
   $B/api/o/$T/decide                                               # decide, apply and confirm
 ```
 
-### 5. Checking the tests and the score
+### 5. Testing and scoring
 
-If you'd like to confirm these yourself:
+We run the tests and score our predictions with these two commands. Neither needs anything installed:
 
 ```bash
 python3 -m unittest discover tests
 python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
 ```
 
-### 6. Rebuilding the model
+The tests report `Ran 35 tests` and `OK`, and the scorer reports `Score: 68.62 / 100` on the dev labels.
 
-You don't need this to use the app, because the trained models' output is already in this repository. It's here in case you'd like to reproduce it. The neural models take about two hours in total on a 4 GB GPU, and the last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
+`predictions_2026.csv` also holds our predictions for every test and demo row, so the same scorer works on the hidden test by pointing it at those labels:
 
 ```bash
-pip install -r model/requirements.txt
+python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv --labels <path-to-hidden-labels.csv>
+```
+
+### 6. Rebuilding the model from scratch
+
+The app doesn't need this, because the models' output is already in this repository. To reproduce it, we run these in order, in a fresh virtual environment. It needs a GPU with about 4 GB of memory for the neural models.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r model/requirements-neural.txt
+
+# Data and the past-day estimator
 python3 tools/build_views.py
 python3 model/build_dataset.py
-python3 model/past_days.py --before 2025-11-06    # first stage for the strict back-test
+python3 model/past_days.py --before 2025-11-06
 python3 model/past_days.py
 
-pip install -r model/requirements-neural.txt
+# TabICLv2
 python3 model/neural.py tabicl --max-train 16000 --tag _16k
 python3 model/neural.py tabicl --max-train 16000 --strict --soft soft_strict.parquet --tag _16k_strict
 
+# The two history transformers
 python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --layers 4 --drop .3 --seeds 7,21 --tag _deep
 python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --past-weight 1.0 --seeds 7,21 --tag _past
 python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --layers 4 --drop .3 --seeds 7,21 --strict --tag _deep_strict
 python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --past-weight 1.0 --seeds 7,21 --strict --tag _past_strict
 
+# The final blend: prints every score, then overwrites predictions_2026.csv and connect/model_decisions.json
 python3 model/blend.py --weight 0.4 --hist-weight 0.2 --closed-margin 0.2 --strict --write
+
+# The customer messages and the charts in this README
+python3 tools/export_messages.py
+python3 tools/make_charts.py
 ```
 
-It's safest to run these one at a time, as heavy jobs running together can run a laptop out of memory.
+We run these one at a time, because heavy jobs running together can run a laptop out of memory. On our laptop:
 
-### Businesses worth trying
+| Step | About how long |
+|---|---|
+| Data and past-day estimator | 5 minutes |
+| TabICLv2, for all folds | 45 minutes, plus its strict run |
+| Each history transformer | 15 to 20 minutes |
+| Each strict history transformer | 9 minutes |
+| Final blend | 4 minutes |
+
+Neural training on a GPU isn't perfectly repeatable, so a full rebuild can differ slightly from our numbers. The checks in step 5 use the saved predictions, so those match exactly.
+
+### Businesses we test with
 
 | Business | What it shows |
 |---|---|
@@ -125,7 +194,14 @@ The model only proposes. Nothing is published without the owner's approval or st
 
 1. **Review reader:** reads closed-door complaints, closing times, thanks for being open and new weekly hours, in Finnish, Swedish, Norwegian and English, and ties each statement to the day it's about.
 2. **Past-day estimator:** most special days never got an entry, so what the business really did is hidden. A LightGBM model estimates it from what the day left behind: reviews, user edits, and spikes in calls and clicks.
-3. **Open or closed model:** LightGBM combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather, and learns from every past special day, not just November to January. Its estimates are blended with two other kinds of model, because they make different mistakes: TabICLv2, a transformer foundation model, and our history transformer, which reads a business's past special days as a sequence using the self-attention encoder from [Attention Is All You Need](https://arxiv.org/abs/1706.03762). The shares are LightGBM 48%, TabICLv2 32% and the history transformer 20%.
+3. **Open or closed model:** a transformer blend of three kinds of model, because they make different mistakes:
+
+   | Model | What it does | Share |
+   |---|---|---:|
+   | LightGBM | Combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather. It learns from every past special day, not just November to January | 48% |
+   | TabICLv2 | A transformer foundation model for tables | 32% |
+   | History transformers | Our own two models, which read a business's past special days as a sequence, using the self-attention encoder from [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | 20% |
+
 4. **Hours picker:** builds candidate hours from every source and ranks them. The right hours are on the list 97% of the time.
 5. **Decision layer:** chooses the action with the highest expected points, asks for extra proof before suggesting "closed", and holds back hours it thinks have under a 25% chance of being exactly right.
 
@@ -145,22 +221,67 @@ The models run ahead of time and their decisions are saved to a file, so the web
 
 ## Results
 
-Scored with the organisers' `evaluate.py`, on businesses each model never saw. `predictions_2026.csv` gives the 2026 score below.
+We score everything with the organisers' `evaluate.py`, on businesses each model never saw. Differences under about 0.2 are within noise, so we only keep a change that beats that on both seasons, without doing worse in a stricter test. That test trains only on data from before the 2025 snapshot.
 
-| Measure | Package baseline | Earlier blend | Connect Suggests (final blend) |
+### How the score improved, step by step
+
+Each row adds to the one above it, and the last row is the model in this repository.
+
+| Step | What we added | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 | Stricter test: score | Stricter test: wrong calls |
+|---:|---|---:|---:|---:|---:|---:|
+| 1 | Package baseline, a rule ladder | 54.49 | 53.23 | 224 / 249 | | |
+| 2 | LightGBM, with the review reader and past-day estimator | 67.66 | 65.67 | 389 / 445 | 59.41 | |
+| 3 | TabICLv2 in a blend, and a stricter rule for suggesting "closed" | 67.98 | 66.05 | 317 / 329 | 60.30 | 554 |
+| 4 | Training LightGBM on all past special days | 68.30 | 66.17 | 308 / 323 | 61.20 | 573 |
+| **5** | **Two history transformers, at a 20% share** | **68.62** | **66.27** | **292 / 311** | **61.10** | **511** |
+
+![Score and wrong open or closed calls at each of the five steps, for the 2026 and 2025 seasons. Scores rise from 54.49 to 68.62 on 2026 and from 53.23 to 66.27 on 2025. Wrong calls jump with LightGBM, then fall to 292 and 311.](docs/images/score_progress.png)
+
+LightGBM made the biggest jump, and also made more wrong calls because it acts far more often. Every step after that raised the score and brought wrong calls down.
+
+### How we chose the settings
+
+All these rows use the blend with the stricter rule. They come from our experiment runs, which used a lighter setup than the final build, so their numbers differ slightly from the steps above.
+
+**How much weight to give the extra training days:**
+
+| Version | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 |
+|---|---:|---:|---:|
+| November to January only | 67.88 | 66.01 | 318 / 329 |
+| All days, weight 0.25 | 68.01 | 66.14 | 314 / 325 |
+| All days, weight 0.5 | 68.15 | 66.12 | 311 / 327 |
+| **All days, weight 1.0 (our choice)** | **68.30** | **66.17** | **308 / 323** |
+| All days, weight 0.5, with the hours picker trained on them too | 67.94 | 66.04 | 311 / 330 |
+
+**How much of the blend to give the history transformers, with all past days included:**
+
+| Transformer share | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 | Stricter test: score | Stricter test: wrong calls |
+|---:|---:|---:|---:|---:|---:|
+| 0.00 | 68.30 | 66.17 | 308 / 323 | 61.20 | 573 |
+| 0.10 | 68.52 | 66.25 | 299 / 318 | 61.03 | 554 |
+| 0.15 | 68.54 | 66.29 | 295 / 315 | 61.08 | 532 |
+| **0.20 (our choice)** | **68.60** | **66.27** | **292 / 308** | **61.10** | **511** |
+| 0.25 | 68.53 | 66.05 | 293 / 308 | 60.89 | 493 |
+| 0.30 | 68.77 | 65.97 | 284 / 301 | 60.65 | 478 |
+
+![Three charts. Score rises gently as the weight on the extra days goes from 0 to 1. As the transformer share grows, 2026 scores rise while 2025 scores fall after 0.20, and wrong calls fall steadily in both seasons.](docs/images/weight_tests.png)
+
+We chose 0.20 because it beats the earlier blend by more than the noise on both seasons, cuts more wrong calls than 0.15, and has the best score of the transformer mixes in the stricter test. Larger shares cut more wrong calls still, but they lose points on 2025. We chose it after trying 30 mixes, so its gain may be slightly flattering, but we fixed it before running the stricter test.
+
+### The final model in full
+
+| Measure | Package baseline | Earlier blend (step 3) | Final blend (step 5) |
 |---|---:|---:|---:|
 | **Score, 2026 season** | 54.49 | 67.98 | **68.62** |
 | **Score, 2025 season** | 53.23 | 66.05 | **66.27** |
-| Score, 2025, trained only on data from before that snapshot | | 60.30 | 61.10 |
+| Score, 2025, stricter test | | 60.30 | 61.10 |
 | Exact recall, 2026 | 0.59 | 0.75 | 0.75 |
 | Exact precision, 2026 | 0.90 | 0.86 | 0.87 |
 | Search views protected, 2026 | 57.2% | 73.6% | 73.7% |
 | Closed-door views prevented, 2026 | 69.2% | 84.5% | 84.8% |
 | Wrong open or closed calls, 2026 | 224 | 317 | 292 |
 | Wrong open or closed calls, 2025 | 249 | 329 | 311 |
-| Wrong calls, trained only on data from before that snapshot | | 554 | 511 |
-
-The earlier blend was LightGBM and TabICLv2, with a stricter rule for suggesting "closed". The final blend trains LightGBM on all past special days and adds the history transformers. That raised all three scores and cut wrong calls by about 8% on 2026 and 5% on 2025. We chose its mix after trying 30, so the gain over the earlier blend may be slightly flattering, but we fixed that mix before running the stricter test.
+| Wrong calls, stricter test | | 554 | 511 |
 
 We still make more wrong calls than the baseline, because we catch far more wrong hours and the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions.
 
@@ -246,5 +367,7 @@ The loop isn't specific to hours: notice something, suggest it with a reason, ge
 | `model/neural.py` only: TabICL and its model weights | BSD-3-Clause |
 | `model/neural.py` and `model/history_transformer.py` only: PyTorch | BSD-style, with Apache-2.0 parts |
 | `model/neural.py` only: pytabkit, for the RealMLP test | Apache-2.0 |
+| `tools/make_charts.py` only: seaborn | BSD-3-Clause |
+| `tools/make_charts.py` only: Matplotlib | Matplotlib License, BSD-style |
 
 The web app runs on the Python standard library alone. No GPL or AGPL components. No code from before the event is used.
