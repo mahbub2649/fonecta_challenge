@@ -6,7 +6,9 @@ let view = null;
 let open = {}; // Which card is showing its edit or decline form: {itemId: "edit" | "decline"}.
 let hideOffer = false;
 let busy = false;
-let tell = {state: "idle", text: ""}; // The "in your own words" box: idle, busy, confirm, question or unavailable.
+let tell = {state: "idle", text: ""}; // The "in your own words" box: idle, recording, busy, confirm, question, unavailable or nomic.
+let recorder = null;
+let spokenReply = false; // Connect only talks back to someone who spoke to it.
 const captions = new URLSearchParams(location.search).get("captions") === "1"; // For reviewers. Owners see only their own language.
 
 function el(tag, props = {}, ...children) {
@@ -72,6 +74,7 @@ async function post(path, body) {
     if (!response.ok) throw new Error(data.error === "expired" ? view.ui.expired : (data.error || view.ui.failed));
     view = data;
     open = {};
+    if (spokenReply) playSpeech(data.speech_id);
   } catch (error) {
     errorText = error.message;
   }
@@ -152,6 +155,60 @@ function declineForm(item) {
     choice("", ui.skip));
 }
 
+async function playSpeech(speechId) {
+  if (!speechId) return;
+  try {
+    const response = await fetch(`${api}/speak`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({speech_id: speechId})});
+    if (!response.ok) return;
+    const audio = new Audio(URL.createObjectURL(await response.blob()));
+    await audio.play();
+  } catch { /* A phone can block playback. The words are on screen, and Listen tries again. */ }
+}
+
+function canRecord() {
+  return view.voice_enabled && navigator.mediaDevices?.getUserMedia && window.MediaRecorder;
+}
+
+async function startRecording() {
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({audio: true});
+  } catch {
+    tell = {state: "nomic", text: ""};
+    render();
+    return;
+  }
+  const chunks = [];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
+  recorder.onstop = () => {
+    stream.getTracks().forEach((track) => track.stop());
+    clearTimeout(recorder.limit);
+    const type = (recorder.mimeType || "audio/webm").split(";")[0];
+    recorder = null;
+    sendRecording(new Blob(chunks, {type}), type);
+  };
+  recorder.limit = setTimeout(() => { if (recorder?.state === "recording") recorder.stop(); }, 20000);
+  recorder.start();
+  tell = {state: "recording", text: ""};
+  render();
+}
+
+async function sendRecording(blob, type) {
+  tell = {state: "busy", text: ""};
+  render();
+  try {
+    const response = await fetch(`${api}/transcribe`, {method: "POST", headers: {"Content-Type": type}, body: blob});
+    const data = await response.json();
+    if (!response.ok || data.status !== "heard") throw new Error();
+    spokenReply = true;
+    await askAgent(data.text);
+  } catch {
+    tell = {state: "unavailable", text: ""};
+    render();
+  }
+}
+
 async function askAgent(text) {
   tell = {state: "busy", text};
   render();
@@ -164,6 +221,7 @@ async function askAgent(text) {
     tell = {state: "unavailable", text};
   }
   render();
+  if (spokenReply) playSpeech(tell.speech_id);
 }
 
 function tellCard() {
@@ -185,7 +243,13 @@ function tellCard() {
           tell = {state: "idle", text: ""};
           post("/confirm", {plan_id: planId});
         }}),
-        el("button", {type: "button", cls: "quiet", textContent: ui.tell_wrong, on: () => { tell = {state: "idle", text: tell.text}; render(); }})));
+        el("button", {type: "button", cls: "quiet", textContent: ui.tell_wrong, on: () => { tell = {state: "idle", text: tell.text}; render(); }})),
+      tell.speech_id ? el("button", {type: "button", cls: "link hear", textContent: `🔊 ${ui.tell_hear}`, on: () => playSpeech(tell.speech_id)}) : null);
+  }
+  if (tell.state === "recording") {
+    return el("section", {cls: "card tell"},
+      el("h2", {textContent: ui.tell_listening}),
+      el("button", {type: "button", cls: "mic on", textContent: `■ ${ui.tell_stop}`, on: () => recorder?.stop()}));
   }
   const box = el("textarea", {rows: 2, maxLength: 500, placeholder: ui.tell_ph, value: tell.state === "question" ? "" : tell.text, disabled: tell.state === "busy", ariaLabel: ui.tell_title});
   return el("form", {cls: "card tell", onsubmit: (event) => {
@@ -195,9 +259,12 @@ function tellCard() {
   }},
     el("h2", {textContent: ui.tell_title}),
     tell.state === "question" ? el("p", {cls: "ask", textContent: tell.question}) : null,
+    tell.state === "question" && tell.speech_id ? el("button", {type: "button", cls: "link hear", textContent: `🔊 ${ui.tell_hear}`, on: () => playSpeech(tell.speech_id)}) : null,
     tell.state === "unavailable" ? el("p", {cls: "error", role: "alert", textContent: ui.tell_unavailable}) : null,
+    tell.state === "nomic" ? el("p", {cls: "error", role: "alert", textContent: ui.tell_mic_off}) : null,
+    canRecord() ? el("button", {type: "button", cls: "mic", disabled: tell.state === "busy", textContent: `🎙 ${ui.tell_speak}`, on: startRecording}) : null,
     box,
-    el("button", {type: "submit", cls: "primary", disabled: tell.state === "busy", textContent: tell.state === "busy" ? ui.tell_busy : ui.tell_send}));
+    el("button", {type: "submit", cls: "primary", disabled: tell.state === "busy", textContent: tell.state === "busy" ? ui.tell_busy : ui.tell_send, on: () => { spokenReply = false; }}));
 }
 
 function stateLine(item) {
@@ -293,7 +360,7 @@ function render() {
         on: () => post("/standing", {enabled: false})}))));
   }
   // While the owner checks their own words, "approve all" would mean something else, so it steps aside.
-  if (pending.length && !pending.some((i) => open[i.id]) && tell.state !== "confirm") {
+  if (pending.length && !pending.some((i) => open[i.id]) && !["confirm", "recording"].includes(tell.state)) {
     nodes.push(el("div", {cls: "sticky"}, el("div", {},
       el("button", {type: "button", cls: "primary",
         textContent: pending.length > 1 ? ui.approve_all_n.replace("{n}", pending.length) : ui.approve_all,

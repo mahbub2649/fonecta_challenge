@@ -145,7 +145,7 @@ TEXT = {
 
 # The words on the owner's approval page.
 UI = {
-    "fi": {"tell_title": "Tai kerro omin sanoin", "tell_ph": "Esim. jouluaattona suljetaan kahdelta, muuten ok", "tell_send": "Lähetä", "tell_busy": "Luetaan viestiäsi…", "tell_check": "Ymmärsinkö oikein?", "tell_yes": "Kyllä, tallenna", "tell_wrong": "Ei, korjaan", "tell_unavailable": "Emme saaneet tästä selvää juuri nyt. Voit käyttää painikkeita.", "tell_regular": "Normaalit aukioloajat päivitetty", "tell_you": "Kirjoitit", "tell_again": "Kerrothan vielä päivän ja kellonajan.", "tell_no_change": "Ei muutosta", "tell_holidays": "Juhlapyhät", "tell_ask_first": "Kysytään ensin", "tell_automatic": "Hoidetaan puolestasi", "tell_before": "Ennen", "tell_after": "Jälkeen", "alternative": "Siirrä kuten viimeksi: {hours}", "title": "Tarkista aukioloajat", "shown": "Google näyttää nyt", "suggest": "Ehdotus", "why": "Miksi",
+    "fi": {"tell_speak": "Puhu", "tell_stop": "Lopeta", "tell_listening": "Kuuntelen…", "tell_mic_off": "Mikrofoni ei ole käytössä. Voit kirjoittaa tai käyttää painikkeita.", "tell_hear": "Kuuntele", "tell_title": "Tai kerro omin sanoin", "tell_ph": "Esim. jouluaattona suljetaan kahdelta, muuten ok", "tell_send": "Lähetä", "tell_busy": "Luetaan viestiäsi…", "tell_check": "Ymmärsinkö oikein?", "tell_yes": "Kyllä, tallenna", "tell_wrong": "Ei, korjaan", "tell_unavailable": "Emme saaneet tästä selvää juuri nyt. Voit käyttää painikkeita.", "tell_regular": "Normaalit aukioloajat päivitetty", "tell_you": "Kirjoitit", "tell_again": "Kerrothan vielä päivän ja kellonajan.", "tell_no_change": "Ei muutosta", "tell_holidays": "Juhlapyhät", "tell_ask_first": "Kysytään ensin", "tell_automatic": "Hoidetaan puolestasi", "tell_before": "Ennen", "tell_after": "Jälkeen", "alternative": "Siirrä kuten viimeksi: {hours}", "title": "Tarkista aukioloajat", "shown": "Google näyttää nyt", "suggest": "Ehdotus", "why": "Miksi",
            "approve_all": "Hyväksy", "approve_all_n": "Hyväksy kaikki ({n})", "approve": "Hyväksy", "edit": "Muokkaa",
            "decline": "Ei kiitos", "closed_toggle": "Kiinni koko päivän", "from": "Avataan", "to": "Suljetaan",
            "add_period": "Lisää toinen aukiolojakso", "remove_period": "Poista toinen jakso", "save": "Tallenna",
@@ -162,7 +162,7 @@ UI = {
            "saving": "Tallennetaan…", "failed": "Tallennus ei onnistunut, joten mitään ei muutettu. Yritämme uudelleen.",
            "invalid": "Tarkista ajat.", "expired": "Tämä linkki ei ole enää voimassa.",
            "stopped": "Selvä, emme lähetä näitä viestejä enää.", "pending_write": "Odottaa tallennusta"},
-    "sv": {"tell_title": "Eller säg det med egna ord", "tell_ph": "T.ex. på julafton stänger vi klockan två, annars ok", "tell_send": "Skicka", "tell_busy": "Läser ditt meddelande…", "tell_check": "Förstod jag rätt?", "tell_yes": "Ja, spara", "tell_wrong": "Nej, jag ändrar", "tell_unavailable": "Vi kunde inte tolka det just nu. Du kan använda knapparna.", "tell_regular": "De vanliga öppettiderna är uppdaterade", "tell_you": "Du skrev", "tell_again": "Berätta gärna vilken dag och vilken tid du menar.", "tell_no_change": "Ingen ändring", "tell_holidays": "Helgdagar", "tell_ask_first": "Vi frågar först", "tell_automatic": "Vi sköter det åt dig", "tell_before": "Före", "tell_after": "Efter", "alternative": "Flytta som förra gången: {hours}", "title": "Kontrollera öppettiderna", "shown": "Google visar nu", "suggest": "Förslag", "why": "Varför",
+    "sv": {"tell_speak": "Tala", "tell_stop": "Stopp", "tell_listening": "Jag lyssnar…", "tell_mic_off": "Mikrofonen är inte tillgänglig. Du kan skriva eller använda knapparna.", "tell_hear": "Lyssna", "tell_title": "Eller säg det med egna ord", "tell_ph": "T.ex. på julafton stänger vi klockan två, annars ok", "tell_send": "Skicka", "tell_busy": "Läser ditt meddelande…", "tell_check": "Förstod jag rätt?", "tell_yes": "Ja, spara", "tell_wrong": "Nej, jag ändrar", "tell_unavailable": "Vi kunde inte tolka det just nu. Du kan använda knapparna.", "tell_regular": "De vanliga öppettiderna är uppdaterade", "tell_you": "Du skrev", "tell_again": "Berätta gärna vilken dag och vilken tid du menar.", "tell_no_change": "Ingen ändring", "tell_holidays": "Helgdagar", "tell_ask_first": "Vi frågar först", "tell_automatic": "Vi sköter det åt dig", "tell_before": "Före", "tell_after": "Efter", "alternative": "Flytta som förra gången: {hours}", "title": "Kontrollera öppettiderna", "shown": "Google visar nu", "suggest": "Förslag", "why": "Varför",
            "approve_all": "Godkänn", "approve_all_n": "Godkänn alla ({n})", "approve": "Godkänn", "edit": "Ändra",
            "decline": "Nej tack", "closed_toggle": "Stängt hela dagen", "from": "Öppnar", "to": "Stänger",
            "add_period": "Lägg till en andra öppettid", "remove_period": "Ta bort den andra öppettiden", "save": "Spara",
@@ -179,7 +179,7 @@ UI = {
            "saving": "Sparar…", "failed": "Det gick inte att spara, så inget har ändrats. Vi försöker igen.",
            "invalid": "Kontrollera tiderna.", "expired": "Den här länken gäller inte längre.",
            "stopped": "Okej, vi skickar inga fler sådana meddelanden.", "pending_write": "Väntar på att sparas"},
-    "nb": {"tell_title": "Eller si det med egne ord", "tell_ph": "F.eks. på julaften stenger vi klokka to, ellers ok", "tell_send": "Send", "tell_busy": "Leser meldingen din…", "tell_check": "Forsto jeg riktig?", "tell_yes": "Ja, lagre", "tell_wrong": "Nei, jeg endrer", "tell_unavailable": "Vi fikk ikke tak i det akkurat nå. Du kan bruke knappene.", "tell_regular": "De vanlige åpningstidene er oppdatert", "tell_you": "Du skrev", "tell_again": "Si gjerne hvilken dag og hvilket klokkeslett du mener.", "tell_no_change": "Ingen endring", "tell_holidays": "Helligdager", "tell_ask_first": "Vi spør først", "tell_automatic": "Vi ordner det for deg", "tell_before": "Før", "tell_after": "Etter", "alternative": "Flytt som sist: {hours}", "title": "Sjekk åpningstidene", "shown": "Google viser nå", "suggest": "Forslag", "why": "Hvorfor",
+    "nb": {"tell_speak": "Snakk", "tell_stop": "Stopp", "tell_listening": "Jeg lytter…", "tell_mic_off": "Mikrofonen er ikke tilgjengelig. Du kan skrive eller bruke knappene.", "tell_hear": "Lytt", "tell_title": "Eller si det med egne ord", "tell_ph": "F.eks. på julaften stenger vi klokka to, ellers ok", "tell_send": "Send", "tell_busy": "Leser meldingen din…", "tell_check": "Forsto jeg riktig?", "tell_yes": "Ja, lagre", "tell_wrong": "Nei, jeg endrer", "tell_unavailable": "Vi fikk ikke tak i det akkurat nå. Du kan bruke knappene.", "tell_regular": "De vanlige åpningstidene er oppdatert", "tell_you": "Du skrev", "tell_again": "Si gjerne hvilken dag og hvilket klokkeslett du mener.", "tell_no_change": "Ingen endring", "tell_holidays": "Helligdager", "tell_ask_first": "Vi spør først", "tell_automatic": "Vi ordner det for deg", "tell_before": "Før", "tell_after": "Etter", "alternative": "Flytt som sist: {hours}", "title": "Sjekk åpningstidene", "shown": "Google viser nå", "suggest": "Forslag", "why": "Hvorfor",
            "approve_all": "Godkjenn", "approve_all_n": "Godkjenn alle ({n})", "approve": "Godkjenn", "edit": "Endre",
            "decline": "Nei takk", "closed_toggle": "Stengt hele dagen", "from": "Åpner", "to": "Stenger",
            "add_period": "Legg til en åpningsperiode til", "remove_period": "Fjern den andre perioden", "save": "Lagre",
@@ -196,7 +196,7 @@ UI = {
            "saving": "Lagrer…", "failed": "Vi fikk ikke lagret, så ingenting er endret. Vi prøver igjen.",
            "invalid": "Sjekk tidene.", "expired": "Denne lenken gjelder ikke lenger.",
            "stopped": "Greit, vi sender ikke flere slike meldinger.", "pending_write": "Venter på lagring"},
-    "en": {"tell_title": "Or say it in your own words", "tell_ph": "E.g. we close at two on Christmas Eve, otherwise fine", "tell_send": "Send", "tell_busy": "Reading your message…", "tell_check": "Did I get that right?", "tell_yes": "Yes, save it", "tell_wrong": "No, let me change it", "tell_unavailable": "We couldn't work that out just now. You can use the buttons.", "tell_regular": "Regular hours updated", "tell_you": "You wrote", "tell_again": "Please tell us which day and what time you mean.", "tell_no_change": "No change", "tell_holidays": "Public holidays", "tell_ask_first": "We ask first", "tell_automatic": "We handle them for you", "tell_before": "Before", "tell_after": "After", "alternative": "Move like last time: {hours}", "title": "Check your opening hours", "shown": "Google shows now", "suggest": "Suggestion", "why": "Why",
+    "en": {"tell_speak": "Speak", "tell_stop": "Stop", "tell_listening": "Listening…", "tell_mic_off": "The microphone isn't available. You can type or use the buttons.", "tell_hear": "Listen", "tell_title": "Or say it in your own words", "tell_ph": "E.g. we close at two on Christmas Eve, otherwise fine", "tell_send": "Send", "tell_busy": "Reading your message…", "tell_check": "Did I get that right?", "tell_yes": "Yes, save it", "tell_wrong": "No, let me change it", "tell_unavailable": "We couldn't work that out just now. You can use the buttons.", "tell_regular": "Regular hours updated", "tell_you": "You wrote", "tell_again": "Please tell us which day and what time you mean.", "tell_no_change": "No change", "tell_holidays": "Public holidays", "tell_ask_first": "We ask first", "tell_automatic": "We handle them for you", "tell_before": "Before", "tell_after": "After", "alternative": "Move like last time: {hours}", "title": "Check your opening hours", "shown": "Google shows now", "suggest": "Suggestion", "why": "Why",
            "approve_all": "Approve", "approve_all_n": "Approve all ({n})", "approve": "Approve", "edit": "Edit",
            "decline": "No thanks", "closed_toggle": "Closed all day", "from": "Opens", "to": "Closes",
            "add_period": "Add a second opening period", "remove_period": "Remove the second period", "save": "Save",
@@ -337,6 +337,47 @@ def confirmation(first: str, business: str, items: list, listings: list, lang: s
     if standing_link:
         parts.append(t["standing_offer"].format(link=standing_link))
     return "\n".join(parts)
+
+
+def _spoken_time(text: str) -> str:
+    hour, minute = int(text[:2]), text[3:]
+    suffix = "AM" if hour < 12 else "PM"
+    hour = hour % 12 or 12
+    return f"{hour} {suffix}" if minute == "00" else f"{hour}:{minute} {suffix}"
+
+
+def spoken_hours(hours: str) -> str:
+    """English that sounds right when read aloud: 07:30-14:00 becomes 7:30 AM to 2 PM."""
+    if hours == "closed":
+        return "closed"
+    return ", and ".join(" to ".join(_spoken_time(t) for t in part.split("-")) for part in hours.split(","))
+
+
+def spoken_date(iso: str, day_key: str = "") -> str:
+    d = date.fromisoformat(iso)
+    text = f"{d.strftime('%A %B')} {d.day}"
+    names = DAY_NAMES.get(day_key)
+    return f"{names[LANGUAGES.index('en')]}, {text}" if names else text
+
+
+def spoken_days(days: list) -> str:
+    names = [day.capitalize() for day in days]
+    return names[0] if len(names) == 1 else f"{names[0]} to {names[-1]}"
+
+
+def spoken_plan(lines: list) -> str:
+    shown = lines[:3]
+    extra = f" And {len(lines) - 3} more." if len(lines) > 3 else ""
+    return "Here's what I understood. " + " ".join(shown) + extra + " Is that right?"
+
+
+def spoken_saved(listings: list) -> str:
+    if not listings:
+        return "Saved."
+    place = listings[0]["name"].split(" (")[0]
+    others = len(listings) - 1
+    more = f", and {others} other {'place' if others == 1 else 'places'} after that" if others else ""
+    return f"Saved. It will show on {place} in {eta_label(listings[0]['seconds'], 'en').replace('min', 'minutes')}{more}."
 
 
 def group_weekdays(after: dict, before: dict) -> list:

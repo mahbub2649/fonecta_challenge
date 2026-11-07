@@ -334,6 +334,60 @@ class ChainTest(unittest.TestCase):
         answers = [service.interpret_reply(case["token"], "hi")["status"] for _ in range(26)]
         self.assertEqual((answers[0], answers[-1]), ("question", "unavailable"))
 
+    def test_voice_goes_through_the_same_checks_as_typing(self):
+        class FakeVoice:
+            spoken = []
+
+            def transcribe(self, audio, content_type):
+                return "jouluaattona suljetaan kahdelta, muuten ok"
+
+            def speak(self, text):
+                self.spoken.append(text)
+                return b"mp3"
+
+        raw = {"actions": [{"type": "set_date", "date": "2026-12-24", "hours": "07:30-14:00"}, {"type": "approve", "date": "2026-12-25"}], "question": "", "question_en": "", "reply_en": ""}
+        service = Service(ENGINE, Store(":memory:"), self.mock, public_url="http://test", agent=lambda text, context: raw, voice=FakeVoice())
+        case = service.send(service.detect("FI-D0001")["case_id"])
+        self.assertTrue(service.owner_view(case["token"])["voice_enabled"])
+        heard = service.transcribe_reply(case["token"], b"audio", "audio/webm")
+        self.assertEqual(heard["status"], "heard")
+        answer = service.interpret_reply(case["token"], heard["text"])
+        self.assertEqual(self.mock.get_entity("FI-D0001")["hours"].get("holidayHours", []), [])
+        self.assertEqual(service.speak(case["token"], answer["speech_id"]), b"mp3")
+        said = FakeVoice.spoken[-1]
+        self.assertIn("Christmas Eve", said)
+        self.assertIn("7:30 AM to 2 PM", said)
+        self.assertIn("Is that right?", said)
+        view = service.confirm_plan(case["token"], answer["plan_id"])
+        service.speak(case["token"], view["speech_id"])
+        self.assertIn("It will show on Google", FakeVoice.spoken[-1])
+        with self.assertRaises(ValueError):
+            service.speak(case["token"], "made-up")
+
+    def test_speech_only_works_on_its_own_link(self):
+        class FakeVoice:
+            def transcribe(self, audio, content_type):
+                return ""
+
+            def speak(self, text):
+                return b"mp3"
+
+        raw = {"actions": [], "question": "Mihin aikaan?", "question_en": "What time?", "reply_en": ""}
+        service = Service(ENGINE, Store(":memory:"), self.mock, public_url="http://test", agent=lambda text, context: raw, voice=FakeVoice())
+        case = service.send(service.detect("FI-D0001")["case_id"])
+        other = service.send(service.detect("SE-D0008")["case_id"])
+        answer = service.interpret_reply(case["token"], "hmm")
+        with self.assertRaises(ValueError):
+            service.speak(other["token"], answer["speech_id"])
+        self.assertEqual(service.transcribe_reply(case["token"], b"x", "audio/webm")["status"], "unavailable")  # Nothing was heard.
+
+    def test_spoken_wording_sounds_natural(self):
+        self.assertEqual(messages.spoken_hours("07:30-14:00"), "7:30 AM to 2 PM")
+        self.assertEqual(messages.spoken_hours("10:00-14:00,17:00-22:00"), "10 AM to 2 PM, and 5 PM to 10 PM")
+        self.assertEqual(messages.spoken_hours("18:00-00:00"), "6 PM to 12 AM")
+        self.assertEqual(messages.spoken_days(["monday", "tuesday", "wednesday", "thursday", "friday"]), "Monday to Friday")
+        self.assertIn("And 2 more.", messages.spoken_plan(["a", "b", "c", "d", "e"]))
+
     def test_reset_sends_no_body_to_the_mock(self):
         sent = []
         original = urllib.request.urlopen

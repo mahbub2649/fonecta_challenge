@@ -8,6 +8,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from .service import Service
+from .voice import MAX_AUDIO
 
 STATIC = Path(__file__).parent / "static"
 CONTENT_TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8",
@@ -97,7 +98,24 @@ def make_handler(service: Service):
 
         def _post(self):
             path = urlparse(self.path).path
+            match = re.fullmatch(r"/api/o/([\w-]+)/transcribe", path)
+            if match:
+                content_type = (self.headers.get("Content-Type") or "").split(";")[0].strip()
+                length = int(self.headers.get("Content-Length") or 0)
+                if not content_type.startswith("audio/") or not 0 < length <= MAX_AUDIO:
+                    raise ValueError("Send a short audio clip")
+                return self._json(200, service.transcribe_reply(match.group(1), self.rfile.read(length), content_type))
             body = self._body()
+            match = re.fullmatch(r"/api/o/([\w-]+)/speak", path)
+            if match:
+                raw = service.speak(match.group(1), str(body.get("speech_id", "")))
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/mpeg")
+                self.send_header("Content-Length", str(len(raw)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(raw)
+                return None
             match = re.fullmatch(r"/api/o/([\w-]+)/(decide|standing|undo|interpret|confirm)", path)
             if match:
                 token, action = match.groups()
