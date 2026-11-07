@@ -1,0 +1,206 @@
+// The owner's page: one tap, no login. Everything is built with textContent, so no data can inject markup.
+const token = location.pathname.split("/").pop();
+const api = `/api/o/${token}`;
+const app = document.getElementById("app");
+let view = null;
+let open = {}; // Which card is showing its edit or decline form: {itemId: "edit" | "decline"}.
+let hideOffer = false;
+let busy = false;
+
+function el(tag, props = {}, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(props)) {
+    if (key === "on") node.addEventListener("click", value);
+    else if (key === "cls") node.className = value;
+    else if (value !== null && value !== undefined) node[key] = value;
+  }
+  for (const child of children) if (child !== null && child !== undefined) node.append(child);
+  return node;
+}
+
+async function post(path, body) {
+  if (busy) return;
+  busy = true;
+  // Nothing redraws while saving, so a form keeps what the owner typed if the save fails.
+  const notice = el("div", {cls: "saving", role: "status", textContent: view.ui.saving});
+  document.body.append(notice);
+  app.inert = true;
+  let errorText = null;
+  try {
+    const response = await fetch(`${api}${path}`, {
+      method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error === "expired" ? view.ui.expired : (data.error || view.ui.failed));
+    view = data;
+    open = {};
+  } catch (error) {
+    errorText = error.message;
+  }
+  busy = false;
+  app.inert = false;
+  notice.remove();
+  if (errorText) {
+    app.prepend(el("p", {cls: "error", role: "alert", textContent: errorText}));
+    window.scrollTo(0, 0);
+  } else {
+    render();
+  }
+}
+
+const decide = (decisions) => post("/decide", {decisions});
+
+function pendingItems() {
+  return view.items.filter((i) => i.decision === "PENDING" || i.decision === "NO_REPLY");
+}
+
+function editForm(item) {
+  const ui = view.ui;
+  const existing = item.proposed === "closed" ? [] : item.proposed.split(",").map((p) => p.split("-"));
+  let periods = existing.length ? existing.slice(0, 2) : [["10:00", "16:00"]];
+  let closed = item.proposed === "closed";
+  const body = el("div");
+  const message = el("p", {cls: "error", hidden: true});
+
+  function paint() {
+    const inputs = closed ? null : el("div", {},
+      ...periods.map((period, index) => el("div", {cls: "times"},
+        el("label", {}, ui.from, el("input", {type: "time", value: period[0], required: true,
+          oninput: (e) => { periods[index][0] = e.target.value; }})),
+        el("label", {}, ui.to, el("input", {type: "time", value: period[1], required: true,
+          oninput: (e) => { periods[index][1] = e.target.value; }})))),
+      periods.length === 1
+        ? el("button", {type: "button", cls: "link", textContent: ui.add_period,
+            on: () => { periods.push(["17:00", "22:00"]); paint(); }})
+        : el("button", {type: "button", cls: "link", textContent: ui.remove_period,
+            on: () => { periods = periods.slice(0, 1); paint(); }}));
+    body.replaceChildren(
+      el("label", {cls: "check"},
+        el("input", {type: "checkbox", checked: closed, onchange: (e) => { closed = e.target.checked; paint(); }}),
+        ui.closed_toggle),
+      inputs ?? "");
+  }
+  paint();
+
+  return el("form", {
+    onsubmit: (event) => {
+      event.preventDefault();
+      const hours = closed ? "closed" : periods.map((p) => `${p[0]}-${p[1]}`).join(",");
+      if (!closed && periods.some((p) => !p[0] || !p[1])) {
+        message.textContent = ui.invalid;
+        message.hidden = false;
+        return;
+      }
+      decide([{item: item.id, action: "edit", hours}]);
+    },
+  }, body, message, el("div", {cls: "row"},
+    el("button", {type: "submit", cls: "primary", textContent: ui.save}),
+    el("button", {type: "button", cls: "quiet", textContent: ui.cancel, on: () => { delete open[item.id]; render(); }})));
+}
+
+function declineForm(item) {
+  const ui = view.ui;
+  const choice = (reason, label) => el("button", {type: "button", textContent: label,
+    on: () => decide([{item: item.id, action: "decline", reason}])});
+  return el("div", {cls: "reasons"},
+    el("p", {textContent: ui.why_decline}),
+    choice("open_as_usual", ui.r_open_as_usual),
+    choice("dont_ask", ui.r_dont_ask),
+    choice("wrong", ui.r_wrong),
+    choice("stop", ui.r_stop),
+    choice("", ui.skip));
+}
+
+function stateLine(item) {
+  const ui = view.ui;
+  if (item.decision === "DECLINED") return el("div", {cls: "state off"}, ui.decline);
+  if (item.decision === "UNDONE") return el("div", {cls: "state off"}, ui.undone);
+  if (item.write_status === "FAILED") return el("div", {cls: "state bad"}, ui.failed);
+  if (item.write_status === "WRITTEN") {
+    return el("div", {cls: "state ok"}, `✓ ${item.final_label}`,
+      el("button", {type: "button", textContent: ui.undo,
+        on: () => post("/undo", {item: item.id})}));
+  }
+  return el("div", {cls: "state off"}, ui.pending_write);
+}
+
+function card(item, multiple) {
+  const ui = view.ui;
+  const pending = item.decision === "PENDING" || item.decision === "NO_REPLY";
+  const form = open[item.id];
+  return el("section", {cls: "card"},
+    el("div", {cls: "day"}, item.day, el("span", {cls: "date", textContent: item.date})),
+    pending ? el("div", {cls: "change"},
+      el("div", {cls: "was"}, el("small", {textContent: ui.shown}), item.shown),
+      el("div", {cls: "arrow", textContent: "→", ariaHidden: "true"}),
+      el("div", {}, el("small", {textContent: ui.suggest}), el("div", {cls: "now", textContent: item.proposed_label}))) : null,
+    pending && item.reason ? el("p", {cls: "why", textContent: item.reason}) : null,
+    pending && item.mode === "ASK" ? el("p", {cls: "ask", textContent: ui.ask}) : null,
+    pending && item.views ? el("p", {cls: "views", textContent: ui.views.replace("{n}", item.views)}) : null,
+    !pending ? stateLine(item) : null,
+    pending && form === "edit" ? editForm(item) : null,
+    pending && form === "decline" ? declineForm(item) : null,
+    pending && !form ? el("div", {cls: "row"},
+      multiple ? el("button", {type: "button", textContent: ui.approve,
+        on: () => decide([{item: item.id, action: "approve"}])}) : null,
+      el("button", {type: "button", textContent: ui.edit, on: () => { open[item.id] = "edit"; render(); }}),
+      el("button", {type: "button", cls: "quiet", textContent: ui.decline,
+        on: () => { open[item.id] = "decline"; render(); }})) : null);
+}
+
+function render() {
+  if (!view) return;
+  const ui = view.ui;
+  document.documentElement.lang = view.language === "nb" ? "nb" : view.language;
+  document.title = `${ui.title}: ${view.business}`;
+  if (view.expired) {
+    app.replaceChildren(el("p", {cls: "center", textContent: ui.expired}));
+    return;
+  }
+  const pending = pendingItems();
+  const written = view.items.some((i) => i.write_status === "WRITTEN");
+  const allDeclined = !pending.length && !written && !view.items.some((i) => i.write_status === "FAILED");
+  const nodes = [el("header", {cls: "head"},
+    el("p", {textContent: view.business}),
+    el("h1", {textContent: ui.title}),
+    el("p", {textContent: ui.no_login}))];
+
+  if (written && !pending.length) nodes.push(el("section", {cls: "card done"}, el("h2", {textContent: ui.done_title})));
+  if (allDeclined) {
+    nodes.push(el("section", {cls: "card done"},
+      el("h2", {textContent: view.opted_out ? ui.stopped : ui.declined_title})));
+  }
+
+  view.items.forEach((item) => nodes.push(card(item, pending.length > 1)));
+
+  if (written && view.listings.length) {
+    nodes.push(el("section", {cls: "card panel"}, el("h2", {textContent: ui.where}),
+      el("ul", {}, ...view.listings.slice(0, 5).map((x) => el("li", {},
+        el("span", {textContent: x.name}), el("span", {textContent: x.eta}))))));
+  }
+  if (written && !hideOffer && !view.standing && !view.opted_out) {
+    nodes.push(el("section", {cls: "card offer"},
+      el("h2", {textContent: ui.standing_q}),
+      el("p", {textContent: ui.standing_d}),
+      el("div", {cls: "row"},
+        el("button", {type: "button", cls: "primary", textContent: ui.standing_yes,
+          on: () => post("/standing", {enabled: true})}),
+        el("button", {type: "button", cls: "quiet", textContent: ui.standing_no, on: () => { hideOffer = true; render(); }}))));
+  }
+  if (written && view.standing) {
+    nodes.push(el("section", {cls: "card offer"},
+      el("p", {textContent: ui.standing_on}),
+      el("div", {cls: "row"}, el("button", {type: "button", cls: "quiet", textContent: ui.standing_off,
+        on: () => post("/standing", {enabled: false})}))));
+  }
+  if (pending.length && !pending.some((i) => open[i.id])) {
+    nodes.push(el("div", {cls: "sticky"}, el("div", {},
+      el("button", {type: "button", cls: "primary",
+        textContent: pending.length > 1 ? ui.approve_all_n.replace("{n}", pending.length) : ui.approve_all,
+        on: () => decide(pending.map((i) => ({item: i.id, action: "approve"})))}))));
+  }
+  app.replaceChildren(...nodes);
+}
+
+fetch(api).then((r) => (r.ok ? r.json() : Promise.reject())).then((data) => { view = data; render(); })
+  .catch(() => app.replaceChildren(el("p", {cls: "center", textContent: "This link is no longer valid."})));

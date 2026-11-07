@@ -1,0 +1,6 @@
+# Only for rebuilding the model. The web app itself needs nothing beyond Python.
+pandas
+pyarrow
+numpy
+scikit-learn
+lightgbm

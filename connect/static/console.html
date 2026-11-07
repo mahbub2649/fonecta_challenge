@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connect Suggests</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/console.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Connect Suggests</h1>
+      <p>Connect finds the hours that are about to be wrong. The owner approves in one tap.</p>
+    </div>
+    <div class="top-right">
+      <span id="target" class="pill"></span>
+      <button id="reset" class="small">Reset demo</button>
+    </div>
+  </header>
+  <section id="overview" class="overview" aria-label="All customers"></section>
+  <div class="layout">
+    <nav id="list" class="list" aria-label="Demo businesses"></nav>
+    <main id="detail" class="detail"></main>
+    <aside class="phone-wrap" aria-label="Owner's phone">
+      <div class="phone">
+        <div class="phone-tabs">
+          <button id="tab-message" class="on">Message</button>
+          <button id="tab-page">Approval page</button>
+        </div>
+        <div id="phone-message" class="phone-screen"></div>
+        <iframe id="phone-page" class="phone-screen" title="Owner's approval page" hidden></iframe>
+      </div>
+      <p class="note">Message delivery is simulated. The approval page and the Yext write are real.</p>
+    </aside>
+  </div>
+  <script src="/console.js"></script>
+</body>
+</html>
