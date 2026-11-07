@@ -21,3 +21,6 @@ lumi/config.env
 lumi/results/
 lumi/grid*.jsonl
 lumi/final.jsonl
+
+# Demo film renders (large, rebuilt by tools/build_animatic.py)
+demo/out/
