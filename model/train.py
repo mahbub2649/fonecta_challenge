@@ -41,6 +41,7 @@ CAND_PARAMS = dict(objective="binary", n_estimators=350, learning_rate=0.04, num
                    subsample=0.8, subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=10, verbose=-1, random_state=7)
 CLOSED, SAME, OTHER = 0, 1, 2
 MIN_EXACT = 0.25  # The least chance of exactly right hours that justifies messaging an owner.
+AUX, EXTRA = 1, 2  # Values of "aux": test businesses' own entries, and dev businesses' other special days. Neither is ever scored.
 
 
 def load_scorer():
@@ -63,7 +64,7 @@ def load(soft: str | None = "soft.parquet") -> tuple:
     if soft and (CACHE / soft).exists():
         rows = rows.merge(pd.read_parquet(CACHE / soft), on="row_id", how="left")
     rows["fold"] = rows["entity_id"].map(json.loads((CACHE / "folds.json").read_text())).fillna(-1).astype(int)
-    rows["aux"] = (rows["split"] == "aux").astype(int)
+    rows["aux"] = (rows["split"] == "aux").astype(int) * AUX + (rows["split"] == "extra").astype(int) * EXTRA
     regular = rows["truth"] == "REGULAR"  # An entry saying "regular hours" means the truth is what's listed.
     rows.loc[regular, "truth"] = rows.loc[regular, "shown"]
     rows["cls"] = -1
@@ -178,18 +179,24 @@ def show(name: str, result: dict) -> None:
           f"redundant {b.get('redundant_confirm', 0)} flag {b.get('flag_correct', 0)}/{b.get('unneeded_flag', 0)}", flush=True)
 
 
-def held_out(rows, cands, seeds=(7,), use_aux=True) -> tuple:
+def extra_rows(rows: pd.DataFrame) -> pd.DataFrame:
+    """Past special days outside the scored November to January window. They train the open-or-closed model only."""
+    return rows[(rows["cls"] >= 0) & (rows["aux"] == EXTRA)]
+
+
+def held_out(rows, cands, seeds=(7,), use_aux=True, use_extra=False) -> tuple:
     """Out-of-fold predictions: no business is ever predicted by a model trained on it. Folds match the first stage."""
     labelled = rows[(rows["cls"] >= 0) & (rows["aux"] == 0)].copy()
+    extra = extra_rows(rows) if use_extra else rows.iloc[0:0]
     probs = np.zeros((len(labelled), 3))
     cand_rows = cands[(cands["cls"] >= 0) & (cands["aux"] == 0)]
-    aux = cands[(cands["aux"] == 1) & (cands["cls"] == OTHER)] if use_aux else cands.iloc[0:0]
+    aux = cands[(cands["aux"] == AUX) & (cands["cls"] == OTHER)] if use_aux else cands.iloc[0:0]
     p_exact = np.zeros(len(cand_rows))
     p_near = np.zeros(len(cand_rows))
     row_fold = labelled["fold"].to_numpy()
     cand_fold = cand_rows["fold"].to_numpy()
     for fold in sorted(set(row_fold)):
-        tr, te = labelled[row_fold != fold], labelled[row_fold == fold]
+        tr, te = pd.concat([labelled[row_fold != fold], extra[extra["fold"] != fold]]), labelled[row_fold == fold]
         ct = pd.concat([cand_rows[cand_fold != fold], aux])
         cp = cand_rows[cand_fold == fold]
         pr, pe, pn = fit_predict(tr, te, ct, cp, seeds)
@@ -270,7 +277,7 @@ def write_outputs(rows, cands, labelled, probs, cand_rows, p_exact, p_near, knob
     target = rows[(rows["season"] == 2026) & (rows["cls"] < 0)]
     ids = set(target["row_id"])
     cp = cands[cands["row_id"].isin(ids)]
-    train_cands = pd.concat([cand_rows, cands[(cands["aux"] == 1) & (cands["cls"] == OTHER)]])
+    train_cands = pd.concat([cand_rows, cands[(cands["aux"] == AUX) & (cands["cls"] == OTHER)]])
     pr, pe, pn = fit_predict(labelled, target, train_cands, cp, seeds=(7, 21, 33))
 
     dev_mask = (labelled["season"] == 2026).to_numpy()

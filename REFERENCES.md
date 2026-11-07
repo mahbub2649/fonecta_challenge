@@ -36,7 +36,7 @@ Businesses are like users, holidays are like items, and entered hours are like r
 
 | Reference | Why we looked at it | What we did |
 |---|---|---|
-| [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | The original transformer and its multi-head self-attention | Our history transformer uses this encoder, through PyTorch's implementation. It has no decoder, and it replaces position encodings with each day's time gap. It's in a later experiment, not in the model in this repository |
+| [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | The original transformer and its multi-head self-attention | Our history transformer uses this encoder, through PyTorch's implementation. It has no decoder, and it replaces position encodings with each day's time gap. The code is in `model/history_transformer.py` |
 | [HT-Transformer: Event Sequences Classification by Accumulating Prefix](https://arxiv.org/abs/2508.01474) | Transformers over event histories. It notes they often lose to RNNs when predicting future targets | Tested a transformer over each business's history. Alone it was weaker than LightGBM, but it cut wrong calls in a blend. We didn't test an RNN |
 | [EMIT: Event-Based Masked Auto Encoding for Irregular Time Series](https://arxiv.org/abs/2409.16554) | Pretraining when labels are scarce | Not used directly. Our history transformer has a similar task, hiding past entries and predicting them, but trains it alongside the main task |
 
@@ -84,7 +84,7 @@ Scored with the organisers' `evaluate.py` on dev businesses each model never saw
 
 We picked the all-past-days and transformer mixes after trying 30, so their gains may be slightly flattering.
 
-In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model in this repository. The same test for the transformer combinations is still running.
+In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model in this repository. All past days with both transformer versions at 0.20 scored 61.10 with 511 wrong calls.
 
 ## Software and data
 

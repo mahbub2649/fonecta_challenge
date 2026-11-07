@@ -152,6 +152,7 @@ def main() -> None:
     past.loc[entered, ["soft_closed", "soft_other"]] = 0.0
     past.loc[closed, "soft_closed"] = 1.0
     past.loc[special, "soft_other"] = 1.0
+    past.to_parquet(CACHE / ("past_strict.parquet" if args.before else "past.parquet"))  # The history transformer reads this.
 
     rows = pd.read_parquet(CACHE / "rows.parquet", columns=["row_id", "entity_id", "date", "day_key", "season", "day_class", "day_type", "country"])
     out = []

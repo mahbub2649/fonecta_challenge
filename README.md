@@ -4,42 +4,48 @@ Wrong holiday hours send customers to a closed door, and most owners never get r
 
 All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
-## Run it
+## Running it
 
-### 1. Set up
+### 1. What you'll need
 
-You need Python 3.9 or newer. The app uses only the standard library, so there's nothing to install (`requirements.txt` is there to confirm that).
+You'll need Python 3.9 or newer. The app uses only the standard library, so there's nothing to install (`requirements.txt` is there to confirm that).
 
-The challenge data package is included in `fonecta_data/`, so the app runs straight after cloning. To use a copy somewhere else, set `CONNECT_DATA_DIR` to its `FONECTA_CONNECT_SUGGESTS_2026` folder.
+The challenge data package is included in `fonecta_data/`, so the app runs straight after cloning. If you'd rather use a copy somewhere else, you can set `CONNECT_DATA_DIR` to its `FONECTA_CONNECT_SUGGESTS_2026` folder.
 
-### 2. Start the app
+### 2. Starting the app
 
 ```bash
 ./run_webui.sh
 ```
 
-It opens http://127.0.0.1:8080 in your browser, or the next free port if that one's busy. Press `Ctrl+C` in the terminal to stop. Add `--sandbox` to also write to your Yext sandbox, or `--no-browser` to skip opening a browser. `python3 run.py` also works.
+This opens http://127.0.0.1:8080 in your browser, or the next free port if that one's busy, and `Ctrl+C` in the terminal stops it. `python3 run.py` works too.
 
-| Optional setting | What it does |
+You can add `--sandbox` to also write to your own Yext sandbox, or `--no-browser` to skip opening a browser.
+
+These settings are optional, in case they're useful:
+
+| Setting | What it does |
 |---|---|
-| `YEXT_API_KEY` | Your Yext sandbox key. Copy `.env.example` to `.env`, set it there, then use `./run_webui.sh --sandbox`. Otherwise writes go to the local mock, and the top of the page shows which is active |
+| `YEXT_API_KEY` | Your Yext sandbox key. You can copy `.env.example` to `.env`, set it there, and start with `./run_webui.sh --sandbox`. Without it, writes go to the local mock, and the top of the page shows which is active |
 | `CONNECT_DATA_DIR` | Where the challenge package is, if not in `fonecta_data/` |
 | `CONNECT_PORT` | Uses another port instead of 8080 |
 | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
 
-### 3. Use the web page
+### 3. Trying it on the web page
 
-1. Pick **Kahvila Aurora** on the left, then press **Run detection**.
-2. Press **Send by SMS**. The message appears on the on-screen phone.
-3. Tap the link in the message, then approve or edit.
-4. Steps 4 and 5 fill in beside the phone, and the audit trail records each step.
-5. Press **Detect the next dates** to see the next message use what the owner just said.
+This is the quickest way to see all five steps:
 
-Press **Reset demo** to start again.
+1. Choose **Kahvila Aurora** on the left. **Run detection** looks for hours that may be wrong.
+2. **Send by SMS** puts the message on the on-screen phone.
+3. The link in the message opens the owner's page, where you can approve or edit.
+4. Steps 4 and 5 then fill in beside the phone, and the audit trail records each step.
+5. **Detect the next dates** shows the next message using what the owner just said.
 
-### 4. Or use the command line
+**Reset demo** starts again whenever you like.
 
-With the app running, a second terminal can drive the same chain through its local API:
+### 4. Using the command line instead
+
+With the app running, you can drive the same chain from a second terminal through its local API:
 
 ```bash
 B=http://127.0.0.1:8080
@@ -57,16 +63,18 @@ curl -s -X POST -H "$J" \
   $B/api/o/$T/decide                                               # decide, apply and confirm
 ```
 
-### 5. Run the tests and check the score
+### 5. Checking the tests and the score
+
+If you'd like to confirm these yourself:
 
 ```bash
 python3 -m unittest discover tests
 python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
 ```
 
-### 6. Rebuild the model (optional)
+### 6. Rebuilding the model
 
-The trained models' output is already in this repository, so the app doesn't need this. The last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
+You don't need this to use the app, because the trained models' output is already in this repository. It's here in case you'd like to reproduce it. The neural models take about two hours in total on a 4 GB GPU, and the last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
 
 ```bash
 pip install -r model/requirements.txt
@@ -75,18 +83,23 @@ python3 model/build_dataset.py
 python3 model/past_days.py --before 2025-11-06    # first stage for the strict back-test
 python3 model/past_days.py
 
-pip install -r model/requirements-neural.txt      # TabICLv2: about 45 minutes on a 4 GB GPU
+pip install -r model/requirements-neural.txt
 python3 model/neural.py tabicl --max-train 16000 --tag _16k
-python3 model/neural.py tabicl --max-train 16000 --strict --soft soft_strict.parquet --tag _strict
+python3 model/neural.py tabicl --max-train 16000 --strict --soft soft_strict.parquet --tag _16k_strict
 
-python3 model/blend.py --weight 0.4 --closed-margin 0.2 --strict --write
+python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --layers 4 --drop .3 --seeds 7,21 --tag _deep
+python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --past-weight 1.0 --seeds 7,21 --tag _past
+python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --layers 4 --drop .3 --seeds 7,21 --strict --tag _deep_strict
+python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --past-weight 1.0 --seeds 7,21 --strict --tag _past_strict
+
+python3 model/blend.py --weight 0.4 --hist-weight 0.2 --closed-margin 0.2 --strict --write
 ```
 
-Run these one at a time, as running heavy jobs together can run a laptop out of memory.
+It's safest to run these one at a time, as heavy jobs running together can run a laptop out of memory.
 
-### Businesses to try
+### Businesses worth trying
 
-| Business | Shows |
+| Business | What it shows |
 |---|---|
 | `FI-D0001` Kahvila Aurora | Fonecta's own example |
 | `FI-D0017` Kahvila Kipinä | New customer with no history |
@@ -150,9 +163,9 @@ The blend adds TabICLv2, a transformer foundation model, to LightGBM, and asks f
 
 These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
 
-### Later experiments, not in this repository
+### Next model
 
-Two later experiments improved on the model above. Neither they nor their code are in the app or `predictions_2026.csv`, so the scorer command above still gives 67.98.
+Two later experiments improved on the model above. Their code is in `model/`, but the app and `predictions_2026.csv` don't use them yet, so the scorer command above still gives 67.98.
 
 | Version | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 |
 |---|---:|---:|---:|
@@ -163,7 +176,7 @@ Two later experiments improved on the model above. Neither they nor their code a
 
 The transformer reads a business's past special days as a sequence, using the self-attention encoder from [Attention Is All You Need](https://arxiv.org/abs/1706.03762). Alone it's weaker than LightGBM, but it makes different mistakes, so it helps a blend. We picked the combined row after trying 30 mixes, so its gain may be slightly flattering.
 
-In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model in this repository. The same test for the full combination is still running.
+In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model above. The full combination scored 61.10 with 511 wrong calls.
 
 ## Data sources that mattered most
 

@@ -57,6 +57,12 @@ def main() -> None:
         if season in (2024, 2025) and r["entity_id"] in dev:
             wanted[(r["entity_id"], r["date"])] = (r["day_key"], r["event_id"], season, "dev")
             truth[(r["entity_id"], r["date"])] = r["truth_hours"]
+        elif season is None and r["entity_id"] in dev:
+            # Other special days of the year, seen from the latest snapshot before them. Only used for training.
+            snap = 2025 if d > SNAPSHOTS[2025] else (2024 if d > SNAPSHOTS[2024] else None)
+            if snap:
+                wanted[(r["entity_id"], r["date"])] = (r["day_key"], r["event_id"], snap, "extra")
+                truth[(r["entity_id"], r["date"])] = r["truth_hours"]
     for r in read_csv(root / "evaluation" / "targets_2025_backtest.csv"):
         wanted.setdefault((r["entity_id"], r["date"]), (r["day_key"], r["event_id"], 2025, "dev"))
     for name in ("dev_labels_2025_backtest.csv", "dev_labels_2026.csv"):

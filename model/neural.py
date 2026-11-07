@@ -19,7 +19,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from model.train import CACHE, CATEGORICAL, load, row_columns  # noqa: E402
+from model.train import CACHE, CATEGORICAL, EXTRA, load, row_columns  # noqa: E402
 
 
 TABICL_VIEWS = 4
@@ -66,6 +66,7 @@ def main() -> None:
     parser.add_argument("--tag", default="")
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--strict", action="store_true", help="Train on the 2024 season only, predict 2025: the strict back-test")
+    parser.add_argument("--all-days", action="store_true", help="Also train on past special days outside the scored window")
     args = parser.parse_args()
     start = time.time()
     rows, _ = load(args.soft)
@@ -82,8 +83,11 @@ def main() -> None:
     if args.strict:
         season = rows["season"].to_numpy()
         labelled_mask = labelled_mask & np.isin(season, [2024, 2025])
+    extra_mask = ((rows["cls"] >= 0) & (rows["aux"] == EXTRA)).to_numpy() if args.all_days else np.zeros(len(rows), bool)
+    if args.strict:  # Only what was knowable at the 2025 snapshot.
+        extra_mask &= ((rows["season"] == 2024) & (rows["date"] < "2025-11-06")).to_numpy()
     for k in folds:
-        train = np.where(labelled_mask & (fold != k) & ((rows["season"].to_numpy() == 2024) if args.strict else True))[0]
+        train = np.where((extra_mask | (labelled_mask & ((rows["season"].to_numpy() == 2024) if args.strict else True))) & (fold != k))[0]
         if args.max_train and len(train) > args.max_train:
             train = rng.choice(train, args.max_train, replace=False)
         model = make_model(args.name, args.seed)
