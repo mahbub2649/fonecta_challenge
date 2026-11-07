@@ -1,13 +1,4 @@
 {
- "8e061b11ab0a": {
-  "file": "sfx02-cafe-busy-8e061b11.mp3",
-  "clip": "sfx02-cafe-busy",
-  "request": {
-   "text": "Busy small cafe behind the counter: espresso machine hiss, cups clattering, murmur of customers",
-   "duration_seconds": 6
-  },
-  "path": "/sound-generation"
- },
  "d475974f072e": {
   "file": "f33-yes-d475974f.mp3",
   "clip": "f33-yes",
@@ -22,24 +13,6 @@
    }
   },
   "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
- },
- "da021a9ec8b1": {
-  "file": "sfx06-summer-park-da021a9e.mp3",
-  "clip": "sfx06-summer-park",
-  "request": {
-   "text": "Hot summer afternoon in a seaside park: seagulls, gentle waves, relaxed chatter of people on the grass, a distant band doing a sound check with a few drum hits",
-   "duration_seconds": 8
-  },
-  "path": "/sound-generation"
- },
- "c0874a9f4b25": {
-  "file": "sfx07-terrace-c0874a9f.mp3",
-  "clip": "sfx07-terrace",
-  "request": {
-   "text": "Sunny seaside restaurant terrace: glasses clinking, cutlery, relaxed chatter, light breeze, distant seagulls",
-   "duration_seconds": 6
-  },
-  "path": "/sound-generation"
  },
  "64343b0a476c": {
   "file": "sfx08-tap-64343b0a.mp3",
@@ -59,15 +32,6 @@
   },
   "path": "/sound-generation"
  },
- "3507c89653fd": {
-  "file": "fx-footsteps-snow-3507c896.mp3",
-  "clip": "fx-footsteps-snow",
-  "request": {
-   "text": "Slow footsteps crunching on fresh snow on a quiet winter night street, close and clear, nothing else",
-   "duration_seconds": 5
-  },
-  "path": "/sound-generation"
- },
  "ac3042368118": {
   "file": "fx-handle-rattle-ac304236.mp3",
   "clip": "fx-handle-rattle",
@@ -77,30 +41,12 @@
   },
   "path": "/sound-generation"
  },
- "c71a2cfeee54": {
-  "file": "fx-wind-c71a2cfe.mp3",
-  "clip": "fx-wind",
-  "request": {
-   "text": "Soft cold winter wind on an empty city street at night, very quiet",
-   "duration_seconds": 5
-  },
-  "path": "/sound-generation"
- },
  "935ad2f4c4a2": {
   "file": "fx-door-bell-935ad2f4.mp3",
   "clip": "fx-door-bell",
   "request": {
    "text": "A small brass shop door bell rings as a cafe door opens, warm murmur of people inside",
    "duration_seconds": 3
-  },
-  "path": "/sound-generation"
- },
- "07bc0af86198": {
-  "file": "fx-terrace-night-07bc0af8.mp3",
-  "clip": "fx-terrace-night",
-  "request": {
-   "text": "Lively seaside restaurant terrace on a warm summer night: laughter, glasses clinking, relaxed chatter, distant live music",
-   "duration_seconds": 5
   },
   "path": "/sound-generation"
  },
@@ -421,5 +367,23 @@
    }
   },
   "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "60038043177d": {
+  "file": "story-a-winter-60038043.mp3",
+  "clip": "story-a-winter",
+  "request": {
+   "text": "Gentle instrumental music: sparse, slightly wistful felt piano on a quiet winter evening, tender and intimate, slow, soft, no strings, no drums, no vocals",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
+ },
+ "b1ed8117711f": {
+  "file": "story-a-warm-b1ed8117.mp3",
+  "clip": "story-a-warm",
+  "request": {
+   "text": "Gentle instrumental music: warm felt piano joined by soft strings, slowly opening up, hopeful and joyful summer warmth, cinematic, no drums, no vocals",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
  }
 }

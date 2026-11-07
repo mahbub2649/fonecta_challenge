@@ -1,6 +1,6 @@
 # How generative AI was used to make the demo film
 
-The demo film (`demo/out/film-full.mp4`, about 2 minutes) has three parts:
+The demo film ([demo/out/film-full.mp4](out/film-full.mp4), 2 minutes, committed) has three parts:
 
 1. **The story** (0:00–0:39): a concept film. Emma finds a café locked on Christmas Eve; Aleksi and Sanna update their hours in one tap; the doors are open when people come.
 2. **The demo** (0:39–1:26): a screen recording of the real, working app, with narration.
@@ -22,7 +22,7 @@ Everything was made on Saturday 7 November 2026, during the Since AI hackathon.
 | **Pruna** (image) | `p-image`, `p-image-edit` | Character portraits, and a start frame for every shot | 15 images (4 portraits, 11 start frames) |
 | **Pruna** (video) | `p-video-2-pro`, image to video | Every moving shot in parts 1 and 3 | 11 clips, 5–8 s each |
 | **ElevenLabs** (voice) | Text to speech, `eleven_multilingual_v2`, voice "Roger" | All narration | 21 lines |
-| **ElevenLabs** (sound) | Sound generation | Sound effects and the two music beds | 10 effects, 2 music beds |
+| **ElevenLabs** (sound) | Sound generation | Sound effects and the music | 4 effects, 4 music pieces |
 | **Claude Code** (Anthropic) | Claude Opus | The script, storyboard and every prompt, plus the tools that call the APIs and cut the film | – |
 
 Not generative: [tools/render_screens.py](../tools/render_screens.py) draws the phone and app screens, and
@@ -119,12 +119,19 @@ Or with the project's tool, after adding a scene to `demo/scenes.json`: `python3
   - The script is written to be *spoken*: short lines, contractions, pauses (`...`).
 - **Fitting the picture.** Each line is short enough to fit inside its shot (about 2.5 words per second), with a pause
   before the cut.
-- **Sounds tied to moments.** Each sound effect is made for one moment in the picture, for example footsteps in snow, a
-  locked handle rattling, a soft notification chime, or a door bell. It's placed on that exact frame and faded out before
-  the next shot.
-- **Music.** The two music beds are made with the same sound-generation endpoint: calm piano under the demo, hopeful piano
-  and strings under "What's next". For the second one we compared three 10-second samples (piano, electronic, acoustic)
-  before choosing.
+- **Sounds tied to moments.** The story keeps only four sound effects, each made for one moment in the picture: a locked
+  handle rattling, a soft notification chime, the tap on "Yes", and a door bell. Each is placed on that exact frame.
+  Background noise (footsteps, wind, café and terrace chatter) was tried and removed: with music underneath, it only
+  cluttered the sound.
+- **Music.** All music is made with the same sound-generation endpoint, and it's piano throughout, so the three parts feel
+  like one film:
+  - **the story:** sparse, wistful felt piano in winter, crossfading into the same piano with soft strings where summer
+    begins;
+  - **the demo:** a calm piano bed;
+  - **What's next:** hopeful piano and strings.
+
+  Each choice was made by ear from three short samples (for example piano, electronic and acoustic). The winter take came
+  out about 23 dB quieter than the warm one, so each piece has its own level, about 14 dB under the narration.
 
 **Guardrails we kept:**
 

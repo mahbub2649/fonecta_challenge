@@ -708,6 +708,36 @@
     "style": 0.2,
     "use_speaker_boost": true
    }
+  },
+  {
+   "name": "story-a-piano",
+   "kind": "sfx",
+   "duration_seconds": 12,
+   "text": "Gentle instrumental music: sparse, slightly wistful felt piano in winter that slowly opens up into warm soft strings, hopeful and tender, cinematic, no drums, no vocals"
+  },
+  {
+   "name": "story-b-celesta",
+   "kind": "sfx",
+   "duration_seconds": 12,
+   "text": "Gentle instrumental music: soft celesta and music box melody with warm piano, a quiet, tender Christmas fairy-tale warmth, slowly growing, no drums, no vocals"
+  },
+  {
+   "name": "story-c-acoustic",
+   "kind": "sfx",
+   "duration_seconds": 12,
+   "text": "Gentle instrumental music: soft fingerpicked acoustic guitar with quiet piano, intimate Nordic folk feel, starting wistful and becoming warm and hopeful, no drums, no vocals"
+  },
+  {
+   "name": "story-a-winter",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Gentle instrumental music: sparse, slightly wistful felt piano on a quiet winter evening, tender and intimate, slow, soft, no strings, no drums, no vocals"
+  },
+  {
+   "name": "story-a-warm",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Gentle instrumental music: warm felt piano joined by soft strings, slowly opening up, hopeful and joyful summer warmth, cinematic, no drums, no vocals"
   }
  ]
 }

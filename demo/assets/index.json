@@ -106,20 +106,6 @@
   },
   "seconds": 4.7
  },
- "96b210f15cae": {
-  "file": "s41-emma-door-open-96b210f1.jpg",
-  "scene": "s41-emma-door-open",
-  "model": "p-image-edit",
-  "input": {
-   "prompt": "Daytime version of the cafe in the second image on Christmas Eve around noon, soft snowy daylight, the cafe warmly lit and open with people inside, the woman from the first image opening the cafe door with a happy smile, warm light spilling out. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
-   "images": [
-    "@demo/assets/ref-emma-3f1a3390.jpg",
-    "@demo/assets/hook-wide-40e762c7.jpg"
-   ],
-   "aspect_ratio": "16:9"
-  },
-  "seconds": 8.3
- },
  "4dd463faa6c5": {
   "file": "v11-emma-walk-4dd463fa.mp4",
   "scene": "v11-emma-walk",
@@ -184,19 +170,6 @@
    "mode": "speed"
   },
   "seconds": 29.8
- },
- "de25bb913d2f": {
-  "file": "v41-emma-door-open-de25bb91.mp4",
-  "scene": "v41-emma-door-open",
-  "model": "p-video-2-pro",
-  "input": {
-   "image": "@demo/assets/s41-emma-door-open-96b210f1.jpg",
-   "prompt": "The woman opens the warmly lit cafe door with a happy smile and steps inside out of the snow, warm light spilling onto the snowy street, people inside the cozy cafe. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
-   "duration": 5,
-   "resolution": "768p",
-   "mode": "speed"
-  },
-  "seconds": 21.7
  },
  "011beffa61e8": {
   "file": "s43-terrace-night-011beffa.jpg",
@@ -324,5 +297,44 @@
    "mode": "quality"
   },
   "seconds": 32.5
+ },
+ "1b3c4c5cfcc3": {
+  "file": "s44b-emma-door-lit-1b3c4c5c.jpg",
+  "scene": "s44b-emma-door-lit",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Keep the same framing, the same woman and her pose with her gloved hand on the door handle, and keep the door closed. Change it to Christmas Eve around noon: soft snowy daylight, the cafe now warmly lit inside with people sitting at tables, and a small sign on the glass reading 'Avoinna'. Change her expression to a warm, happy smile. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/s13-emma-door-1afbf2e7.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.7
+ },
+ "adf18ccaccda": {
+  "file": "s44c-emma-door-nosign-adf18cca.jpg",
+  "scene": "s44c-emma-door-nosign",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Remove the small 'Avoinna' sign from the glass door completely, leaving plain clear glass with the warm cafe visible behind it. Keep everything else exactly the same: the woman, her smile, her gloved hand on the door handle, the closed door, the lighting and the snowy street.",
+   "images": [
+    "@demo/assets/s44b-emma-door-lit-1b3c4c5c.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.4
+ },
+ "1f21a9dc5aff": {
+  "file": "v44b-emma-door-opens-1f21a9dc.mp4",
+  "scene": "v44b-emma-door-opens",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s44c-emma-door-nosign-adf18cca.jpg",
+   "prompt": "The smiling woman pulls the door handle; the closed door swings open towards her, warm light spills out onto the snowy street, and she steps inside the cozy cafe. The door only opens once she pulls it. No signs or text appear on the glass. Snow falling gently. Only one door moves. Steady camera, cinematic, photorealistic, natural human motion, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 21.4
  }
 }

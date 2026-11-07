@@ -22,33 +22,37 @@ W, H = 1920, 1080
 DISSOLVE, ACT = 0.4, 0.8  # Seconds of cross-dissolve between shots, and of the fade through black between acts.
 SPLIT_IN = 0.7  # Seconds for the phone panel to slide in.
 END_FADE = 1.0  # Seconds of fade to black (picture and sound) at the end.
+# Felt piano; strings join for summer. The winter take came out about 23 dB quieter, so it gets more gain: both end up
+# about 14 dB under the narration.
+MUSIC_WINTER, MUSIC_WARM = ("story-a-winter", 1.5), ("story-a-warm", 0.11)
 
 # The cut. "at" times in sounds are seconds from the start of that shot.
 SHOTS = [
     {"id": "walk", "clip": "v11-emma-walk", "in": 0.0, "dur": 4.0,
-     "sounds": [("fx-footsteps-snow", 0.0, 0.3), ("g1-map", 0.4, 1.0, "voice")]},
+     "sounds": [("g1-map", 0.4, 1.0, "voice")]},
     {"id": "door", "clip": "v13b-emma-door", "in": 0.0, "dur": 4.6,
-     "sounds": [("fx-wind", 0.0, 0.25), ("fx-handle-rattle", 0.4, 0.6), ("g2-door", 2.0, 1.0, "voice")]},
+     "sounds": [("fx-handle-rattle", 0.4, 0.6), ("g2-door", 2.0, 1.0, "voice")]},
     {"id": "counter", "clip": "v21-aleksi-counter", "in": 0.0, "dur": 3.8, "join": "act",
-     "sounds": [("sfx02-cafe-busy", 0.0, 0.35), ("g3-aleksi", 0.9, 1.0, "voice"), ("fx-chime", 3.1, 0.7)]},
+     "sounds": [("g3-aleksi", 0.9, 1.0, "voice"), ("fx-chime", 3.1, 0.7)]},
     {"id": "nod", "clip": "v22-aleksi-nod", "in": 0.0, "dur": 6.0,
      "split": {"open_at": 0.0, "panels": [("ui22-message", 0.0), ("ui22-message-yes", 5.4)]},
-     "sounds": [("sfx02-cafe-busy", 0.0, 0.25), ("g4-noticed", 1.0, 1.0, "voice"), ("sfx08-tap", 5.4, 0.8)]},
+     "sounds": [("g4-noticed", 1.0, 1.0, "voice"), ("sfx08-tap", 5.4, 0.8)]},
     {"id": "serve", "clip": "v23-aleksi-serve", "in": 0.0, "dur": 4.6,
      "split": {"open_at": None, "close_at": 2.9,
                "panels": [("ui23-updated-0", 0.0), ("ui23-updated-1", 1.3), ("ui23-updated-2", 1.8), ("ui23-updated-3", 2.3)]},
-     "sounds": [("sfx02-cafe-busy", 0.0, 0.35), ("g5-updated", 0.4, 1.0, "voice"),
+     "sounds": [("g5-updated", 0.4, 1.0, "voice"),
                 ("sfx08-tap", 1.3, 0.3), ("sfx08-tap", 1.8, 0.3), ("sfx08-tap", 2.3, 0.3)]},
     {"id": "park", "clip": "v31-summer-park", "in": 0.5, "dur": 4.4, "join": "act",
-     "sounds": [("sfx06-summer-park", 0.0, 0.6), ("g6-summer", 0.4, 1.0, "voice")]},
+     "sounds": [("g6-summer", 0.4, 1.0, "voice")]},
     {"id": "sanna", "clip": "v34-sanna-take", "in": 0.8, "dur": 7.6,
      "split": {"open_at": 2.6, "close_at": 5.8, "panels": [("ui33-message", 0.0), ("ui33-message-yes", 5.2)]},
-     "sounds": [("sfx07-terrace", 0.0, 0.3), ("g7-sanna", 0.6, 1.0, "voice"), ("fx-chime", 1.6, 0.7),
+     "sounds": [("g7-sanna", 0.6, 1.0, "voice"), ("fx-chime", 1.6, 0.7),
                 ("g8-midnight", 3.2, 1.0, "voice"), ("sfx08-tap", 5.2, 0.8)]},
-    {"id": "emma-open", "clip": "v41-emma-door-open", "in": 0.0, "dur": 3.6, "join": "act",
-     "sounds": [("fx-door-bell", 0.1, 0.8), ("h9-xmas-open", 0.6, 1.0, "voice")]},
+    # The act 1 locked-door framing again: the door is shut until she pulls it (clip 2.4 s), then the bell.
+    {"id": "emma-open", "clip": "v44b-emma-door-opens", "in": 0.8, "dur": 4.2, "join": "act",
+     "sounds": [("fx-door-bell", 1.6, 0.8), ("h9-xmas-open", 1.2, 1.0, "voice")]},
     {"id": "terrace", "clip": "v43-terrace-night", "in": 0.0, "dur": 4.8,
-     "sounds": [("fx-terrace-night", 0.0, 0.3), ("h10-summer-open", 0.3, 1.0, "voice")]},
+     "sounds": [("h10-summer-open", 0.3, 1.0, "voice")]},
 ]
 
 
@@ -140,6 +144,16 @@ def main() -> None:
             labels.append(f"[a{i}]")
     # A silent bed exactly as long as the film is the base of the mix, so the mix ends on time (padding the end of a
     # mix instead can stall this ffmpeg build).
+    # Music: the winter piano under the winter scenes, crossfading into the warm version where summer begins.
+    turn = starts[next(k for k, shot in enumerate(SHOTS) if shot["id"] == "park")]
+    i = len(labels)
+    a_inputs += ["-i", str(audio(MUSIC_WINTER[0])), "-i", str(audio(MUSIC_WARM[0]))]
+    a_graph.append(f"[{i}:a]atrim=0:{turn + 1.5:.3f},volume={MUSIC_WINTER[1]},afade=t=in:d=1.5,"
+                   f"afade=t=out:st={turn - 1.5:.3f}:d=3.0[mw]")
+    warm_ms = int((turn - 1.5) * 1000)
+    a_graph.append(f"[{i + 1}:a]atrim=0:{total - turn + 1.5:.3f},volume={MUSIC_WARM[1]},afade=t=in:d=3.0,"
+                   f"adelay={warm_ms}|{warm_ms}[mh]")
+    labels += ["[mw]", "[mh]"]
     a_graph.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{total:.3f}[bed]")
     labels.append("[bed]")
     a_graph.append("".join(labels) + f"amix=inputs={len(labels)}:duration=longest:normalize=0:dropout_transition=0,"
