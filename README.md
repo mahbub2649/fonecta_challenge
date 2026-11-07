@@ -125,7 +125,7 @@ The model only proposes. Nothing is published without the owner's approval or st
 
 1. **Review reader:** reads closed-door complaints, closing times, thanks for being open and new weekly hours, in Finnish, Swedish, Norwegian and English, and ties each statement to the day it's about.
 2. **Past-day estimator:** most special days never got an entry, so what the business really did is hidden. A LightGBM model estimates it from what the day left behind: reviews, user edits, and spikes in calls and clicks.
-3. **Open or closed model:** LightGBM combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather. Its estimates are blended, 60/40, with those of TabICLv2, a transformer foundation model, because the two make different mistakes.
+3. **Open or closed model:** LightGBM combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather, and learns from every past special day, not just November to January. Its estimates are blended with two other kinds of model, because they make different mistakes: TabICLv2, a transformer foundation model, and our history transformer, which reads a business's past special days as a sequence using the self-attention encoder from [Attention Is All You Need](https://arxiv.org/abs/1706.03762). The shares are LightGBM 48%, TabICLv2 32% and the history transformer 20%.
 4. **Hours picker:** builds candidate hours from every source and ranks them. The right hours are on the list 97% of the time.
 5. **Decision layer:** chooses the action with the highest expected points, asks for extra proof before suggesting "closed", and holds back hours it thinks have under a 25% chance of being exactly right.
 
@@ -145,38 +145,26 @@ The models run ahead of time and their decisions are saved to a file, so the web
 
 ## Results
 
-Scored with the organisers' `evaluate.py`, on businesses each model never saw.
+Scored with the organisers' `evaluate.py`, on businesses each model never saw. `predictions_2026.csv` gives the 2026 score below.
 
-| Measure | Package baseline | LightGBM only | Connect Suggests (blend) |
+| Measure | Package baseline | Earlier blend | Connect Suggests (final blend) |
 |---|---:|---:|---:|
-| **Score, 2026 season** | 54.49 | 67.66 | **67.98** |
-| **Score, 2025 season** | 53.23 | 65.67 | **66.05** |
-| Score, 2025, trained only on data from before that snapshot | | 59.41 | 60.30 |
-| Exact recall, 2026 | 0.59 | 0.76 | 0.75 |
-| Exact precision, 2026 | 0.90 | 0.85 | 0.86 |
-| Search views protected, 2026 | 57.2% | 74.0% | 73.6% |
-| Closed-door views prevented, 2026 | 69.2% | 86.5% | 84.5% |
-| Wrong open or closed calls, 2026 | 224 | 389 | 317 |
-| Wrong open or closed calls, 2025 | 249 | 445 | 329 |
+| **Score, 2026 season** | 54.49 | 67.98 | **68.62** |
+| **Score, 2025 season** | 53.23 | 66.05 | **66.27** |
+| Score, 2025, trained only on data from before that snapshot | | 60.30 | 61.10 |
+| Exact recall, 2026 | 0.59 | 0.75 | 0.75 |
+| Exact precision, 2026 | 0.90 | 0.86 | 0.87 |
+| Search views protected, 2026 | 57.2% | 73.6% | 73.7% |
+| Closed-door views prevented, 2026 | 69.2% | 84.5% | 84.8% |
+| Wrong open or closed calls, 2026 | 224 | 317 | 292 |
+| Wrong open or closed calls, 2025 | 249 | 329 | 311 |
+| Wrong calls, trained only on data from before that snapshot | | 554 | 511 |
 
-The blend adds TabICLv2, a transformer foundation model, to LightGBM, and asks for more proof before suggesting "closed". That cut wrong calls by about 19% and raised the score, at a small cost in closed-door views. We still make more wrong calls than the baseline, because we catch far more wrong hours and the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions.
+The earlier blend was LightGBM and TabICLv2, with a stricter rule for suggesting "closed". The final blend trains LightGBM on all past special days and adds the history transformers. That raised all three scores and cut wrong calls by about 8% on 2026 and 5% on 2025. We chose its mix after trying 30, so the gain over the earlier blend may be slightly flattering, but we fixed that mix before running the stricter test.
+
+We still make more wrong calls than the baseline, because we catch far more wrong hours and the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions.
 
 These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
-
-### Next model
-
-Two later experiments improved on the model above. Their code is in `model/`, but the app and `predictions_2026.csv` don't use them yet, so the scorer command above still gives 67.98.
-
-| Version | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 |
-|---|---:|---:|---:|
-| Model in this repository | 67.98 | 66.05 | 317 / 329 |
-| Open or closed model trained on all past special days, not just November to January | 68.30 | 66.17 | 308 / 323 |
-| Adding a transformer that reads each business's history | 68.28 | 66.08 | 293 / 303 |
-| **All past days plus two versions of that transformer** | **68.60** | **66.27** | **292 / 308** |
-
-The transformer reads a business's past special days as a sequence, using the self-attention encoder from [Attention Is All You Need](https://arxiv.org/abs/1706.03762). Alone it's weaker than LightGBM, but it makes different mistakes, so it helps a blend. We picked the combined row after trying 30 mixes, so its gain may be slightly flattering.
-
-In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model above. The full combination scored 61.10 with 511 wrong calls.
 
 ## Data sources that mattered most
 
@@ -196,6 +184,8 @@ In the stricter test, trained only on data from before the 2025 snapshot, all pa
 - **Larger, more detailed trees.** They scored worse on both seasons, and simpler trees did better.
 - **Training the hours picker on the 2024 season.** It has too little history behind it, so that season is left out of the picker.
 - **RealMLP, a neural model.** It was clearly weaker than LightGBM on one fold, and made the blend worse.
+- **The history transformer without the extra training days.** It cut wrong calls, but lowered the strict 2025 score to 59.74, so it only earned its place alongside all past days.
+- **Training the hours picker on all past days too.** It scored worse than training only the open or closed model on them.
 - **Row weighting, pseudo-labels and a hidden-habit model across years.** No clear gain.
 - **Similar businesses in the same city, and reviews dated on the holiday.** No gain, which suggests this dataset doesn't reward location.
 - **Outside data.** All 88 live holidays from Nager.Date are already in the package's calendar, and real city population and daylight gave no clear gain. The hidden answers are synthetic, so outside sources can't predict them.
@@ -254,7 +244,7 @@ The loop isn't specific to hours: notice something, suggest it with a reason, ge
 | `model/` and `tools/build_views.py` only: scikit-learn, pandas, NumPy | BSD-3-Clause |
 | `model/` and `tools/build_views.py` only: PyArrow | Apache-2.0 |
 | `model/neural.py` only: TabICL and its model weights | BSD-3-Clause |
-| `model/neural.py` only: PyTorch | BSD-style, with Apache-2.0 parts |
+| `model/neural.py` and `model/history_transformer.py` only: PyTorch | BSD-style, with Apache-2.0 parts |
 | `model/neural.py` only: pytabkit, for the RealMLP test | Apache-2.0 |
 
 The web app runs on the Python standard library alone. No GPL or AGPL components. No code from before the event is used.

@@ -63,12 +63,12 @@ Businesses are like users, holidays are like items, and entered hours are like r
 
 ## Experiment results
 
-Scored with the organisers' `evaluate.py` on dev businesses each model never saw. Differences under about 0.2 are within noise. All rows below use the blend of LightGBM and TabICLv2 with a stricter rule for suggesting "closed", except the first. The bold row is the model in this repository, and the rows below it are experiments on top of it that aren't included.
+Scored with the organisers' `evaluate.py` on dev businesses each model never saw. Differences under about 0.2 are within noise. All rows use a blend with a stricter rule for suggesting "closed", except the first. The bold row is the model in this repository. The others are the earlier blend of LightGBM and TabICLv2, and experiments on top of it, and aren't included.
 
 | Version | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 |
 |---|---:|---:|---:|
 | LightGBM only, with the review reader update | 67.56 | 65.52 | 395 / 432 |
-| **Blend with the stricter rule** | **67.98** | **66.05** | **317 / 329** |
+| Earlier blend with the stricter rule | 67.98 | 66.05 | 317 / 329 |
 | Adding matrix completion | 68.04 | 66.31 | 318 / 322 |
 | Adding less weight on the 2024 season | 68.03 | 65.93 | 318 / 333 |
 | Adding more weight on hard rows | 67.87 | 65.94 | 316 / 332 |
@@ -79,12 +79,12 @@ Scored with the organisers' `evaluate.py` on dev businesses each model never saw
 | Also training the hours picker on those days, at half weight | 67.94 | 66.04 | 311 / 330 |
 | Adding the history transformer, deep version at 0.25 | 68.28 | 66.08 | 293 / 303 |
 | Adding the history transformer, past-weighted version at 0.20 | 68.39 | 65.98 | 296 / 316 |
-| Adding all past days and both transformer versions at 0.20 | 68.60 | 66.27 | 292 / 308 |
 | Adding all past days and the deep transformer at 0.25 | 68.73 | 66.14 | 290 / 297 |
+| **All past days and both transformer versions at 0.20** | **68.62** | **66.27** | **292 / 311** |
 
 We picked the all-past-days and transformer mixes after trying 30, so their gains may be slightly flattering.
 
-In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model in this repository. All past days with both transformer versions at 0.20 scored 61.10 with 511 wrong calls.
+In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the earlier blend. The model in this repository scored 61.10 with 511 wrong calls, using a mix we fixed before running this test.
 
 ## Software and data
 

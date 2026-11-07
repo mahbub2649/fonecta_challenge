@@ -21,11 +21,9 @@ Hyväksy, muokkaa tai kieltäydy ilman kirjautumista: https://connect.example/o/
 Kafé Linnea: kontrollera era avvikande öppettider
 
 Hej Maria! Kafé Linnea visas troligen fel på Google de här dagarna:
-• Lucia sön 13/12: Google visar 10–17. Vi föreslår: 9–17. För två år sedan: 7–18.
 • Julafton tors 24/12: Google visar 8–18. Vi föreslår: stängt. Förra året: stängt.
 • Juldagen fre 25/12: Google visar 8–18. Vi föreslår: stängt. 97 % av liknande företag som angav sina tider hade stängt.
-Vi är inte helt säkra, så berätta gärna om förslaget stämmer.
-Samma dagar förra året hade ert företag cirka 230 sökvisningar på Google.
+Samma dagar förra året hade ert företag cirka 190 sökvisningar på Google.
 Godkänn, ändra eller tacka nej utan inloggning: https://connect.example/o/abc123
 ```
 
