@@ -36,8 +36,9 @@ Businesses are like users, holidays are like items, and entered hours are like r
 
 | Reference | Why we looked at it | What we did |
 |---|---|---|
-| [HT-Transformer: Event Sequences Classification by Accumulating Prefix](https://arxiv.org/abs/2508.01474) | Transformers over event histories. It notes they often lose to RNNs when predicting future targets | Considered a transformer over each business's history, not tested |
-| [EMIT: Event-Based Masked Auto Encoding for Irregular Time Series](https://arxiv.org/abs/2409.16554) | Pretraining when labels are scarce | Considered, not tested |
+| [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | The original transformer and its multi-head self-attention | Our history transformer uses this encoder, through PyTorch's implementation. It has no decoder, and it replaces position encodings with each day's time gap. It's in a later experiment, not in the model in this repository |
+| [HT-Transformer: Event Sequences Classification by Accumulating Prefix](https://arxiv.org/abs/2508.01474) | Transformers over event histories. It notes they often lose to RNNs when predicting future targets | Tested a transformer over each business's history. Alone it was weaker than LightGBM, but it cut wrong calls in a blend. We didn't test an RNN |
+| [EMIT: Event-Based Masked Auto Encoding for Irregular Time Series](https://arxiv.org/abs/2409.16554) | Pretraining when labels are scarce | Not used directly. Our history transformer has a similar task, hiding past entries and predicting them, but trains it alongside the main task |
 
 ## How opening hours are detected in practice
 
@@ -74,6 +75,16 @@ Scored with the organisers' `evaluate.py` on dev businesses each model never saw
 | Adding city population and daylight | 68.01 | 66.13 | 317 / 330 |
 | Adding pseudo-labels | 67.91 | 65.98 | 322 / 334 |
 | Adding past entries from all businesses to training | 68.13 | 66.24 | 310 / 332 |
+| Training the open or closed model on all past special days | 68.30 | 66.17 | 308 / 323 |
+| Also training the hours picker on those days, at half weight | 67.94 | 66.04 | 311 / 330 |
+| Adding the history transformer, deep version at 0.25 | 68.28 | 66.08 | 293 / 303 |
+| Adding the history transformer, past-weighted version at 0.20 | 68.39 | 65.98 | 296 / 316 |
+| Adding all past days and both transformer versions at 0.20 | 68.60 | 66.27 | 292 / 308 |
+| Adding all past days and the deep transformer at 0.25 | 68.73 | 66.14 | 290 / 297 |
+
+We picked the all-past-days and transformer mixes after trying 30, so their gains may be slightly flattering.
+
+In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model in this repository. The same test for the transformer combinations is still running.
 
 ## Software and data
 

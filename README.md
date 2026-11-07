@@ -150,6 +150,21 @@ The blend adds TabICLv2, a transformer foundation model, to LightGBM, and asks f
 
 These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
 
+### Later experiments, not in this repository
+
+Two later experiments improved on the model above. Neither they nor their code are in the app or `predictions_2026.csv`, so the scorer command above still gives 67.98.
+
+| Version | Score, 2026 | Score, 2025 | Wrong calls, 2026 / 2025 |
+|---|---:|---:|---:|
+| Model in this repository | 67.98 | 66.05 | 317 / 329 |
+| Open or closed model trained on all past special days, not just November to January | 68.30 | 66.17 | 308 / 323 |
+| Adding a transformer that reads each business's history | 68.28 | 66.08 | 293 / 303 |
+| **All past days plus two versions of that transformer** | **68.60** | **66.27** | **292 / 308** |
+
+The transformer reads a business's past special days as a sequence, using the self-attention encoder from [Attention Is All You Need](https://arxiv.org/abs/1706.03762). Alone it's weaker than LightGBM, but it makes different mistakes, so it helps a blend. We picked the combined row after trying 30 mixes, so its gain may be slightly flattering.
+
+In the stricter test, trained only on data from before the 2025 snapshot, all past days alone scored 61.20 with 573 wrong calls, against 60.30 with 554 for the model in this repository. The same test for the full combination is still running.
+
 ## Data sources that mattered most
 
 | Signal | How we used it | Where Connect would get it in production |
