@@ -429,15 +429,21 @@ class Service:
         eid = case["entity_id"]
         items = [self.store.one("SELECT * FROM items WHERE id = ?", (i,)) for i in item_ids]
         changes = {i["date"]: i["final_hours"] for i in items}
+        sandbox_id, restore = None, None
         try:
             entries = self.mock.get_entity(eid).get("hours", {}).get("holidayHours", [])
             before = {h["date"]: day_to_string(h) for h in entries if not h.get("isRegularHours")}
             sandbox_after = {}
             if self.sandbox:
-                sandbox_after = self.sandbox.write_holidays(self._sandbox_id(eid), changes)
+                sandbox_id = self._sandbox_id(eid)
+                current = self.sandbox.get_entity(sandbox_id).get("hours", {}).get("holidayHours", [])
+                current = {h["date"]: day_to_string(h) for h in current if not h.get("isRegularHours")}
+                restore = {day: current.get(day) for day in changes}
+                sandbox_after = self.sandbox.write_holidays(sandbox_id, changes)
                 self._check_readback(sandbox_after, changes, "sandbox ")
             self._check_readback(self.mock.write_holidays(eid, changes), changes, "")
         except YextError as error:
+            self._put_back(restore, sandbox_id, eid, case["id"])
             for item in items:
                 self.store.execute("UPDATE items SET write_status = 'FAILED', write_error = ? WHERE id = ?", (str(error)[:300], item["id"]))
             self.store.log("APPLY", "connect", f"Write failed for {', '.join(changes)}, so the owner is told nothing changed. {error}", eid, case["id"])
@@ -450,6 +456,15 @@ class Service:
             self.store.log("APPLY", "connect", f"{item['date']}: wrote {item['final_hours']} to {target}. Read-back matches.", eid, case["id"],
                            {"sandbox_readback": readback})
         return items
+
+    def _put_back(self, restore: dict | None, sandbox_id: str | None, eid: str, case_id: int) -> None:
+        """A failed write must leave nothing behind, because the owner is told nothing changed."""
+        if not restore:
+            return
+        try:
+            self.sandbox.write_holidays(sandbox_id, restore)
+        except YextError as error:
+            self.store.log("APPLY", "connect", f"Could not put the sandbox back, so a person must check {sandbox_id}. {error}", eid, case_id)
 
     @staticmethod
     def _check_readback(after: dict, changes: dict, label: str) -> None:
@@ -477,12 +492,16 @@ class Service:
             if not item or item["write_status"] != "WRITTEN":
                 raise ValueError("That change can't be undone")
             eid = case["entity_id"]
+            sandbox_id, restore = None, None
             try:
                 change = {item["date"]: item["previous_hours"]}
                 if self.sandbox:
-                    self.sandbox.write_holidays(self._sandbox_id(eid), change)
+                    sandbox_id = self._sandbox_id(eid)
+                    restore = {item["date"]: item["final_hours"]}
+                    self.sandbox.write_holidays(sandbox_id, change)
                 self.mock.write_holidays(eid, change)
             except YextError as error:
+                self._put_back(restore, sandbox_id, eid, case["id"])
                 self.store.log("APPLY", "connect", f"{item['date']}: undo failed. {error}", eid, case["id"])
                 raise ValueError("The undo didn't go through. Nothing else changed.") from None
             self.store.execute("UPDATE items SET decision = 'UNDONE', write_status = 'UNDONE' WHERE id = ?", (item_id,))

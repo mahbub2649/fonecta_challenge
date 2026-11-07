@@ -211,6 +211,30 @@ class ChainTest(unittest.TestCase):
         self.assertEqual(case["status"], "BLOCKED_OPT_OUT")
         self.assertEqual(case["messages"], [])
 
+    def test_touching_intervals_are_refused_as_yext_refuses_them(self):
+        case = self.open_case("FI-D0001")
+        with self.assertRaises(ValueError):
+            self.service.decide(case["token"], [{"item": case["items"][0]["id"], "action": "edit", "hours": "10:00-12:00,12:00-14:00"}])
+        self.assertTrue(is_valid("10:00-12:00,12:01-14:00"))
+
+    def test_failed_record_write_takes_the_change_back_off_the_sandbox(self):
+        sandbox = FakeSandbox()
+        service = Service(ENGINE, Store(":memory:"), self.mock, sandbox, public_url="http://test")
+        result = service.detect("FI-D0001")
+        case = service.send(result["case_id"])
+        good = self.mock.write_holidays
+
+        def down(*_):
+            raise YextError(503, "record store down")
+
+        self.mock.write_holidays = down
+        try:
+            view = service.decide(case["token"], [{"item": i["id"], "action": "approve"} for i in case["items"]])
+        finally:
+            self.mock.write_holidays = good
+        self.assertTrue(all(i["write_status"] == "FAILED" for i in view["items"]))
+        self.assertEqual(sandbox.entities["connect-demo-fi-d0001"]["hours"].get("holidayHours", []), [])
+
     def test_stop_reason_opts_out(self):
         case = self.open_case("FI-D0001")
         self.service.decide(case["token"], [{"item": i["id"], "action": "decline", "reason": "stop"} for i in case["items"]])

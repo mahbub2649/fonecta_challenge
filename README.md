@@ -121,50 +121,15 @@ The tests report `Ran 35 tests` and `OK`, and the scorer reports `Score: 68.62 /
 python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv --labels <path-to-hidden-labels.csv>
 ```
 
-### 6. Rebuilding the model from scratch
+### 6. Testing against a real Yext sandbox
 
-The app doesn't need this, because the models' output is already in this repository. To reproduce it, we run these in order, in a fresh virtual environment. It needs a GPU with about 4 GB of memory for the neural models.
+The normal tests never touch the sandbox. For the real write path, we put a sandbox key in `.env` and run:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r model/requirements-neural.txt
-
-# Data and the past-day estimator
-python3 tools/build_views.py
-python3 model/build_dataset.py
-python3 model/past_days.py --before 2025-11-06
-python3 model/past_days.py
-
-# TabICLv2
-python3 model/neural.py tabicl --max-train 16000 --tag _16k
-python3 model/neural.py tabicl --max-train 16000 --strict --soft soft_strict.parquet --tag _16k_strict
-
-# The two history transformers
-python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --layers 4 --drop .3 --seeds 7,21 --tag _deep
-python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --past-weight 1.0 --seeds 7,21 --tag _past
-python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --layers 4 --drop .3 --seeds 7,21 --strict --tag _deep_strict
-python3 model/history_transformer.py --epochs 80 --patience 10 --d 128 --past-weight 1.0 --seeds 7,21 --strict --tag _past_strict
-
-# The final blend: prints every score, then overwrites predictions_2026.csv and connect/model_decisions.json
-python3 model/blend.py --weight 0.4 --hist-weight 0.2 --closed-margin 0.2 --strict --write
-
-# The customer messages and the charts in this README
-python3 tools/export_messages.py
-python3 tools/make_charts.py
+python3 tests/live_yext_check.py
 ```
 
-We run these one at a time, because heavy jobs running together can run a laptop out of memory. On our laptop:
-
-| Step | About how long |
-|---|---|
-| Data and past-day estimator | 5 minutes |
-| TabICLv2, for all folds | 45 minutes, plus its strict run |
-| Each history transformer | 15 to 20 minutes |
-| Each strict history transformer | 9 minutes |
-| Final blend | 4 minutes |
-
-Neural training on a GPU isn't perfectly repeatable, so a full rebuild can differ slightly from our numbers. The checks in step 5 use the saved predictions, so those match exactly.
+This runs 33 live checks in about 11 minutes, and all of them pass. They write every hours format the model can suggest, take all 17 demo businesses through the five steps, and check the result with a separate client. They also cover failures such as a wrong key or an unreachable sandbox. The script only changes records whose ID starts with `connect-`, and it cleans up after itself.
 
 ### Businesses we test with
 
@@ -207,7 +172,7 @@ The model only proposes. Nothing is published without the owner's approval or st
 
 No business is ever scored by a model trained on it, and features only use data dated before the snapshot. The feature code has no path to the answer files, and we don't read the simulator's internals.
 
-The models run ahead of time and their decisions are saved to a file, so the web app needs no machine-learning libraries. The research we considered, and what we tested from it, is in [REFERENCES.md](REFERENCES.md).
+The models run ahead of time and their decisions are saved to a file, so the web app needs no machine-learning libraries. The code that trains them is in `model/`. The research we considered, and what we tested from it, is in [REFERENCES.md](REFERENCES.md).
 
 ## How it learns
 

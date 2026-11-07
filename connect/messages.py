@@ -53,6 +53,7 @@ TEXT = {
         "confirm": "Kiitos {first}! Päivitimme yrityksen {business} tiedot:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "Uudet ajat näkyvät: {places}.",
+        "more_places": "ja {n} muuta",
         "failed": "Tallennus ei vielä onnistunut, joten mitään ei muutettu. Yritämme uudelleen ja kerromme, kun se on tehty.",
         "standing_offer": "Hoidetaanko jatkossa juhlapyhät puolestasi? Kerromme aina muutoksesta, ja voit perua sen yhdellä napautuksella: {link}",
         "declined": "Selvä {first}, emme muuttaneet mitään. Muistamme tämän seuraavalla kerralla.",
@@ -78,6 +79,7 @@ TEXT = {
         "confirm": "Tack {first}! Vi har uppdaterat {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "De nya tiderna syns: {places}.",
+        "more_places": "och {n} till",
         "failed": "Det gick inte att spara ännu, så inget har ändrats. Vi försöker igen och hör av oss när det är klart.",
         "standing_offer": "Ska vi sköta helgdagarna åt dig i fortsättningen? Vi berättar alltid om ändringen, och du kan ångra den med ett tryck: {link}",
         "declined": "Okej {first}, vi ändrade ingenting. Vi kommer ihåg det till nästa gång.",
@@ -103,6 +105,7 @@ TEXT = {
         "confirm": "Takk {first}! Vi har oppdatert {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "De nye tidene vises: {places}.",
+        "more_places": "og {n} til",
         "failed": "Vi fikk ikke lagret ennå, så ingenting er endret. Vi prøver igjen og sier fra når det er gjort.",
         "standing_offer": "Skal vi ta oss av helligdagene for deg fra nå av? Vi sier alltid fra om endringen, og du kan angre med ett trykk: {link}",
         "declined": "Greit {first}, vi endret ingenting. Vi husker det til neste gang.",
@@ -128,6 +131,7 @@ TEXT = {
         "confirm": "Thanks {first}! We've updated {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "The new hours will show: {places}.",
+        "more_places": "and {n} more",
         "failed": "We couldn't save this yet, so nothing has changed. We'll try again and tell you when it's done.",
         "standing_offer": "Want us to handle public holidays for you from now on? We always tell you about a change, and you can undo it in one tap: {link}",
         "declined": "OK {first}, we didn't change anything. We'll remember this next time.",
@@ -321,7 +325,9 @@ def _final_lines(items: list, lang: str) -> list:
 
 
 def places_label(listings: list, lang: str) -> str:
-    return ", ".join(f"{x['name']} {eta_label(x['seconds'], lang)}" for x in listings[:4])
+    label = ", ".join(f"{x['name']} {eta_label(x['seconds'], lang)}" for x in listings[:4])
+    extra = len(listings) - 4
+    return f"{label} {TEXT[lang]['more_places'].format(n=extra)}" if extra > 0 else label
 
 
 def confirmation(first: str, business: str, items: list, listings: list, lang: str, standing_link: str | None = None) -> str:

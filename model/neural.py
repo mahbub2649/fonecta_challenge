@@ -85,7 +85,7 @@ def main() -> None:
         labelled_mask = labelled_mask & np.isin(season, [2024, 2025])
     extra_mask = ((rows["cls"] >= 0) & (rows["aux"] == EXTRA)).to_numpy() if args.all_days else np.zeros(len(rows), bool)
     if args.strict:  # Only what was knowable at the 2025 snapshot.
-        extra_mask &= ((rows["season"] == 2024) & (rows["date"] < "2025-11-06")).to_numpy()
+        extra_mask = extra_mask & ((rows["season"] == 2024) & (rows["date"] < "2025-11-06")).to_numpy()
     for k in folds:
         train = np.where((extra_mask | (labelled_mask & ((rows["season"].to_numpy() == 2024) if args.strict else True))) & (fold != k))[0]
         if args.max_train and len(train) > args.max_train:
