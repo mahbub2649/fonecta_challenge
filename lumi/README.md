@@ -52,6 +52,25 @@ lumi/lumi.sh smoke     # one baseline on the debug partition, to test the whole 
 lumi/lumi.sh logs      # follow it. It ends with a line like "baseline: 2026 67.xx | 2025 65.xx | strict 2025 59.xx"
 ```
 
+### No SSH yet? Use the LUMI web interface
+
+If you can log in at www.lumi.csc.fi but SSH is refused, run the same commands in a login-node shell there.
+`lumi.sh` notices it's on LUMI and works locally instead of over SSH.
+
+1. Upload `fonecta-lumi.zip` (the code from git and the challenge package, no `.env`) with the web Files app, to
+   `/scratch/project_<number>/<user>/`.
+2. Open **Login node shell** and run:
+
+```bash
+cd /scratch/project_<number>/$USER && unzip -q fonecta-lumi.zip && mv fonecta-lumi fonecta && cd fonecta/repo
+printf 'LUMI_PROJECT=project_<number>\n' > lumi/config.env
+lumi/lumi.sh setup && lumi/lumi.sh smoke
+```
+
+`fetch` then prints the leaderboard on LUMI, and `final` writes the new predictions into that folder. Download
+`predictions_2026.csv`, `connect/model_decisions.json` and `model/keywords.json` with the Files app, instead of
+using `pull`.
+
 ## The sweep
 
 ```bash

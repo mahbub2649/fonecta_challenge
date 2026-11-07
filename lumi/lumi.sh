@@ -23,6 +23,7 @@ if [ ! -f "$CONF" ]; then
 fi
 # shellcheck disable=SC1090
 source "$CONF"
+[ -d /appl/lumi ] && LUMI_USER=${LUMI_USER:-$USER}
 : "${LUMI_USER:?set LUMI_USER in $CONF}" "${LUMI_PROJECT:?set LUMI_PROJECT in $CONF}"
 LUMI_HOST=${LUMI_HOST:-lumi.csc.fi}
 LUMI_WORK=${LUMI_WORK:-/scratch/$LUMI_PROJECT/$LUMI_USER/fonecta}
@@ -42,16 +43,33 @@ if [ -n "${LUMI_SSH_KEY:-}" ]; then
 fi
 TARGET="$LUMI_USER@$LUMI_HOST"
 
-remote() { ssh "${SSH_OPTS[@]}" "$TARGET" "bash -lc $(printf '%q' "$1")"; }
-copy() { rsync -az -e "ssh ${SSH_OPTS[*]}" "$@"; }
+# On LUMI itself (for example in the web interface's login-node shell), run commands here instead of over SSH.
+if [ -n "${LUMI_LOCAL:-}" ] || [ -d /appl/lumi ]; then
+  ON_LUMI=1
+  R=""
+  remote() { bash -lc "$1"; }
+  copy() { rsync -a "$@"; }
+else
+  ON_LUMI=0
+  R="$TARGET:"
+  remote() { ssh "${SSH_OPTS[@]}" "$TARGET" "bash -lc $(printf '%q' "$1")"; }
+  copy() { rsync -az -e "ssh ${SSH_OPTS[*]}" "$@"; }
+fi
+
+# The same folder twice (a clone made right at $LUMI_WORK/repo) needs no copy.
+same_dir() { [ -d "$2" ] && [ "$(cd "$1" && pwd -P)" = "$(cd "$2" && pwd -P)" ]; }
 
 sync_code() {
   remote "mkdir -p '$LUMI_WORK/repo' '$LUMI_WORK/fonecta_data/FONECTA_CONNECT_SUGGESTS_2026' '$LUMI_WORK/results' '$LUMI_WORK/logs'"
+  if [ "$ON_LUMI" = 1 ] && same_dir "$REPO" "$LUMI_WORK/repo"; then
+    echo "Code already in place at $LUMI_WORK/repo"
+    return
+  fi
   # Secrets never leave this laptop: .env holds the Yext sandbox key, lumi/config.env the LUMI details.
   copy --delete \
     --exclude '.git/' --exclude 'var/' --exclude '.env' --exclude '.env.*' --exclude 'lumi/config.env' \
     --exclude 'lumi/results/' --exclude '__pycache__/' --exclude '.venv/' --exclude '.DS_Store' \
-    "$REPO/" "$TARGET:$LUMI_WORK/repo/"
+    "$REPO/" "${R}$LUMI_WORK/repo/"
   echo "Code synced to $LUMI_WORK/repo"
 }
 
@@ -60,7 +78,11 @@ sync_data() {
     echo "Can't find the challenge package at $DATA_LOCAL. Set DATA_LOCAL in $CONF."
     exit 1
   fi
-  copy --exclude '.DS_Store' "$DATA_LOCAL/" "$TARGET:$LUMI_WORK/fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/"
+  if [ "$ON_LUMI" = 1 ] && same_dir "$DATA_LOCAL" "$LUMI_WORK/fonecta_data/FONECTA_CONNECT_SUGGESTS_2026"; then
+    echo "Data already in place"
+    return
+  fi
+  copy --exclude '.DS_Store' "$DATA_LOCAL/" "${R}$LUMI_WORK/fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/"
   echo "Data synced to $LUMI_WORK/fonecta_data (synthetic, CC BY 4.0)"
 }
 
@@ -114,23 +136,23 @@ case "$cmd" in
     ;;
   fetch)
     mkdir -p "$HERE/results"
-    copy "$TARGET:$LUMI_WORK/results/" "$HERE/results/"
+    copy "${R}$LUMI_WORK/results/" "$HERE/results/"
     python3 "$HERE/collect.py" "$HERE/results"
     ;;
   final)
     mkdir -p "$HERE/results"
-    copy "$TARGET:$LUMI_WORK/results/" "$HERE/results/"
+    copy "${R}$LUMI_WORK/results/" "$HERE/results/"
     python3 "$HERE/collect.py" "$HERE/results" --best > "$HERE/final.jsonl"
     echo "Final setting: $(cat "$HERE/final.jsonl")"
     sync_code
     submit "$LUMI_WORK/repo/lumi/final.jsonl" "$LUMI_PARTITION" "$LUMI_TIME" --write
     ;;
   pull)
-    copy "$TARGET:$LUMI_WORK/results/final.json" "$HERE/results/final.json"
-    copy "$TARGET:$LUMI_WORK/repo/predictions_2026.csv" "$REPO/predictions_2026.csv"
-    copy "$TARGET:$LUMI_WORK/repo/connect/model_decisions.json" "$REPO/connect/model_decisions.json"
+    copy "${R}$LUMI_WORK/results/final.json" "$HERE/results/final.json"
+    copy "${R}$LUMI_WORK/repo/predictions_2026.csv" "$REPO/predictions_2026.csv"
+    copy "${R}$LUMI_WORK/repo/connect/model_decisions.json" "$REPO/connect/model_decisions.json"
     if remote "test -f '$LUMI_WORK/repo/model/keywords.json'"; then
-      copy "$TARGET:$LUMI_WORK/repo/model/keywords.json" "$REPO/model/keywords.json"
+      copy "${R}$LUMI_WORK/repo/model/keywords.json" "$REPO/model/keywords.json"
     else
       rm -f "$REPO/model/keywords.json"
     fi
