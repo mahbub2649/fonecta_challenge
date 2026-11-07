@@ -21,7 +21,7 @@ def _load_env_file() -> None:
 
 _load_env_file()
 
-DATA_DIR = Path(os.environ.get("CONNECT_DATA_DIR", ROOT.parent / "fonecta_data" / "FONECTA_CONNECT_SUGGESTS_2026"))
+DATA_DIR = Path(os.environ.get("CONNECT_DATA_DIR", ROOT / "fonecta_data" / "FONECTA_CONNECT_SUGGESTS_2026"))
 VAR_DIR = Path(os.environ.get("CONNECT_VAR_DIR", ROOT / "var"))
 HOST = os.environ.get("CONNECT_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CONNECT_PORT", "8080"))

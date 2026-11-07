@@ -10,16 +10,7 @@ All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
 You need Python 3.9 or newer. The app uses only the standard library, so there's nothing to install (`requirements.txt` is there to confirm that).
 
-The repository doesn't include the challenge data package. Put it next to this folder:
-
-```text
-parent-folder/
-├── fonecta_challenge/                        # this repository
-└── fonecta_data/
-    └── FONECTA_CONNECT_SUGGESTS_2026/        # the challenge package
-```
-
-If it's somewhere else, set `CONNECT_DATA_DIR` to the `FONECTA_CONNECT_SUGGESTS_2026` folder.
+The challenge data package is included in `fonecta_data/`, so the app runs straight after cloning. To use a copy somewhere else, set `CONNECT_DATA_DIR` to its `FONECTA_CONNECT_SUGGESTS_2026` folder.
 
 ### 2. Start the app
 
@@ -32,7 +23,7 @@ Then open http://127.0.0.1:8080. Press `Ctrl+C` in the terminal to stop.
 | Optional setting | What it does |
 |---|---|
 | `YEXT_API_KEY` | Also writes to your Yext sandbox. Copy `.env.example` to `.env` and set it there. Without a key, writes go to the local mock, and the top of the page shows which is active |
-| `CONNECT_DATA_DIR` | Where the challenge package is |
+| `CONNECT_DATA_DIR` | Where the challenge package is, if not in `fonecta_data/` |
 | `CONNECT_PORT` | Uses another port instead of 8080 |
 | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
 
@@ -70,7 +61,7 @@ curl -s -X POST -H "$J" \
 
 ```bash
 python3 -m unittest discover tests
-python3 ../fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
+python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --predictions predictions_2026.csv
 ```
 
 ### 6. Rebuild the model (optional)
