@@ -34,17 +34,13 @@ if [ -z "${CONNECT_DATA_DIR:-}" ] && [ ! -f fonecta_data/FONECTA_CONNECT_SUGGEST
 fi
 
 if [ "$SANDBOX" = 1 ]; then
-  if [ -f .env ]; then
-    export CONNECT_ENV_FILE="$PWD/.env"
-  elif [ -f ../.env ]; then
-    export CONNECT_ENV_FILE="$(cd .. && pwd)/.env"
-  else
+  export CONNECT_ENV_FILE="$PWD/.env:$(cd .. && pwd)/.env"
+  if [ -z "${YEXT_API_KEY:-}${API_KEY:-}" ] && ! grep -qsE '^(YEXT_API_KEY|API_KEY)=.+' .env ../.env; then
     echo "--sandbox needs a key in .env. Copy .env.example to .env and set YEXT_API_KEY."
     exit 1
   fi
 else
-  export CONNECT_ENV_FILE=/dev/null
-  unset YEXT_API_KEY API_KEY
+  export CONNECT_NO_SANDBOX=1
 fi
 
 # Use the first free port from 8080 up, so a second copy doesn't fail.

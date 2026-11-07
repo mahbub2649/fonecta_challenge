@@ -84,6 +84,8 @@ This is how we go through all five steps:
 
 **Reset demo** starts again at any point.
 
+The **English captions** switch above the phone puts English under the Finnish, Swedish and Norwegian text, in both the message and the approval page. It's on by default in the console, so reviewers can follow along. It uses the app's own English wording, so hours and dates stay exact, and owners only ever see their own language.
+
 ### 4. Walking through it on the command line
 
 With the app running, we drive the same chain from a second terminal through its local API. If the app started on another port, `B` changes to match.
@@ -178,11 +180,38 @@ The models run ahead of time and their decisions are saved to a file, so the web
 
 | Owner does | Next time |
 |---|---|
-| Edits the hours | Later suggestions move the same way, and that day uses their choice |
+| Edits the hours | That day uses their choice. Later suggestions stay as they are, and the same move is offered in one tap |
+| Opens on a day we thought was closed | Later "closed" guesses are asked as questions |
 | Declines: "open as usual" | Connect stops asking about that day and needs more proof before suggesting "closed" |
 | Declines: "stop" | The owner is opted out |
 | Undoes a change | The earlier hours come back, and Connect stops asking about that day |
 | Gives standing permission | Strong suggestions are applied, then the owner is told, with one-tap undo. Peer guesses are never applied this way |
+
+### Is the next suggestion better? We measured it
+
+We let the challenge's simulated owners answer every message for all 802 dev businesses, with learning off and on. We score only the dates after an owner's first reply, with the organisers' points. This command repeats it in about a minute, and `--seed` draws a different set of answers:
+
+```bash
+python3 tools/measure_learning.py
+```
+
+Our first rules made later suggestions worse. After one edit, they moved all that owner's later suggestions the same way, which was usually wrong. So we stopped moving them automatically:
+
+| Version | Points gained, learning on against off | 95% range |
+|---|---:|---:|
+| First rules | -28.0 | -44.1 to -13.3 |
+| **Current rules** | **+9.0** | **+3.0 to +17.0** |
+| Current rules, second set of answers | +7.8 | +2.3 to +15.1 |
+| Current rules, third set of answers | +4.7 | +1.0 to +10.2 |
+| Current rules, fourth set of answers | +5.7 | +0.7 to +12.4 |
+
+The gain is real but small, at about 0.5% of the points on those dates, because most holidays appear only once in a season. Across the four sets:
+
+- **An owner's earlier choice:** when we reused it, it was exactly right on 80 of 89 dates.
+- **The one-tap move:** it was exactly right on only 8 of 242 dates, while our suggestion was right on 135. That's why it stays an option and never replaces the suggestion.
+- **Replaying real pilot decisions into this season:** a gain of +0.7 points (range -1.6 to +3.5) across 97 businesses, which is within noise, because the model already uses those decisions.
+
+The owner simulator is a statistical stand-in, so this shows the rules work on simulated owners, not on real ones.
 
 ## Results
 
@@ -272,6 +301,7 @@ These are scores on synthetic data, and the owner simulator isn't real customer 
 - **RealMLP, a neural model.** It was clearly weaker than LightGBM on one fold, and made the blend worse.
 - **The history transformer without the extra training days.** It cut wrong calls, but lowered the strict 2025 score to 59.74, so it only earned its place alongside all past days.
 - **Training the hours picker on all past days too.** It scored worse than training only the open or closed model on them.
+- **Moving later suggestions after one owner edit.** It lost 28 points on the owners who replied, so we now offer the move instead of making it.
 - **Row weighting, pseudo-labels and a hidden-habit model across years.** No clear gain.
 - **Similar businesses in the same city, and reviews dated on the holiday.** No gain, which suggests this dataset doesn't reward location.
 - **Outside data.** All 88 live holidays from Nager.Date are already in the package's calendar, and real city population and daylight gave no clear gain. The hidden answers are synthetic, so outside sources can't predict them.

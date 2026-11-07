@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT))
 os.environ["MOCK_QUIET"] = "1"
 
 from connect import config, messages  # noqa: E402
-from connect.engine import Engine  # noqa: E402
+from connect.engine import Decision, Engine  # noqa: E402
 from connect.hours import edit_shift, is_valid, shift  # noqa: E402
 from connect.service import Service  # noqa: E402
 from connect.store import Store  # noqa: E402
@@ -235,12 +235,22 @@ class ChainTest(unittest.TestCase):
         self.assertTrue(all(i["write_status"] == "FAILED" for i in view["items"]))
         self.assertEqual(sandbox.entities["connect-demo-fi-d0001"]["hours"].get("holidayHours", []), [])
 
+    def test_owner_page_carries_english_for_captions(self):
+        case = self.open_case("FI-D0001")
+        view = self.service.owner_view(case["token"])
+        self.assertEqual(view["language"], "fi")
+        self.assertEqual(view["ui_en"]["approve"], "Approve")
+        item = view["items"][0]
+        self.assertEqual(item["en"]["date"], "Thu 24 Dec")
+        self.assertEqual(item["en"]["proposed_label"], messages.hours_label(item["proposed"], "en"))
+        self.assertNotEqual(item["en"]["reason"], item["reason"])
+
     def test_stop_reason_opts_out(self):
         case = self.open_case("FI-D0001")
         self.service.decide(case["token"], [{"item": i["id"], "action": "decline", "reason": "stop"} for i in case["items"]])
         self.assertTrue(self.service.business_view("FI-D0001")["preferences"]["opted_out"])
 
-    def test_edit_moves_the_next_suggestion(self):
+    def test_edit_offers_the_same_move_in_one_tap(self):
         case = self.open_case("FI-D0003")  # Kide has standing permission, so turn it off for this test.
         self.service.undo(case["token"], case["items"][0]["id"])
         self.service._set_pref("FI-D0003", "standing_permission", 0)
@@ -251,9 +261,26 @@ class ChainTest(unittest.TestCase):
                             [{"item": i["id"], "action": "approve"} for i in second["items"] if i["id"] != eve["id"]])
         third = self.open_case("FI-D0003")
         nye = next(i for i in third["items"] if i["date"] == "2026-12-31")
-        self.assertEqual(nye["proposed"], "09:00-16:00")  # Last year 09:00-15:00, moved an hour like the edit.
+        self.assertEqual(nye["proposed"], "09:00-15:00")  # Last year's hours stay the suggestion.
+        self.assertEqual(nye["evidence"]["alternative"], "09:00-16:00")  # The same one-hour move is one tap away.
         self.assertTrue(nye["learning_notes"])
-        self.assertIn("shifted_from", nye["evidence"])
+        shown = next(i for i in self.service.owner_view(third["token"])["items"] if i["id"] == nye["id"])
+        self.assertEqual(shown["alternative"], "09:00-16:00")
+        self.service.decide(third["token"], [{"item": nye["id"], "action": "edit", "hours": shown["alternative"]}])
+        written = {h["date"]: h for h in self.mock.get_entity("FI-D0003")["hours"]["holidayHours"]}
+        self.assertEqual(written["2026-12-31"]["openIntervals"], [{"start": "09:00", "end": "16:00"}])
+
+    def test_opening_on_a_closed_guess_makes_later_closed_guesses_questions(self):
+        decision = Decision("FI-D0001", "2026-12-25", "XMAS_DAY", "SUGGEST", "07:30-18:00", "closed", "PEERS", confidence=0.95)
+        after = ENGINE.apply_learning(decision, {"closed_asks": 1})
+        self.assertEqual((after.action, after.hours), ("SUGGEST", "closed"))
+        self.assertLess(after.confidence, config.SUGGEST_THRESHOLD)
+        self.assertTrue(after.learning_notes)
+
+    def test_owners_choice_is_used_for_the_same_day(self):
+        decision = Decision("FI-D0001", "2026-12-28", "INTERDAY", "SUGGEST", "07:30-18:00", "10:00-14:00", "PEERS", confidence=0.5)
+        after = ENGINE.apply_learning(decision, {"day_hours": {"INTERDAY": "09:00-15:00"}})
+        self.assertEqual((after.hours, after.basis), ("09:00-15:00", "YOUR_CHOICE"))
 
     def test_decline_open_as_usual_makes_connect_more_careful(self):
         case = self.open_case("FI-D0017")

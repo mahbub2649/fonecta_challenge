@@ -49,7 +49,7 @@ TEXT = {
         "LAST_YEAR": "Viime vuonna: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share} % vastaavista yrityksistä, jotka merkitsivät aikansa, oli kiinni",
         "OLDER_YEAR": "Kaksi vuotta sitten: {older}", "REVIEW_TIME": "Asiakkaan mukaan suljitte viime vuonna klo {close}", "REVIEW_CLOSED": "Asiakkaat löysivät ovet kiinni viime vuonna", "REVIEW_WEEK": "Asiakkaan mukaan aukiolonne ovat nyt {week}", "PATTERN": "Perustuu tietoihimme yrityksestänne ja vastaavista yrityksistä",
-        "YOUR_CHOICE": "Aiempi valintanne: {your}", "shifted": "Huomioimme aiemman muokkauksenne",
+        "YOUR_CHOICE": "Aiempi valintanne: {your}",
         "confirm": "Kiitos {first}! Päivitimme yrityksen {business} tiedot:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "Uudet ajat näkyvät: {places}.",
@@ -75,7 +75,7 @@ TEXT = {
         "LAST_YEAR": "Förra året: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share} % av liknande företag som angav sina tider hade stängt",
         "OLDER_YEAR": "För två år sedan: {older}", "REVIEW_TIME": "Enligt en kund stängde ni {close} förra året", "REVIEW_CLOSED": "Kunder stod framför stängd dörr förra året", "REVIEW_WEEK": "Enligt en kund har ni nu öppet {week}", "PATTERN": "Bygger på vad vi vet om ert företag och liknande företag",
-        "YOUR_CHOICE": "Ert tidigare val: {your}", "shifted": "Vi tog hänsyn till er tidigare ändring",
+        "YOUR_CHOICE": "Ert tidigare val: {your}",
         "confirm": "Tack {first}! Vi har uppdaterat {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "De nya tiderna syns: {places}.",
@@ -101,7 +101,7 @@ TEXT = {
         "LAST_YEAR": "I fjor: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share} % av lignende bedrifter som oppga tidene sine, holdt stengt",
         "OLDER_YEAR": "For to år siden: {older}", "REVIEW_TIME": "Ifølge en kunde stengte dere {close} i fjor", "REVIEW_CLOSED": "Kunder sto foran stengt dør i fjor", "REVIEW_WEEK": "Ifølge en kunde har dere nå åpent {week}", "PATTERN": "Basert på det vi vet om bedriften deres og lignende bedrifter",
-        "YOUR_CHOICE": "Deres tidligere valg: {your}", "shifted": "Vi tok hensyn til den tidligere endringen deres",
+        "YOUR_CHOICE": "Deres tidligere valg: {your}",
         "confirm": "Takk {first}! Vi har oppdatert {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "De nye tidene vises: {places}.",
@@ -127,7 +127,7 @@ TEXT = {
         "LAST_YEAR": "Last year: {last}", "SHOPPING_CENTRE": "{mall}: {mall_hours}",
         "PEERS": "{share}% of similar businesses that entered their hours were closed",
         "OLDER_YEAR": "Two years ago: {older}", "REVIEW_TIME": "A customer says you closed at {close} last year", "REVIEW_CLOSED": "Customers found you closed last year", "REVIEW_WEEK": "A customer says you're now open {week}", "PATTERN": "Based on what we know about your business and similar ones",
-        "YOUR_CHOICE": "Your earlier choice: {your}", "shifted": "We took your earlier edit into account",
+        "YOUR_CHOICE": "Your earlier choice: {your}",
         "confirm": "Thanks {first}! We've updated {business}:",
         "confirm_line": "• {day} {date}: {final}",
         "where": "The new hours will show: {places}.",
@@ -145,7 +145,7 @@ TEXT = {
 
 # The words on the owner's approval page.
 UI = {
-    "fi": {"title": "Tarkista aukioloajat", "shown": "Google näyttää nyt", "suggest": "Ehdotus", "why": "Miksi",
+    "fi": {"alternative": "Siirrä kuten viimeksi: {hours}", "title": "Tarkista aukioloajat", "shown": "Google näyttää nyt", "suggest": "Ehdotus", "why": "Miksi",
            "approve_all": "Hyväksy", "approve_all_n": "Hyväksy kaikki ({n})", "approve": "Hyväksy", "edit": "Muokkaa",
            "decline": "Ei kiitos", "closed_toggle": "Kiinni koko päivän", "from": "Avataan", "to": "Suljetaan",
            "add_period": "Lisää toinen aukiolojakso", "remove_period": "Poista toinen jakso", "save": "Tallenna",
@@ -162,7 +162,7 @@ UI = {
            "saving": "Tallennetaan…", "failed": "Tallennus ei onnistunut, joten mitään ei muutettu. Yritämme uudelleen.",
            "invalid": "Tarkista ajat.", "expired": "Tämä linkki ei ole enää voimassa.",
            "stopped": "Selvä, emme lähetä näitä viestejä enää.", "pending_write": "Odottaa tallennusta"},
-    "sv": {"title": "Kontrollera öppettiderna", "shown": "Google visar nu", "suggest": "Förslag", "why": "Varför",
+    "sv": {"alternative": "Flytta som förra gången: {hours}", "title": "Kontrollera öppettiderna", "shown": "Google visar nu", "suggest": "Förslag", "why": "Varför",
            "approve_all": "Godkänn", "approve_all_n": "Godkänn alla ({n})", "approve": "Godkänn", "edit": "Ändra",
            "decline": "Nej tack", "closed_toggle": "Stängt hela dagen", "from": "Öppnar", "to": "Stänger",
            "add_period": "Lägg till en andra öppettid", "remove_period": "Ta bort den andra öppettiden", "save": "Spara",
@@ -179,7 +179,7 @@ UI = {
            "saving": "Sparar…", "failed": "Det gick inte att spara, så inget har ändrats. Vi försöker igen.",
            "invalid": "Kontrollera tiderna.", "expired": "Den här länken gäller inte längre.",
            "stopped": "Okej, vi skickar inga fler sådana meddelanden.", "pending_write": "Väntar på att sparas"},
-    "nb": {"title": "Sjekk åpningstidene", "shown": "Google viser nå", "suggest": "Forslag", "why": "Hvorfor",
+    "nb": {"alternative": "Flytt som sist: {hours}", "title": "Sjekk åpningstidene", "shown": "Google viser nå", "suggest": "Forslag", "why": "Hvorfor",
            "approve_all": "Godkjenn", "approve_all_n": "Godkjenn alle ({n})", "approve": "Godkjenn", "edit": "Endre",
            "decline": "Nei takk", "closed_toggle": "Stengt hele dagen", "from": "Åpner", "to": "Stenger",
            "add_period": "Legg til en åpningsperiode til", "remove_period": "Fjern den andre perioden", "save": "Lagre",
@@ -196,7 +196,7 @@ UI = {
            "saving": "Lagrer…", "failed": "Vi fikk ikke lagret, så ingenting er endret. Vi prøver igjen.",
            "invalid": "Sjekk tidene.", "expired": "Denne lenken gjelder ikke lenger.",
            "stopped": "Greit, vi sender ikke flere slike meldinger.", "pending_write": "Venter på lagring"},
-    "en": {"title": "Check your opening hours", "shown": "Google shows now", "suggest": "Suggestion", "why": "Why",
+    "en": {"alternative": "Move like last time: {hours}", "title": "Check your opening hours", "shown": "Google shows now", "suggest": "Suggestion", "why": "Why",
            "approve_all": "Approve", "approve_all_n": "Approve all ({n})", "approve": "Approve", "edit": "Edit",
            "decline": "No thanks", "closed_toggle": "Closed all day", "from": "Opens", "to": "Closes",
            "add_period": "Add a second opening period", "remove_period": "Remove the second period", "save": "Save",
@@ -275,8 +275,6 @@ def reason(item: dict, lang: str) -> str:
         text = t[basis]
     else:
         return ""
-    if evidence.get("shifted_from"):
-        text += f". {t['shifted']}"
     return text
 
 

@@ -357,10 +357,10 @@ class Service:
                     learned["open_shift"], learned["close_shift"] = open_by, close_by
                     self.store.log("LEARN", "connect",
                                    f"Owner moved the opening by {open_by:+d} min and the closing by {close_by:+d} min. "
-                                   "Later suggestions for this owner move the same way.", eid, case["id"])
+                                   "Later suggestions offer the same move in one tap.", eid, case["id"])
                 if proposed == "closed" and final != "closed":
-                    learned["closed_doubts"] = learned.get("closed_doubts", 0) + 1
-                    self.store.log("LEARN", "connect", "Owner opens on a day Connect thought was closed. Later 'closed' guesses need more proof.", eid, case["id"])
+                    learned["closed_asks"] = learned.get("closed_asks", 0) + 1
+                    self.store.log("LEARN", "connect", "Owner opens on a day Connect thought was closed. Later 'closed' guesses are asked as questions.", eid, case["id"])
             if item["decision"] == "DECLINED":
                 why = item.get("decline_reason")
                 if why in ("open_as_usual", "dont_ask"):
@@ -563,15 +563,22 @@ class Service:
                 "id": item["id"], "day": messages.day_name(item["day_key"], lang, item["day_name_local"]),
                 "date": messages.date_label(item["date"], lang), "shown": messages.hours_label(item["shown"], lang),
                 "proposed": item["proposed"], "proposed_label": messages.hours_label(item["proposed"], lang),
+                "alternative": item["evidence"].get("alternative"),
+                "alternative_label": messages.hours_label(item["evidence"]["alternative"], lang) if item["evidence"].get("alternative") else None,
                 "reason": messages.reason(item, lang), "mode": item["mode"], "decision": item["decision"],
                 "final_label": messages.hours_label(item["final_hours"], lang) if item["final_hours"] else None,
                 "write_status": item["write_status"], "views": item["expected_views"] if item["views_from_last_year"] else None,
+                "en": {"day": messages.day_name(item["day_key"], "en", item["day_name_local"]), "date": messages.date_label(item["date"], "en"),
+                       "shown": messages.hours_label(item["shown"], "en"), "proposed_label": messages.hours_label(item["proposed"], "en"),
+                       "alternative_label": messages.hours_label(item["evidence"]["alternative"], "en") if item["evidence"].get("alternative") else None,
+                       "reason": messages.reason(item, "en"), "final_label": messages.hours_label(item["final_hours"], "en") if item["final_hours"] else None},
             })
         prefs = self._prefs(eid)
         written = any(i["write_status"] == "WRITTEN" for i in items)
-        listings = [{"name": x["name"], "eta": messages.eta_label(x["seconds"], lang)} for x in self.where_it_shows(eid)] if written else []
+        listings = [{"name": x["name"], "eta": messages.eta_label(x["seconds"], lang), "eta_en": messages.eta_label(x["seconds"], "en")}
+                    for x in self.where_it_shows(eid)] if written else []
         return {"business": self.engine.entities[eid]["name"], "first_name": self._first_name(eid), "language": lang,
-                "ui": messages.UI[lang], "status": case["status"], "expired": self._expired(case), "items": items,
+                "ui": messages.UI[lang], "ui_en": messages.UI["en"], "status": case["status"], "expired": self._expired(case), "items": items,
                 "listings": listings, "standing": prefs["standing"], "opted_out": prefs["opted_out"]}
 
     def case_view(self, case_id: int) -> dict:

@@ -20,8 +20,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 os.environ["MOCK_QUIET"] = "1"
-if "CONNECT_ENV_FILE" not in os.environ and not (ROOT / ".env").exists() and (ROOT.parent / ".env").exists():
-    os.environ["CONNECT_ENV_FILE"] = str(ROOT.parent / ".env")
+os.environ.setdefault("CONNECT_ENV_FILE", os.pathsep.join([str(ROOT / ".env"), str(ROOT.parent / ".env")]))
 
 from connect import config  # noqa: E402
 from connect.engine import Engine  # noqa: E402

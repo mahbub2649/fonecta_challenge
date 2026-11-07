@@ -6,6 +6,7 @@ let view = null;
 let open = {}; // Which card is showing its edit or decline form: {itemId: "edit" | "decline"}.
 let hideOffer = false;
 let busy = false;
+const captions = new URLSearchParams(location.search).get("captions") === "1"; // For reviewers. Owners see only their own language.
 
 function el(tag, props = {}, ...children) {
   const node = document.createElement(tag);
@@ -18,11 +19,43 @@ function el(tag, props = {}, ...children) {
   return node;
 }
 
+function englishFor() {
+  const map = new Map();
+  const sameHours = (a, b) => a.replaceAll(".", ":") === b.replaceAll(".", ":"); // 7.30–13 and 7:30–13 need no caption.
+  const add = (text, english) => { if (text && english && !sameHours(text, english)) map.set(text, english); };
+  for (const [key, text] of Object.entries(view.ui)) add(text, view.ui_en[key]);
+  const count = String(pendingItems().length);
+  add(view.ui.approve_all_n.replace("{n}", count), view.ui_en.approve_all_n.replace("{n}", count));
+  for (const item of view.items) {
+    for (const key of ["day", "date", "shown", "proposed_label", "reason", "final_label"]) add(item[key], item.en[key]);
+    if (item.final_label) add(`✓ ${item.final_label}`, `✓ ${item.en.final_label}`);
+    if (item.views) add(view.ui.views.replace("{n}", item.views), view.ui_en.views.replace("{n}", item.views));
+    if (item.alternative) add(view.ui.alternative.replace("{hours}", item.alternative_label), view.ui_en.alternative.replace("{hours}", item.en.alternative_label));
+  }
+  for (const listing of view.listings) add(listing.eta, listing.eta_en);
+  return map;
+}
+
+// Puts a small English line under any text that has a translation. It doesn't change what the buttons do.
+function addCaptions(root) {
+  if (!captions || !view || view.language === "en") return;
+  const map = englishFor();
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const english = map.get(node.textContent.trim());
+    if (!english || node.parentElement.classList.contains("caption") || node.nextSibling?.classList?.contains("caption")) continue;
+    node.after(el("small", {cls: "caption", textContent: english}));
+  }
+}
+
 async function post(path, body) {
   if (busy) return;
   busy = true;
   // Nothing redraws while saving, so a form keeps what the owner typed if the save fails.
   const notice = el("div", {cls: "saving", role: "status", textContent: view.ui.saving});
+  addCaptions(notice);
   document.body.append(notice);
   app.inert = true;
   let errorText = null;
@@ -41,7 +74,9 @@ async function post(path, body) {
   app.inert = false;
   notice.remove();
   if (errorText) {
-    app.prepend(el("p", {cls: "error", role: "alert", textContent: errorText}));
+    const problem = el("p", {cls: "error", role: "alert", textContent: errorText});
+    addCaptions(problem);
+    app.prepend(problem);
     window.scrollTo(0, 0);
   } else {
     render();
@@ -79,6 +114,7 @@ function editForm(item) {
         el("input", {type: "checkbox", checked: closed, onchange: (e) => { closed = e.target.checked; paint(); }}),
         ui.closed_toggle),
       inputs ?? "");
+    addCaptions(body);
   }
   paint();
 
@@ -140,6 +176,9 @@ function card(item, multiple) {
     !pending ? stateLine(item) : null,
     pending && form === "edit" ? editForm(item) : null,
     pending && form === "decline" ? declineForm(item) : null,
+    pending && !form && item.alternative ? el("button", {type: "button", cls: "alternative",
+      textContent: ui.alternative.replace("{hours}", item.alternative_label),
+      on: () => decide([{item: item.id, action: "edit", hours: item.alternative}])}) : null,
     pending && !form ? el("div", {cls: "row"},
       multiple ? el("button", {type: "button", textContent: ui.approve,
         on: () => decide([{item: item.id, action: "approve"}])}) : null,
@@ -155,6 +194,7 @@ function render() {
   document.title = `${ui.title}: ${view.business}`;
   if (view.expired) {
     app.replaceChildren(el("p", {cls: "center", textContent: ui.expired}));
+    addCaptions(app);
     return;
   }
   const pending = pendingItems();
@@ -200,6 +240,7 @@ function render() {
         on: () => decide(pending.map((i) => ({item: i.id, action: "approve"})))}))));
   }
   app.replaceChildren(...nodes);
+  addCaptions(app);
 }
 
 fetch(api).then((r) => (r.ok ? r.json() : Promise.reject())).then((data) => { view = data; render(); })

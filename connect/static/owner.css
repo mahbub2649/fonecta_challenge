@@ -77,6 +77,7 @@ button {
 button:focus-visible, input:focus-visible { outline: 3px solid #7c8cff; outline-offset: 2px; }
 button.primary { background: var(--brand); color: #fff; }
 button.quiet { border-color: var(--line); color: var(--muted); }
+button.alternative { display: block; width: 100%; margin-top: 12px; border-color: var(--brand); color: var(--brand); }
 button:disabled { opacity: .55; cursor: default; }
 
 .sticky {
@@ -132,3 +133,7 @@ label.check input { width: 22px; height: 22px; }
 }
 main[inert] { opacity: .6; }
 .center { text-align: center; margin-top: 40vh; color: var(--muted); }
+
+.caption { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-style: italic; font-weight: 400; line-height: 1.3; }
+button.primary .caption { color: #dfe3ff; }
+.day .caption { display: inline; margin: 0 6px; }
