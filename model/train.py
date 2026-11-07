@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -36,9 +37,9 @@ LABELS_2025 = config.DATA_DIR / "labels" / "dev_labels_2025_backtest.csv"
 CATEGORICAL = ["day_key", "segment", "country", "tier", "archetype", "day_class", "day_type"]
 ID_COLUMNS = {"entity_id", "date", "shown", "season", "split", "row_id", "truth", "cls", "fold", "listing_closed", "aux"}
 ROW_PARAMS = dict(objective="multiclass", num_class=3, n_estimators=450, learning_rate=0.03, num_leaves=15, min_child_samples=25,
-                  subsample=0.8, subsample_freq=1, colsample_bytree=0.3, reg_lambda=5.0, n_jobs=10, verbose=-1, random_state=7)
+                  subsample=0.8, subsample_freq=1, colsample_bytree=0.3, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=7)
 CAND_PARAMS = dict(objective="binary", n_estimators=350, learning_rate=0.04, num_leaves=31, min_child_samples=20,
-                   subsample=0.8, subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=10, verbose=-1, random_state=7)
+                   subsample=0.8, subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=7)
 CLOSED, SAME, OTHER = 0, 1, 2
 MIN_EXACT = 0.25  # The least chance of exactly right hours that justifies messaging an owner.
 
@@ -102,6 +103,7 @@ def fit_predict(rows_train, rows_pred, cands_train, cands_pred, seeds=(7,), min_
     # The 2024 season has too little history behind it, so it would teach the wrong lesson.
     other = cands_train[(cands_train["cls"] == OTHER) & (cands_train["season"] >= min_season)]
     for seed in seeds:
+        seed += int(os.environ.get("MODEL_SEED_SHIFT", "0"))  # For measuring noise. 0 keeps the published model.
         model = lgb.LGBMClassifier(**{**ROW_PARAMS, "random_state": seed})
         model.fit(rows_train[r_cols], rows_train["cls"], categorical_feature=CATEGORICAL)
         probs += model.predict_proba(rows_pred[r_cols]) / len(seeds)
@@ -230,6 +232,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Also run the strict 2025 back-test")
+    parser.add_argument("--results", default=None, help="Also save the scores to this JSON file")
     args = parser.parse_args()
     start = time.time()
     rows, cands = load()
@@ -249,7 +252,10 @@ def main() -> None:
     show("2026 held-out", results[2026])
     show("2025 held-out", results[2025])
     if args.strict:
-        show("2025 strict (past only)", strict_2025(knobs))
+        results["strict_2025"] = strict_2025(knobs)
+        show("2025 strict (past only)", results["strict_2025"])
+    if args.results:
+        Path(args.results).write_text(json.dumps({str(k): v for k, v in results.items()}, indent=1, default=float))
     np.savez(CACHE / "oof.npz", probs=probs, p_exact=p_exact, p_near=p_near)
     if args.write:
         write_outputs(rows, cands, labelled, probs, cand_rows, p_exact, p_near, knobs)

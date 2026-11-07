@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import argparse
 import csv
-import json
+import os
 import sys
 import time
 from datetime import date
@@ -30,25 +30,14 @@ from connect import config  # noqa: E402
 from sklearn.metrics import log_loss, roc_auc_score  # noqa: E402
 
 from model.features import RELATED_KEYS, Data, past_day_rows, previous_dates  # noqa: E402
+from model.folds import N_FOLDS, fold_map  # noqa: E402
 
 CACHE = config.VAR_DIR / "model"
 SNAPSHOTS = {2024: date(2024, 11, 6), 2025: date(2025, 11, 6), 2026: date(2026, 11, 6)}
 CATEGORICAL = ["day_key", "day_class", "day_type", "segment", "country", "tier"]
 NOT_FEATURES = {"entity_id", "date", "regular", "has_entry", "entry_hours", "entry_in_time", "truth", "cls", "fold", "season"}
 PARAMS = dict(objective="multiclass", num_class=3, n_estimators=300, learning_rate=0.04, num_leaves=31, min_child_samples=30, subsample=0.8,
-              subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=10, verbose=-1, random_state=3)
-N_FOLDS = 5
-
-
-def fold_map(dev_ids: list) -> dict:
-    """Fixed folds by business, shared with the second stage."""
-    path = CACHE / "folds.json"
-    if path.exists():
-        return json.loads(path.read_text())
-    order = np.random.RandomState(11).permutation(sorted(dev_ids))
-    folds = {str(eid): int(i % N_FOLDS) for i, eid in enumerate(order)}
-    path.write_text(json.dumps(folds))
-    return folds
+              subsample_freq=1, colsample_bytree=0.6, reg_lambda=5.0, n_jobs=int(os.environ.get("MODEL_N_JOBS", "10")), verbose=-1, random_state=3 + int(os.environ.get("MODEL_SEED_SHIFT", "0")))
 
 
 def build_tables(data: Data, dev: set) -> pd.DataFrame:

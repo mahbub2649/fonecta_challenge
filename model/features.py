@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import re
 from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
@@ -16,6 +17,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from model.review_text import KeywordMatcher
 
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 RELATED_KEYS = ["FATHERS_DAY", "BLACK_FRIDAY", "INDEPENDENCE_DAY", "LUCIA", "DEC23", "XMAS_EVE", "XMAS_DAY", "BOXING_DAY",
@@ -134,6 +137,20 @@ def cycle(d: date) -> int:
     return d.year if d.month >= 2 else d.year - 1
 
 
+def keyword_matcher() -> KeywordMatcher | None:
+    """Learned review keywords (model/keywords.py). CONNECT_KEYWORDS=off turns them off, a path picks a file,
+    and unset uses model/keywords.json if it exists. With none, the hand-written phrases above work alone."""
+    choice = os.environ.get("CONNECT_KEYWORDS", "")
+    if choice == "off":
+        return None
+    path = Path(choice) if choice else Path(__file__).with_name("keywords.json")
+    if not path.exists():
+        if choice:
+            raise FileNotFoundError(f"CONNECT_KEYWORDS points to a missing file: {path}")
+        return None
+    return KeywordMatcher(json.loads(path.read_text(encoding="utf-8")))
+
+
 class Data:
     """All the challenge's input files, except labels/ and mock_api/."""
 
@@ -179,6 +196,7 @@ class Data:
             self.breaks[r["country"]].append((r["start"], r["end"]))
         events = json.loads((data / "local_events.json").read_text(encoding="utf-8"))["data"]
         self.events = {e["@id"]: e for e in events}
+        self.keywords = keyword_matcher()
         self._load_reviews(data)
         self._load_edits(data)
         self._load_analytics(data)
@@ -230,6 +248,10 @@ class Data:
                 self.rev_seasonal[eid].append(when)
                 continue
             kind, minutes = None, np.nan
+            # Learned keywords: "union" adds to the hand-written phrases, "replace" stands in for the
+            # hand-written closed and open phrases. Clock times are still read by the patterns above.
+            learned = self.keywords.classes(eid, text) if self.keywords else set()
+            hand = not (self.keywords and self.keywords.mode == "replace")
             m = RE_CLOSE_AT.search(text)
             if RE_WRONG_CLOSED.search(text):
                 kind = "open_shown_closed"
@@ -237,22 +259,25 @@ class Data:
                 kind, minutes = "close_at", clock(next(g for g in m.groups() if g))
             elif RE_ARRIVED.search(text):
                 kind, minutes = "arrived", clock(RE_ARRIVED.search(text).group(1))
-            elif RE_THANKS_OPEN.search(text):
+            elif hand and RE_THANKS_OPEN.search(text):
                 kind = "open"
-            elif RE_CLOSED.search(text):
+            elif hand and RE_CLOSED.search(text):
                 kind = "closed"
+            elif learned:
+                kind = next(c for c in ("closed", "early", "open") if c in learned)
             if not kind:
                 continue
             key = next((k for k, pattern in REVIEW_DAYS if pattern.search(text)), None)
             country = ent["meta"]["countryCode"]
             day = self._day_for(country, key, when, dates_by_country[country])
             confirmed = any(RE_REPLY_CONFIRMS.search((c.get("content") or "").lower()) for c in (r.get("comments") or []))
-            if kind in ("closed", "close_at", "arrived"):
+            if kind in ("closed", "close_at", "arrived", "early"):
                 self.rev_closed[eid].append(when)
                 if key:
                     self.rev_key[eid].append((when, key))
             if day:
-                self.rev_day[(eid, day)].append({"when": when, "kind": kind, "minutes": minutes, "confirmed": confirmed})
+                self.rev_day[(eid, day)].append({"when": when, "kind": kind, "minutes": minutes, "confirmed": confirmed,
+                                                 "learned": learned})
 
     def _day_for(self, country: str, key: str | None, when: str, days: list) -> str | None:
         """The latest date of the named day before the review, or the latest special day if it's unnamed."""
@@ -461,6 +486,10 @@ def build_row(data: Data, modes: PopulationModes, eid: str, d: date, key: str, e
         row[prefix + "rev_confirmed"] = int(any(x["confirmed"] for x in said))
         row[prefix + "rev_d_close"] = (close_at[-1] if close_at else np.nan) - then_close
         row[prefix + "rev_d_arrived"] = (arrived[-1] if arrived else np.nan) - then_close
+        if data.keywords:  # Only with learned keywords, so the model without them is unchanged.
+            row[prefix + "rev_early"] = sum(x["kind"] == "early" for x in said)
+            for cls in ("closed", "early", "open"):
+                row[prefix + "kw_" + cls] = sum(cls in x["learned"] for x in said)
         if reg_then not in (None, "closed") and regular != "closed":
             for name, values in (("rev_close", close_at), ("rev_arrived", arrived)):
                 for minutes in values[-1:]:
@@ -760,7 +789,13 @@ def past_day_rows(data: Data, eid: str, asof: date) -> list:
                         k = int(m[1])
                         value = data.an[i, day, k]
                         extra[m] = float((value + 1) / (means[k] + 1)) if not np.isnan(value) and not np.isnan(means[k]) else np.nan
+        learned = {}
+        if data.keywords:  # Only with learned keywords, so the model without them is unchanged.
+            learned["rev_early_day"] = sum(x["kind"] == "early" for x in said)
+            for cls in ("closed", "early", "open"):
+                learned["kw_" + cls + "_day"] = sum(cls in x["learned"] for x in said)
         out.append({
+            **learned,
             "entity_id": eid, "date": day_text, "day_key": key, "day_class": info["day_class"], "day_type": info["day_type"],
             "segment": ent["c_segment"], "country": country, "tier": data.tiers.get(ent["address"]["city"], "town"),
             "weekday": p.weekday(), "month": p.month, "regular_closed": int(regular == "closed"), "regular": regular,

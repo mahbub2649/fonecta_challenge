@@ -86,6 +86,8 @@ python3 model/past_days.py
 python3 model/train.py --strict --write
 ```
 
+To learn the review keyword lists from data and test them at scale on the LUMI supercomputer, see [lumi/README.md](lumi/README.md). `python3 model/experiment.py` runs one setting end to end on any machine.
+
 ### Businesses to try
 
 | Business | Shows |
