@@ -1,0 +1,5 @@
+# Only for rerunning the TabICLv2 part of the blend (model/neural.py). Needs a GPU with about 4 GB of memory.
+-r requirements.txt
+torch
+tabicl
+pytabkit

@@ -66,7 +66,7 @@ python3 fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/evaluation/evaluate.py --pred
 
 ### 6. Rebuild the model (optional)
 
-The trained model's output is already in this repository, so the app doesn't need this. It takes about 5 minutes on a laptop CPU, and the last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
+The trained models' output is already in this repository, so the app doesn't need this. The last step overwrites `predictions_2026.csv` and `connect/model_decisions.json`.
 
 ```bash
 pip install -r model/requirements.txt
@@ -74,8 +74,15 @@ python3 tools/build_views.py
 python3 model/build_dataset.py
 python3 model/past_days.py --before 2025-11-06    # first stage for the strict back-test
 python3 model/past_days.py
-python3 model/train.py --strict --write
+
+pip install -r model/requirements-neural.txt      # TabICLv2: about 45 minutes on a 4 GB GPU
+python3 model/neural.py tabicl --max-train 16000 --tag _16k
+python3 model/neural.py tabicl --max-train 16000 --strict --soft soft_strict.parquet --tag _strict
+
+python3 model/blend.py --weight 0.4 --closed-margin 0.2 --strict --write
 ```
+
+Run these one at a time, as running heavy jobs together can run a laptop out of memory.
 
 ### Businesses to try
 
@@ -105,11 +112,13 @@ The model only proposes. Nothing is published without the owner's approval or st
 
 1. **Review reader:** reads closed-door complaints, closing times, thanks for being open and new weekly hours, in Finnish, Swedish, Norwegian and English, and ties each statement to the day it's about.
 2. **Past-day estimator:** most special days never got an entry, so what the business really did is hidden. A LightGBM model estimates it from what the day left behind: reviews, user edits, and spikes in calls and clicks.
-3. **Open or closed model:** LightGBM combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather.
+3. **Open or closed model:** LightGBM combines those estimates with history, peers, shopping centres, the 2025 pilot, events and weather. Its estimates are blended, 60/40, with those of TabICLv2, a transformer foundation model, because the two make different mistakes.
 4. **Hours picker:** builds candidate hours from every source and ranks them. The right hours are on the list 97% of the time.
-5. **Decision layer:** chooses the action with the highest expected points, and holds back hours it thinks have under a 25% chance of being exactly right.
+5. **Decision layer:** chooses the action with the highest expected points, asks for extra proof before suggesting "closed", and holds back hours it thinks have under a 25% chance of being exactly right.
 
 No business is ever scored by a model trained on it, and features only use data dated before the snapshot. The feature code has no path to the answer files, and we don't read the simulator's internals.
+
+The models run ahead of time and their decisions are saved to a file, so the web app needs no machine-learning libraries. The research we considered, and what we tested from it, is in [REFERENCES.md](REFERENCES.md).
 
 ## How it learns
 
@@ -125,18 +134,21 @@ No business is ever scored by a model trained on it, and features only use data 
 
 Scored with the organisers' `evaluate.py`, on businesses each model never saw.
 
-| Measure | Package baseline | Connect Suggests |
-|---|---:|---:|
-| **Score, 2026 season** | 54.49 | **67.66** |
-| **Score, 2025 season** | 53.23 | **65.67** |
-| Score, 2025, trained only on data from before that snapshot | | 59.41 |
-| Exact recall, 2026 | 0.59 | 0.76 |
-| Exact precision, 2026 | 0.90 | 0.85 |
-| Search views protected, 2026 | 57.2% | 74.0% |
-| Closed-door views prevented, 2026 | 69.2% | 86.5% |
-| Wrong open or closed calls, 2026 | 224 | 389 |
+| Measure | Package baseline | LightGBM only | Connect Suggests (blend) |
+|---|---:|---:|---:|
+| **Score, 2026 season** | 54.49 | 67.66 | **67.98** |
+| **Score, 2025 season** | 53.23 | 65.67 | **66.05** |
+| Score, 2025, trained only on data from before that snapshot | | 59.41 | 60.30 |
+| Exact recall, 2026 | 0.59 | 0.76 | 0.75 |
+| Exact precision, 2026 | 0.90 | 0.85 | 0.86 |
+| Search views protected, 2026 | 57.2% | 74.0% | 73.6% |
+| Closed-door views prevented, 2026 | 69.2% | 86.5% | 84.5% |
+| Wrong open or closed calls, 2026 | 224 | 389 | 317 |
+| Wrong open or closed calls, 2025 | 249 | 445 | 329 |
 
-We catch far more wrong hours, at the cost of more wrong calls, because the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions. These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
+The blend adds TabICLv2, a transformer foundation model, to LightGBM, and asks for more proof before suggesting "closed". That cut wrong calls by about 19% and raised the score, at a small cost in closed-door views. We still make more wrong calls than the baseline, because we catch far more wrong hours and the scorer rewards the trade. The owner sees each one with its reason before anything changes, and low-confidence suggestions are worded as questions.
+
+These are scores on synthetic data, and the owner simulator isn't real customer behaviour.
 
 ## Data sources that mattered most
 
@@ -152,9 +164,15 @@ We catch far more wrong hours, at the cost of more wrong calls, because the scor
 
 - **A second pass of the past-day estimator**, letting each day read the business's other days. It made both seasons worse, by up to 1.5 points on 2025.
 - **Rating-only reviews and calls on neighbouring days.** They added nothing.
-- **Averaging more random seeds and tuning a decision margin.** Differences stayed within noise, so we kept the simpler version.
+- **Averaging more random seeds, and a general decision margin.** Differences stayed within noise. A margin on "closed" alone, with the blend, is what cut wrong calls.
 - **Larger, more detailed trees.** They scored worse on both seasons, and simpler trees did better.
 - **Training the hours picker on the 2024 season.** It has too little history behind it, so that season is left out of the picker.
+- **RealMLP, a neural model.** It was clearly weaker than LightGBM on one fold, and made the blend worse.
+- **Row weighting, pseudo-labels and a hidden-habit model across years.** No clear gain.
+- **Similar businesses in the same city, and reviews dated on the holiday.** No gain, which suggests this dataset doesn't reward location.
+- **Outside data.** All 88 live holidays from Nager.Date are already in the package's calendar, and real city population and daylight gave no clear gain. The hidden answers are synthetic, so outside sources can't predict them.
+- **Prompting every low-data business.** It lowers the score (66.89 on 2026 at best), though a single question per business could still help real owners.
+- **A small language model reading reviews.** We sized it first: even a perfect reader of all unread reviews added only about 1 point on 2026, so we didn't train it.
 - **Norwegian test businesses in the sandbox.** Yext refuses them with `PROFILE_LANGUAGE_INELIGIBLE`, so that test record uses `en`. The owner's message is still Norwegian.
 
 With perfect knowledge of last year's hidden behaviour, the same model reaches about 86 on 2026. We measured that on dev answers only, and it shows where the next gains are: better records of what businesses really did.
@@ -207,5 +225,8 @@ The loop isn't specific to hours: notice something, suggest it with a reason, ge
 | `model/` and `tools/build_views.py` only: LightGBM | MIT |
 | `model/` and `tools/build_views.py` only: scikit-learn, pandas, NumPy | BSD-3-Clause |
 | `model/` and `tools/build_views.py` only: PyArrow | Apache-2.0 |
+| `model/neural.py` only: TabICL and its model weights | BSD-3-Clause |
+| `model/neural.py` only: PyTorch | BSD-style, with Apache-2.0 parts |
+| `model/neural.py` only: pytabkit, for the RealMLP test | Apache-2.0 |
 
 The web app runs on the Python standard library alone. No GPL or AGPL components. No code from before the event is used.

@@ -22,11 +22,49 @@ RELATED_KEYS = ["FATHERS_DAY", "BLACK_FRIDAY", "INDEPENDENCE_DAY", "LUCIA", "DEC
                 "INTERDAY", "NYE", "NEW_YEARS_DAY", "EPIPHANY_EVE", "EPIPHANY", "EASTER_SATURDAY", "GOOD_FRIDAY", "MAY_DAY",
                 "MIDSUMMER_EVE"]
 STATE = {None: 0, "closed": 1, "REGULAR": 2}  # Anything else is special hours (3).
-CLOSED_FOR_GOOD = ("lopettanut", "pysyvästi", "stängt för gott", "permanent", "lagt ned", "stengt for godt", "closed down",
-                   "lokalen är tom", "tilat tyhjinä")
+CLOSED_FOR_GOOD = ("lopettanut", "pysyvasti", "stangt for gott", "permanent", "lagt ned", "stengt for godt", "closed down",
+                   "lokalen ar tom", "tilat tyhjina")
 CLOSED_WORDS = ("kiinni", "suljettu", "stängt", "stengt", "closed", "låst")
+FOLD = str.maketrans({"ä": "a", "å": "a", "æ": "a", "ö": "o", "ø": "o", "é": "e", "ü": "u"})
+
+
+def fold(text: str) -> str:
+    """Lowercase with accents removed, so 'mørkt', 'mörkt' and 'morkt' all read the same."""
+    return text.lower().translate(FOLD)
+
+
+# Words that decide a statement. A customer's small typo in one of these is corrected before reading.
+TYPO_VOCAB = ["kiinni", "suljettu", "suljettiin", "stangt", "stangde", "stengt", "stengte", "closed", "pimeana", "slackt", "morkt",
+              "auki", "oppet", "apent", "avoinna", "aukioloajat", "oppettider", "apningstider", "lopettanut", "pysyvasti"]
+NOT_TYPOS = {"closer", "closes", "closet", "stange"}  # Real words that happen to be one letter away.
+_typo_cache = {}
+
+
+def fix_typos(text: str) -> str:
+    """Replace a word that is one small slip away from a decisive word. Short words are left alone."""
+    out = []
+    for word in re.findall(r"\w+|\W+", text):
+        if len(word) >= 5 and word.isalpha() and word not in TYPO_VOCAB and word not in NOT_TYPOS:
+            if word not in _typo_cache:
+                _typo_cache[word] = next((v for v in TYPO_VOCAB if abs(len(v) - len(word)) <= 1 and _one_edit(word, v)), word)
+            word = _typo_cache[word]
+        out.append(word)
+    return "".join(out)
+
+
+def _one_edit(a: str, b: str) -> bool:
+    """True if a and b differ by one insertion, deletion, substitution or swap of neighbours."""
+    if a == b:
+        return True
+    if len(a) == len(b):
+        diff = [i for i, (x, y) in enumerate(zip(a, b)) if x != y]
+        return len(diff) == 1 or (len(diff) == 2 and diff[1] == diff[0] + 1 and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]])
+    short, long = (a, b) if len(a) < len(b) else (b, a)
+    return any(long[:i] + long[i + 1:] == short for i in range(len(long)))
+
+
 # Phrases naming a special day, in fi / sv / nb / en. Most specific first: "lille julaften" also contains "julaften".
-REVIEW_DAYS = [(k, re.compile(p)) for k, p in [
+REVIEW_DAYS = [(k, re.compile(fold(p))) for k, p in [
     ("DEC23", r"aatonaat|dagen före julafton|lillejul|lille julaft"),
     ("EPIPHANY_EVE", r"loppiaisaat|trettondagsafton|helligtrekongersaft|epiphany eve"),
     ("EPIPHANY", r"loppiai|trettondag|helligtrekonger|epiphany"),
@@ -44,17 +82,17 @@ REVIEW_DAYS = [(k, re.compile(p)) for k, p in [
     ("SCHOOL_BREAK", r"lomaviikolla|under lovet|i ferien"),
 ]]
 TIME = r"(\d{1,2}(?:[.:]\d{2})?)"
-RE_CLOSE_AT = re.compile(r"suljettiin jo klo " + TIME + r"|stängde de redan " + TIME + r"|stengte de allerede " + TIME + r"|closed already at " + TIME)
-RE_ARRIVED = re.compile(r"klo " + TIME + r" ja ovet olivat jo kiinni")
-RE_WRONG_CLOSED = re.compile(r"olittekin auki|actually open|hade ju öppet|hadde jo åpent")
-RE_THANKS_OPEN = re.compile(r"olitte auki|olla auki|hade öppet|hadde åpent|holdt åpent|being open|you were open")
-RE_CLOSED = re.compile(r"kiinni|suljet|stängt|stängd|stengt|closed|pimeänä|släckt|mörkt|ei ollut|it wasn't")
-RE_WEEK = re.compile(r"(?:nykyään auki vain|numera öppet bara|nå bare åpent|now only open) (.+)")
-RE_OUTDATED = re.compile(r"aukioloajat ovat muuttuneet|uusi omistaja|öppettiderna har ändrats|ny ägare|åpningstidene er endret|ny eier|hours have changed|new owner")
-RE_SEASONAL = re.compile(r"on tauolla|talvella kiinni|stängt på vintern|stengt om vinteren|closed in winter|closed for the winter|closed in the winter|closed during winter")
-RE_REPLY_CONFIRMS = re.compile(r"olimme pyhinä kiinni|aukiolotiedot olivat väärin|unohdimme|öppettiderna var fel|vi glömde|forgot|hours were wrong|åpningstidene var feil|vi glemte")
-WEEK_TOKENS = {"ma": 0, "ti": 1, "ke": 2, "to": 3, "pe": 4, "la": 5, "su": 6, "mån": 0, "tis": 1, "ons": 2, "tor": 3, "fre": 4, "lör": 5, "sön": 6,
-               "man": 0, "tir": 1, "lør": 5, "søn": 6, "mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
+RE_CLOSE_AT = re.compile(fold(r"suljettiin jo klo " + TIME + r"|stängde de redan " + TIME + r"|stengte de allerede " + TIME + r"|closed already at " + TIME))
+RE_ARRIVED = re.compile(fold(r"klo " + TIME + r" ja ovet olivat jo kiinni"))
+RE_WRONG_CLOSED = re.compile(fold(r"olittekin auki|actually open|hade ju öppet|hadde jo åpent"))
+RE_THANKS_OPEN = re.compile(fold(r"olitte auki|olla auki|hade öppet|hadde åpent|holdt åpent|being open|you were open"))
+RE_CLOSED = re.compile(fold(r"kiinni|suljet|stängt|stängd|stengt|closed|pimeänä|släckt|mörkt|ei ollut|it wasn't"))
+RE_WEEK = re.compile(fold(r"(?:nykyään auki vain|numera öppet bara|nå bare åpent|now only open) (.+)"))
+RE_OUTDATED = re.compile(fold(r"aukioloajat ovat muuttuneet|uusi omistaja|öppettiderna har ändrats|ny ägare|åpningstidene er endret|ny eier|hours have changed|new owner"))
+RE_SEASONAL = re.compile(fold(r"on tauolla|talvella kiinni|stängt på vintern|stengt om vinteren|closed in winter|closed for the winter|closed in the winter|closed during winter"))
+RE_REPLY_CONFIRMS = re.compile(fold(r"olimme pyhinä kiinni|aukiolotiedot olivat väärin|unohdimme|öppettiderna var fel|vi glömde|forgot|hours were wrong|åpningstidene var feil|vi glemte"))
+WEEK_TOKENS = {"ma": 0, "ti": 1, "ke": 2, "to": 3, "pe": 4, "la": 5, "su": 6, "tis": 1, "ons": 2, "tor": 3, "fre": 4, "lor": 5, "son": 6,
+               "man": 0, "tir": 1, "mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
 
 
 def clock(text: str) -> int:
@@ -70,11 +108,11 @@ def clock_range(text: str) -> str | None:
 
 def parse_week(text: str) -> dict | None:
     """'ma–pe 10–18, la 10–15' as {weekday index: hours}. Days not listed are closed ("now only open...")."""
-    text = text.split(", päivittäkää")[0].rstrip(". ")
+    text = text.split(", paivittakaa")[0].rstrip(". ")
     week = {i: "closed" for i in range(7)}
     found = False
     for part in text.split(", "):
-        m = re.match(r"([a-zåäöø]+)(?:–([a-zåäöø]+))? (.+)", part)
+        m = re.match(r"([a-z]+)(?:–([a-z]+))? (.+)", part)
         if not m or m.group(1) not in WEEK_TOKENS:
             return None
         first = WEEK_TOKENS[m.group(1)]
@@ -211,7 +249,7 @@ class Data:
                 continue
             when = datetime.fromtimestamp(r["publisherDate"] / 1000).date().isoformat()
             self.rev_all[eid].append(when)
-            text = (r.get("content") or "").lower()
+            text = fix_typos(fold(r.get("content") or ""))
             if not text:
                 continue
             week = RE_WEEK.search(text)
@@ -246,7 +284,7 @@ class Data:
             key = next((k for k, pattern in REVIEW_DAYS if pattern.search(text)), None)
             country = ent["meta"]["countryCode"]
             day = self._day_for(country, key, when, dates_by_country[country])
-            confirmed = any(RE_REPLY_CONFIRMS.search((c.get("content") or "").lower()) for c in (r.get("comments") or []))
+            confirmed = any(RE_REPLY_CONFIRMS.search(fold(c.get("content") or "")) for c in (r.get("comments") or []))
             if kind in ("closed", "close_at", "arrived"):
                 self.rev_closed[eid].append(when)
                 if key:

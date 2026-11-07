@@ -64,6 +64,8 @@ def load(soft: str | None = "soft.parquet") -> tuple:
         rows = rows.merge(pd.read_parquet(CACHE / soft), on="row_id", how="left")
     rows["fold"] = rows["entity_id"].map(json.loads((CACHE / "folds.json").read_text())).fillna(-1).astype(int)
     rows["aux"] = (rows["split"] == "aux").astype(int)
+    regular = rows["truth"] == "REGULAR"  # An entry saying "regular hours" means the truth is what's listed.
+    rows.loc[regular, "truth"] = rows.loc[regular, "shown"]
     rows["cls"] = -1
     known = rows["truth"].notna()
     rows.loc[known & (rows["truth"] == "closed"), "cls"] = CLOSED
@@ -209,9 +211,9 @@ def evaluate(labelled, probs, cand_rows, p_exact, p_near, knobs) -> dict:
     return results
 
 
-def strict_2025(knobs) -> dict:
+def strict_2025(knobs, soft="soft_strict.parquet") -> dict:
     """Both stages trained only on what was knowable before 6 Nov 2025, and on other businesses."""
-    rows, cands = load("soft_strict.parquet")
+    rows, cands = load(soft)
     labelled = rows[(rows["cls"] >= 0) & (rows["aux"] == 0)]
     target = labelled[labelled["season"] == 2025]
     preds = {}
@@ -230,9 +232,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--write", action="store_true")
     parser.add_argument("--strict", action="store_true", help="Also run the strict 2025 back-test")
+    parser.add_argument("--soft", default="soft.parquet", help="Which first-stage feature file to use")
     args = parser.parse_args()
     start = time.time()
-    rows, cands = load()
+    rows, cands = load(args.soft)
     labelled = rows[(rows["cls"] >= 0) & (rows["aux"] == 0)]
     print(f"{len(rows)} rows, {len(cands)} candidates, {labelled['cls'].value_counts().to_dict()}", flush=True)
     other = labelled[labelled["cls"] == OTHER]
@@ -244,12 +247,15 @@ def main() -> None:
 
     knobs = {"margin": 0.0, "closed_margin": 0.0}
     labelled, probs, cand_rows, p_exact, p_near = held_out(rows, cands)
+    other_cands = (cand_rows["cls"] == OTHER).to_numpy()
+    top = cand_rows[other_cands].assign(_p=p_exact[other_cands]).sort_values("_p", ascending=False).drop_duplicates("row_id")
+    print(f"Hours picker: exact on {top['exact'].mean():.3f} of 'other hours' rows", {int(k): round(v, 3) for k, v in top.groupby("y1_state")["exact"].mean().items()}, flush=True)
     print(f"held-out models done at {time.time() - start:.0f}s", flush=True)
     results = evaluate(labelled, probs, cand_rows, p_exact, p_near, knobs)
     show("2026 held-out", results[2026])
     show("2025 held-out", results[2025])
     if args.strict:
-        show("2025 strict (past only)", strict_2025(knobs))
+        show("2025 strict (past only)", strict_2025(knobs, args.soft.replace(".parquet", "_strict.parquet")))
     np.savez(CACHE / "oof.npz", probs=probs, p_exact=p_exact, p_near=p_near)
     if args.write:
         write_outputs(rows, cands, labelled, probs, cand_rows, p_exact, p_near, knobs)
