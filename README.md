@@ -68,6 +68,7 @@ cp .env.example .env
 | Optional setting | What it does |
 |---|---|
 | `YEXT_API_KEY` | The Yext sandbox key, set in `.env` |
+| `GEMINI_API_KEY` | Lets owners reply in their own words. Without it, the buttons still work |
 | `CONNECT_DATA_DIR` | Where the challenge package is, if not in `fonecta_data/` |
 | `CONNECT_PORT` | Uses another port instead of 8080 |
 | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
@@ -175,6 +176,25 @@ The model only proposes. Nothing is published without the owner's approval or st
 No business is ever scored by a model trained on it, and features only use data dated before the snapshot. The feature code has no path to the answer files, and we don't read the simulator's internals.
 
 The models run ahead of time and their decisions are saved to a file, so the web app needs no machine-learning libraries. The code that trains them is in `model/`. The research we considered, and what we tested from it, is in [REFERENCES.md](REFERENCES.md).
+
+## Replying in your own words
+
+Owners don't have to use the buttons. They can write "we close at two on Christmas Eve, otherwise fine" in Finnish, Swedish, Norwegian or English.
+
+1. **Gemini reads it:** it proposes changes in a strict format, or asks one question if the reply is unclear. "Close early" gets "What time?".
+2. **Our code checks it:** dates must make sense, hours must pass the same rules as a manual edit, and a bad plan is refused as a whole.
+3. **The owner confirms:** they see each change as before and after, and nothing is written until they tap.
+4. **The usual path applies:** dates are written with read-back and undo, and weekly hours with read-back and rollback.
+
+It handles single dates, ranges like "closed Saturdays in December", new weekly hours like "open 8-16 Monday to Friday", declines with a reason, and standing permission. Declines with a reason feed the learning rules above and below.
+
+We check it on real Gemini with 36 messy replies in four languages, and it gets 34 to 35 right per run. The misses we've seen are a Swedish holiday name, where it asks a question, and one reply where it also approved a date the owner hadn't mentioned, which the owner would see before confirming:
+
+```bash
+python3 tools/check_reply_agent.py
+```
+
+It uses Gemini 3.5 Flash-Lite and needs `GEMINI_API_KEY` in `.env`. Without a key, or if Gemini is down, the buttons work as usual. Calls are capped per message and per hour. New weekly hours don't yet change the "Google shows" values in later suggestions.
 
 ## How it learns
 

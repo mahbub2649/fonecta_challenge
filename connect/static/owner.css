@@ -137,3 +137,17 @@ main[inert] { opacity: .6; }
 .caption { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; font-style: italic; font-weight: 400; line-height: 1.3; }
 button.primary .caption { color: #dfe3ff; }
 .day .caption { display: inline; margin: 0 6px; }
+
+.tell h2 { margin: 0 0 10px; font-size: 16px; }
+.tell textarea { display: block; width: 100%; padding: 10px 12px; font: inherit; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 10px; resize: vertical; }
+.tell textarea:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+.tell button[type="submit"] { width: 100%; margin-top: 10px; }
+.tell .said { margin: 0 0 10px; }
+.tell .said small { display: block; color: var(--muted); }
+.plan { margin-bottom: 12px; }
+.plan-row { padding: 9px 0; border-top: 1px solid var(--line); }
+.plan-day { font-weight: 600; }
+.plan-change { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; color: var(--muted); }
+.plan-change strong { color: var(--brand); font-size: 18px; }
+.regular { margin: 0; padding: 0; list-style: none; }
+.regular li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }

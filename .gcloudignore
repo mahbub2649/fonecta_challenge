@@ -1,0 +1,15 @@
+# Only what the Dockerfile copies goes to Google Cloud. Keys and local state never do.
+*
+!Dockerfile
+!run.py
+!connect/
+!connect/**
+!demo_web/
+!demo_web/**
+!fonecta_data/
+!fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/
+!fonecta_data/FONECTA_CONNECT_SUGGESTS_2026/**
+**/__pycache__/
+*.pyc
+fonecta_data/*.pdf
+fonecta_data/README.md

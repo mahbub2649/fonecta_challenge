@@ -35,6 +35,9 @@ TODAY = date.fromisoformat(os.environ.get("CONNECT_TODAY", "2026-11-06"))
 SANDBOX_URL = os.environ.get("YEXT_BASE_URL", "https://sbx-api.yextapis.com").rstrip("/")
 SANDBOX_KEY = "" if os.environ.get("CONNECT_NO_SANDBOX") else os.environ.get("YEXT_API_KEY") or os.environ.get("API_KEY") or ""
 
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
+
 # Suggestions at or above this confidence are stated. Below it, they are asked as a question.
 SUGGEST_THRESHOLD = 0.90
 # Standing permission only applies changes at or above this confidence, and never from peers alone.

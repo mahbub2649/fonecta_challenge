@@ -1,0 +1,6 @@
+*
+!connect
+!demo_web
+!run.py
+!fonecta_data/FONECTA_CONNECT_SUGGESTS_2026
+**/__pycache__

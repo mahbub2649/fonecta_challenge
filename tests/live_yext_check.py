@@ -266,6 +266,19 @@ class ApiContract(unittest.TestCase):
         with self.assertRaises(AssertionError):
             LIVE._request("DELETE", "entities/SinceAI09")
 
+    def test_n3_regular_hours_read_back_and_keep_everything_else(self):
+        LIVE.write_holidays(self.id_, {"2026-12-24": "07:30-13:00"})
+        before = READER.get_entity(self.id_)["hours"]
+        changes = {"monday": "08:00-16:00", "saturday": "closed", "tuesday": "10:00-14:00,17:00-22:00"}
+        after = LIVE.write_regular(self.id_, changes)
+        for day, hours in changes.items():
+            self.assertEqual(day_to_string(after[day]), hours, day)
+        now = READER.get_entity(self.id_)["hours"]
+        self.assertEqual(now.get("wednesday"), before.get("wednesday"))
+        self.assertEqual({h["date"] for h in now.get("holidayHours", [])}, {"2026-12-24"})
+        LIVE.write_regular(self.id_, {day: day_to_string(before.get(day)) for day in changes})
+        self.assertEqual(day_to_string(READER.get_entity(self.id_)["hours"].get("monday")), day_to_string(before.get("monday")))
+
     def test_o_read_only_endpoints(self):
         results = {}
         for label, path, params in (("listings", "listings/listings", {"locationIds": self.id_}), ("publisher suggestions", "listings/publishersuggestions", {"locationIds": self.id_}),
@@ -499,6 +512,25 @@ class ChainOnSandbox(unittest.TestCase):
         finally:
             self.service.mock.write_holidays = good
         self.assertEqual(holidays(sandbox_id), before)
+
+    def test_n3_owners_words_reach_the_sandbox_after_confirming(self):
+        sandbox_id = self.fresh("FI-D0001")
+
+        def agent(text, context):
+            return {"actions": [{"type": "set_date", "date": "2026-12-24", "hours": "07:30-14:00"}, {"type": "approve", "date": "2026-12-25"},
+                                {"type": "set_regular", "days": ["monday"], "hours": "08:00-16:00"}], "question": "", "question_en": "", "reply_en": "test"}
+
+        service = Service(ENGINE, Store(":memory:"), self.mock, LIVE, public_url="http://test", agent=agent)
+        case = service.send(service.detect("FI-D0001")["case_id"])
+        LIVE.get_entity(service._sandbox_id("FI-D0001"))
+        monday = READER.get_entity(sandbox_id)["hours"].get("monday")
+        answer = service.interpret_reply(case["token"], "test")
+        self.assertEqual(holidays(sandbox_id), {})
+        self.assertEqual(READER.get_entity(sandbox_id)["hours"].get("monday"), monday)
+        service.confirm_plan(case["token"], answer["plan_id"])
+        self.assertEqual(holidays(sandbox_id), {"2026-12-24": "07:30-14:00", "2026-12-25": "closed"})
+        self.assertEqual(day_to_string(READER.get_entity(sandbox_id)["hours"]["monday"]), "08:00-16:00")
+        LIVE.write_regular(sandbox_id, {"monday": day_to_string(monday)})
 
     def test_o_confirmation_uses_the_businesss_live_listings(self):
         self.fresh("FI-D0001")
