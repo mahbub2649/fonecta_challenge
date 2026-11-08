@@ -2,7 +2,7 @@
 
 **Challenge provider:** [Fonecta](https://www.fonecta.fi), at the Since AI Hackathon 2026 · **More detail:** [README_Detailed.md](README_Detailed.md) · **Pitch deck:** [PDF](Pitch_Deck_Team%20MVP%20Engineers.pdf) · **Video:** [Video](/demo/out/film-full.mp4) · **Demo:** [online](https://connect-suggests-demo-905296230419.europe-north1.run.app), PW: SinceAI2026. 
 
-Connect spots holiday hours that are about to be wrong and sends the owner a ready-made suggestion with the reason. The owner answers with one tap, in their own words or by voice, with no login. Our predictions score **68.62** on the organisers' `evaluate.py` for 2026, against the baseline's 54.49. All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
+Connect spots discrepencies in publicly available business information and provides the owner a ready-made suggestion with the reason. The owner answers with one tap, in their own words or by voice, with no login. Our predictions score **68.62** on the organisers' `evaluate.py` for 2026, against the baseline's 54.49. All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
 ## Run it
 We need only Python 3.9 or newer for the app and tests, with nothing to install:
@@ -31,11 +31,11 @@ Optional settings in `.env` (see `.env.example`):
 Without these keys, the buttons and the mock still work. [The walkthrough, command-line steps and live Yext checks](README_Detailed.md#how-we-run-it) are in the detailed README.
 
 ## The five steps
-1. **Detect:** a transformer blend estimates, for each special day to 6 January 2027, whether the business will be closed, as shown, or open at other hours.
-2. **Suggest:** it picks the most likely hours and keeps the reason. It states strong suggestions, asks about less certain ones, and stays quiet on weak guesses.
-3. **Contact:** one message per group of nearby dates, in the owner's language and on their preferred channel. Opt-outs block it. Delivery is simulated on an on-screen phone.
-4. **Decide:** a private link opens a phone page to approve, edit or decline, with no login. Owners can also write or say their answer, and they confirm before anything is saved. No reply never counts as a yes.
-5. **Apply + confirm:** Connect writes the change to the Yext sandbox and reads it back. Only then is the owner told it's saved and where it will show. If the write fails, they're told nothing changed.
+1. **Detect:** a transformer blend estimates, for each special day to 6 January 2027, whether the business will be closed, or has special operating hours.
+2. **Suggest:** it picks the most likely hours and keeps the reason. It _states_ strong suggestions, _asks_ when it is moderately confident, and _stays quiet_ on weak guesses.
+3. **Contact:** one message per group of nearby dates, in the owner's own language and on their preferred channel. Opt-outs are respected. Delivery is simulated on an on-screen phone.
+4. **Decide:** a private link opens a phone page to approve, edit, or decline, without the need to log in. Owners can also **write or say** their answer, and they can confirm before anything is saved. No reply never counts as a yes.
+5. **Apply + confirm:** Connect writes the change to the Yext sandbox and reads it back. The owner is given a confirmation and guidance about how long each different platform will take to update. If the write fails, they're told nothing changed.
 
 More: [how the AI works](README_Detailed.md#how-the-ai-works), [how it learns](README_Detailed.md#how-it-learns), [results](README_Detailed.md#results) and [extensibility](README_Detailed.md#extensibility).
 
@@ -54,14 +54,15 @@ Costs come from retraining the model's LightGBM part with each source hidden. Th
 - **Moving later suggestions after one owner edit:** it lost 28 points on owners who replied, so we now offer the move instead of making it.
 - **Outside data:** live holidays, city population and daylight added no clear gain, because the hidden answers are synthetic.
 - **Prompting every low-data business:** it lowers the score, to 66.89 on 2026 at best.
-- **A language model reading reviews:** even a perfect reader added only about 1 point on 2026, so we didn't train one.
+- **A language model reading reviews:** even a perfect reader added less than a point on the 2026 data, and was computationally expensive.
 - **RealMLP, row weighting, pseudo-labels and a hidden-habit model:** no clear gain.
 - **The history transformer without the extra training days:** fewer wrong calls, but a lower strict score (59.74).
+- **Stochastic, Brownian, and Sticky Behavioural cues:** as we hit the limits of what the data could provide, we looked for alternative ways to predict an owner's behaviour.
 
 [The full list](README_Detailed.md#what-we-tried-that-didnt-work) is in the detailed README, and [REFERENCES.md](REFERENCES.md) has the research we considered.
 
 ## Customer with no history / no previous actions
-`FI-D0017` Kahvila Kipinä joined in October 2026. With no history of its own, the model leans on similar businesses. Connect says it has no earlier hours for them and asks instead of stating, and standing permission never applies a guess like this. On the other 10 days it stays quiet. Once the owner answers, later suggestions use that answer.
+`FI-D0017` Kahvila Kipinä joined in October 2026. With no history of its own, the model leans on similar businesses. Connect says it has no earlier hours for them and asks instead of stating, and standing permission never applies a guess like this. On the other 10 days it stays quiet. Once the owner answers, that response updates the model's future behaviour.
 
 ```text
 Hei Aino! Kahvila Kipinä näkyy Googlessa näinä päivinä todennäköisesti väärin:
