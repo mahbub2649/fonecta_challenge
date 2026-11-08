@@ -1,6 +1,6 @@
 # MVP ENGINEERS – Connect Suggests
 
-**Challenge provider:** [Fonecta](https://www.fonecta.fi), at the Since AI Hackathon 2026 · **More detail:** [README_Detailed.md](README_Detailed.md) · **Pitch deck:** [PDF](Pitch_Deck_Team%20MVP%20Engineers.pdf) · **Demo:** [online](https://connect-suggests-demo-905296230419.europe-north1.run.app), with a passcode we share with the judges
+**Challenge provider:** [Fonecta](https://www.fonecta.fi), at the Since AI Hackathon 2026 · **More detail:** [README_Detailed.md](README_Detailed.md) · **Pitch deck:** [PDF](Pitch_Deck_Team%20MVP%20Engineers.pdf) · **Video:** [Video](/demo/out/film-full.mp4) · **Demo:** [online](https://connect-suggests-demo-905296230419.europe-north1.run.app), PW: SinceAI2026. 
 
 Connect spots holiday hours that are about to be wrong and sends the owner a ready-made suggestion with the reason. The owner answers with one tap, in their own words or by voice, with no login. Our predictions score **68.62** on the organisers' `evaluate.py` for 2026, against the baseline's 54.49. All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
