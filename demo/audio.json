@@ -1,0 +1,743 @@
+{
+ "about": "Voice and sound for the demo video, in English. Narrator: Roger (laid-back, conversational), eleven_multilingual_v2, low stability so it sounds spoken, not read. Mix the voice slightly under the scene's ambience. Generate with tools/elevenlabs_audio.py.",
+ "clips": [
+  {
+   "name": "n01-hook",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "So, it's Christmas Eve... and the map says Kahvila Aurora's open till six. ... Yeah. The door doesn't agree."
+  },
+  {
+   "name": "n11-title",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Connect suggests. ... The owner decides."
+  },
+  {
+   "name": "sfx01-snow-door",
+   "kind": "sfx",
+   "duration_seconds": 7,
+   "text": "Quiet winter street at night: slow footsteps crunching on fresh snow, stopping, then a locked wooden shop door handle pulled and rattled twice, a soft disappointed exhale, distant muffled city hum"
+  },
+  {
+   "name": "sfx02-cafe-busy",
+   "kind": "sfx",
+   "duration_seconds": 6,
+   "text": "Busy small cafe behind the counter: espresso machine hiss, cups clattering, murmur of customers"
+  },
+  {
+   "name": "sfx03-message",
+   "kind": "sfx",
+   "duration_seconds": 2,
+   "text": "Soft, pleasant smartphone message notification, two gentle notes"
+  },
+  {
+   "name": "sfx04-cafe-open",
+   "kind": "sfx",
+   "duration_seconds": 7,
+   "text": "Warm cozy cafe on a winter evening: a small door bell chimes as the door opens, cheerful murmur, cups clinking, soft laughter"
+  },
+  {
+   "name": "sfx05-tone",
+   "kind": "sfx",
+   "duration_seconds": 3,
+   "text": "Single soft warm ambient synth tone, gentle swell, calm and confident, for an end title"
+  },
+  {
+   "name": "f21-aleksi",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Aleksi always closes early on Christmas Eve. He just never gets round to changing it online. ... This year, Connect noticed for him."
+  },
+  {
+   "name": "f22-tap",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "One short message. One tap, and it's sorted. No login, no hassle."
+  },
+  {
+   "name": "f23-updated",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Updated everywhere people look... and he's back to his customers."
+  },
+  {
+   "name": "f31-summer",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Now, summer. The hottest evening of the year... and a concert in the park, just down the road."
+  },
+  {
+   "name": "f32-sanna",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Sanna usually closes at ten. Connect thinks tonight's worth more."
+  },
+  {
+   "name": "f33-yes",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Stay open till midnight? ... Yes."
+  },
+  {
+   "name": "f41-doors",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Christmas Eve... or the hottest night of summer..."
+  },
+  {
+   "name": "f42-open",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "...the doors are open when people come."
+  },
+  {
+   "name": "p51-idea",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "That's the idea. Here's what's already working."
+  },
+  {
+   "name": "p52-detect",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Connect watches every listing: last year's hours, reviews, calls, similar businesses, shopping centres and local events."
+  },
+  {
+   "name": "p53-suggest",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "It only states a suggestion when it's confident. Otherwise it asks... or stays quiet."
+  },
+  {
+   "name": "p54-message",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "One message, in the owner's language. Approve, edit or decline. No login."
+  },
+  {
+   "name": "p55-apply",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Approved changes go to Yext, get checked, and the owner's told where they're live."
+  },
+  {
+   "name": "p56-learn",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Every answer teaches it. Owners can even hand over holidays completely... with one-tap undo."
+  },
+  {
+   "name": "p57-value",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Tested on the challenge data, it protects three quarters of the searches at risk. And the same loop works for reviews and posts next."
+  },
+  {
+   "name": "sfx06-summer-park",
+   "kind": "sfx",
+   "duration_seconds": 8,
+   "text": "Hot summer afternoon in a seaside park: seagulls, gentle waves, relaxed chatter of people on the grass, a distant band doing a sound check with a few drum hits"
+  },
+  {
+   "name": "sfx07-terrace",
+   "kind": "sfx",
+   "duration_seconds": 6,
+   "text": "Sunny seaside restaurant terrace: glasses clinking, cutlery, relaxed chatter, light breeze, distant seagulls"
+  },
+  {
+   "name": "sfx08-tap",
+   "kind": "sfx",
+   "duration_seconds": 1,
+   "text": "A single soft, satisfying smartphone button tap with a gentle confirmation click"
+  },
+  {
+   "name": "sfx09-music-bed",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Calm, warm, modern ambient piano and soft pads, gentle and optimistic corporate background music, no drums, loopable"
+  },
+  {
+   "name": "e1-map",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "So... it's Christmas Eve. The map says Kahvila Aurora's open till six."
+  },
+  {
+   "name": "e2-door",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Yeah. The door doesn't agree."
+  },
+  {
+   "name": "e3-aleksi",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Aleksi always closes early on Christmas Eve. He just never changes it online."
+  },
+  {
+   "name": "e4-noticed",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "This year, Connect noticed. One short message, one tap. No login, no hassle."
+  },
+  {
+   "name": "e5-updated",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Updated everywhere people look. And he's back to his customers."
+  },
+  {
+   "name": "e6-summer",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Now, summer. The hottest evening of the year... and a concert in the park."
+  },
+  {
+   "name": "e7-sanna",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Sanna usually closes at ten. Connect thinks tonight's worth more."
+  },
+  {
+   "name": "e9-xmas",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Christmas Eve..."
+  },
+  {
+   "name": "e10-open",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "...or a summer night. The doors are open when people come."
+  },
+  {
+   "name": "fx-footsteps-snow",
+   "kind": "sfx",
+   "duration_seconds": 5,
+   "text": "Slow footsteps crunching on fresh snow on a quiet winter night street, close and clear, nothing else"
+  },
+  {
+   "name": "fx-handle-rattle",
+   "kind": "sfx",
+   "duration_seconds": 3,
+   "text": "A locked wooden shop door: the handle is pulled and rattled twice, the door does not open, close up, quiet night"
+  },
+  {
+   "name": "fx-wind",
+   "kind": "sfx",
+   "duration_seconds": 5,
+   "text": "Soft cold winter wind on an empty city street at night, very quiet"
+  },
+  {
+   "name": "fx-buzz",
+   "kind": "sfx",
+   "duration_seconds": 2,
+   "text": "A smartphone vibrating twice on a wooden cafe counter"
+  },
+  {
+   "name": "fx-door-bell",
+   "kind": "sfx",
+   "duration_seconds": 3,
+   "text": "A small brass shop door bell rings as a cafe door opens, warm murmur of people inside"
+  },
+  {
+   "name": "fx-terrace-night",
+   "kind": "sfx",
+   "duration_seconds": 5,
+   "text": "Lively seaside restaurant terrace on a warm summer night: laughter, glasses clinking, relaxed chatter, distant live music"
+  },
+  {
+   "name": "g1-map",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Christmas Eve. The map says open till six."
+  },
+  {
+   "name": "g2-door",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "The door says otherwise."
+  },
+  {
+   "name": "g3-aleksi",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Aleksi always closes early on Christmas Eve."
+  },
+  {
+   "name": "g4-noticed",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "This year, Connect noticed. One tap, and it's fixed."
+  },
+  {
+   "name": "g5-updated",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   },
+   "text": "Updated everywhere people look."
+  },
+  {
+   "name": "g6-summer",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Summer. A hot evening... and a concert in the park."
+  },
+  {
+   "name": "g7-sanna",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "Sanna usually closes at ten."
+  },
+  {
+   "name": "g8-midnight",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Stay open till midnight? ... Yes."
+  },
+  {
+   "name": "g9-xmas",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "Christmas Eve..."
+  },
+  {
+   "name": "g10-summer",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   },
+   "text": "...or a summer night. Open when people come."
+  },
+  {
+   "name": "fx-chime",
+   "kind": "sfx",
+   "duration_seconds": 1.5,
+   "text": "A soft, gentle, warm phone notification: a single mellow marimba note, quiet and pleasant, no vibration"
+  },
+  {
+   "name": "h9-xmas-open",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "This Christmas Eve, the door is open."
+  },
+  {
+   "name": "h10-summer-open",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   },
+   "text": "And on summer nights, the terrace stays open late."
+  },
+  {
+   "name": "q1-demo",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "Now for a quick demonstration.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q2-detect",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "It finds two days that will show the wrong hours, with the evidence, and how sure it is.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q3-message",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "One message goes out, in the owner's own language. Here, Finnish.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q4-approve",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "The link opens a page with no login. Each day shows what Google says now, the suggestion and why. Approve, edit or decline.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q5-apply",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "Approved. Connect writes it to Yext, checks it saved, and shows where it goes live: Google, Bing, Apple Maps and more. Then it offers to handle holidays from now on.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "q6-standing",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "The owner says yes. Next time, holidays just update, with a one-tap undo.",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "music-a-piano",
+   "kind": "sfx",
+   "duration_seconds": 10,
+   "text": "Hopeful, uplifting instrumental music: gentle piano melody with soft strings slowly building, warm and forward-looking, cinematic, no drums, no vocals"
+  },
+  {
+   "name": "music-b-electronic",
+   "kind": "sfx",
+   "duration_seconds": 10,
+   "text": "Uplifting modern instrumental music: light electronic pulse, airy synth pads, soft plucks, optimistic tech momentum, forward-looking, no vocals"
+  },
+  {
+   "name": "music-c-acoustic",
+   "kind": "sfx",
+   "duration_seconds": 10,
+   "text": "Warm, optimistic instrumental music: bright acoustic guitar picking with soft hand claps and light percussion, friendly Nordic indie feel, forward-looking, no vocals"
+  },
+  {
+   "name": "music-a-long",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Hopeful, uplifting instrumental music: gentle piano melody with soft strings slowly building, warm and forward-looking, cinematic, no drums, no vocals"
+  },
+  {
+   "name": "w1-next",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "So... what's next?"
+  },
+  {
+   "name": "w2-signals",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "Connect already sees how every owner replies: how fast, what they approve, who hands over their holidays. Over half of last year's pilot messages got no reply."
+  },
+  {
+   "name": "w3-churn",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "Owners who go quiet get less from Connect, and they're the ones who leave. We can spot them early."
+  },
+  {
+   "name": "w4-revenue",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   },
+   "text": "Then show them the visits we protected, and offer paid auto-updates. A cost, turned into revenue."
+  },
+  {
+   "name": "w5-connect",
+   "kind": "speech",
+   "voice_id": "CwhRBWXzGAHq8TQ4Fs17",
+   "text": "Let's connect.",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.2,
+    "use_speaker_boost": true
+   }
+  },
+  {
+   "name": "story-a-piano",
+   "kind": "sfx",
+   "duration_seconds": 12,
+   "text": "Gentle instrumental music: sparse, slightly wistful felt piano in winter that slowly opens up into warm soft strings, hopeful and tender, cinematic, no drums, no vocals"
+  },
+  {
+   "name": "story-b-celesta",
+   "kind": "sfx",
+   "duration_seconds": 12,
+   "text": "Gentle instrumental music: soft celesta and music box melody with warm piano, a quiet, tender Christmas fairy-tale warmth, slowly growing, no drums, no vocals"
+  },
+  {
+   "name": "story-c-acoustic",
+   "kind": "sfx",
+   "duration_seconds": 12,
+   "text": "Gentle instrumental music: soft fingerpicked acoustic guitar with quiet piano, intimate Nordic folk feel, starting wistful and becoming warm and hopeful, no drums, no vocals"
+  },
+  {
+   "name": "story-a-winter",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Gentle instrumental music: sparse, slightly wistful felt piano on a quiet winter evening, tender and intimate, slow, soft, no strings, no drums, no vocals"
+  },
+  {
+   "name": "story-a-warm",
+   "kind": "sfx",
+   "duration_seconds": 22,
+   "text": "Gentle instrumental music: warm felt piano joined by soft strings, slowly opening up, hopeful and joyful summer warmth, cinematic, no drums, no vocals"
+  }
+ ]
+}

@@ -15,3 +15,16 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# LUMI pipeline: personal settings and generated files
+lumi/config.env
+lumi/results/
+lumi/grid*.jsonl
+lumi/final.jsonl
+
+# Demo film renders (large, rebuilt by tools/build_animatic.py)
+demo/out/*
+!demo/out/film-full.mp4
+
+# Raw screen recordings (large); commit a compressed copy instead if needed
+demo/*.mov

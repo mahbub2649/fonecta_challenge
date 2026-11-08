@@ -1,0 +1,351 @@
+diff --git a/.env.example b/.env.example
+index 76ebfbf..8367431 100644
+--- a/.env.example
++++ b/.env.example
+@@ -12,3 +12,10 @@ YEXT_API_KEY=
+ 
+ # Pruna (demo images and video). Shared hackathon key: keep it here, never in code.
+ PRUNA_API_KEY=
++
++# The demo shows owner messages in English, with a switch to the owner's own language.
++# Set to "owner" to show each owner's language by default, as in production.
++# CONNECT_DISPLAY_LANGUAGE=en
++
++# ElevenLabs (demo narration and sound). Keep it here, never in code.
++ELEVENLABS_API_KEY=
+diff --git a/README.md b/README.md
+index bdcdeaf..47d04b5 100644
+--- a/README.md
++++ b/README.md
+@@ -34,6 +34,7 @@ Then open http://127.0.0.1:8080. Press `Ctrl+C` in the terminal to stop.
+ | `YEXT_API_KEY` | Also writes to your Yext sandbox. Copy `.env.example` to `.env` and set it there. Without a key, writes go to the local mock, and the top of the page shows which is active |
+ | `CONNECT_DATA_DIR` | Where the challenge package is |
+ | `CONNECT_PORT` | Uses another port instead of 8080 |
++| `CONNECT_DISPLAY_LANGUAGE=owner` | Shows owner messages and pages in each owner's own language by default. Without it, the demo shows English, with a switch to the owner's language on the console and the owner page |
+ | `CONNECT_HOST=0.0.0.0` and `CONNECT_PUBLIC_URL=http://<laptop-ip>:8080` | Opens owner links on a phone on the same network. The console stays on the laptop |
+ 
+ ### 3. Use the web page
+diff --git a/connect/config.py b/connect/config.py
+index c973586..e2a4a0e 100644
+--- a/connect/config.py
++++ b/connect/config.py
+@@ -30,6 +30,11 @@ PUBLIC_URL = os.environ.get("CONNECT_PUBLIC_URL", f"http://127.0.0.1:{PORT}").rs
+ # The challenge scenario: "today" is fixed, and the data stops the day before.
+ TODAY = date.fromisoformat(os.environ.get("CONNECT_TODAY", "2026-11-06"))
+ 
++# Which language the demo shows owner messages and pages in: "en" (default, for a one-language demo) or "owner"
++# (each owner's own language, as in production). Messages are always written in the owner's language; the console
++# and the owner page have a switch between the two.
++DISPLAY_LANGUAGE = os.environ.get("CONNECT_DISPLAY_LANGUAGE", "en").strip().lower()
++
+ SANDBOX_URL = os.environ.get("YEXT_BASE_URL", "https://sbx-api.yextapis.com").rstrip("/")
+ SANDBOX_KEY = os.environ.get("YEXT_API_KEY") or os.environ.get("API_KEY") or ""
+ 
+diff --git a/connect/messages.py b/connect/messages.py
+index 0a0da92..be4ac98 100644
+--- a/connect/messages.py
++++ b/connect/messages.py
+@@ -7,6 +7,7 @@ from __future__ import annotations
+ from datetime import date
+ 
+ LANGUAGES = ("fi", "sv", "nb", "en")
++LANGUAGE_NAMES = {"fi": "Suomi", "sv": "Svenska", "nb": "Norsk", "en": "English"}
+ MIN_VIEWS_TO_MENTION = 20  # A smaller number is no reason to act, so the message doesn't quote it.
+ 
+ DAY_NAMES = {
+diff --git a/connect/service.py b/connect/service.py
+index a95e8e1..ed5b4dd 100644
+--- a/connect/service.py
++++ b/connect/service.py
+@@ -268,7 +268,7 @@ class Service:
+ 
+     # ------------------------------------------------------------ step 4: decide
+ 
+-    def decide(self, token: str, decisions: list, actor: str = "owner") -> dict:
++    def decide(self, token: str, decisions: list, actor: str = "owner", lang: str | None = None) -> dict:
+         with self._lock:
+             case = self._case_by_token(token)
+             if not case:
+@@ -306,7 +306,7 @@ class Service:
+             written = self._write_items(case, to_write) if to_write else []
+             self._send_followups(case, written, to_write, declined)
+             self._finish_if_complete(case["id"])
+-            return self.owner_view(token)
++            return self.owner_view(token, lang)
+ 
+     def _record(self, item: dict, decision: str, final: str | None, actor: str, why: str = "") -> None:
+         self.store.execute("UPDATE items SET decision = ?, final_hours = ?, decline_reason = ?, decided_by = ?, decided_at = ? WHERE id = ?",
+@@ -376,14 +376,14 @@ class Service:
+                     self.store.log("LEARN", "connect", "Owner opted out. No more suggestions will be sent.", eid, case["id"])
+         self.store.set_learned(eid, learned)
+ 
+-    def set_standing(self, token: str, enabled: bool) -> dict:
++    def set_standing(self, token: str, enabled: bool, lang: str | None = None) -> dict:
+         case = self._case_by_token(token)
+         if not case:
+             raise KeyError("Unknown link")
+         self._set_pref(case["entity_id"], "standing_permission", int(enabled))
+         self.store.log("LEARN", "owner", "Owner gave standing permission for public holidays." if enabled
+                        else "Owner turned off standing permission.", case["entity_id"], case["id"])
+-        return self.owner_view(token)
++        return self.owner_view(token, lang)
+ 
+     # ------------------------------------------------------------ step 5: apply and confirm
+ 
+@@ -467,7 +467,7 @@ class Service:
+             self._finish_if_complete(case_id)
+             return self.case_view(case_id)
+ 
+-    def undo(self, token: str, item_id: int) -> dict:
++    def undo(self, token: str, item_id: int, lang: str | None = None) -> dict:
+         """The owner always has the last word, even after a change is live."""
+         with self._lock:
+             case = self._case_by_token(token)
+@@ -495,7 +495,7 @@ class Service:
+             first = self._first_name(eid)
+             self._save_message(case, "UNDONE", messages.undone(first, item, case["language"]), messages.undone(first, item, "en"))
+             self.store.log("DECIDE", "owner", f"{item['date']}: undid the change. Connect won't ask about {item['day_key']} again.", eid, case["id"])
+-            return self.owner_view(token)
++            return self.owner_view(token, lang)
+ 
+     def where_it_shows(self, eid: str) -> list:
+         """Publishers where the change is being sent, fastest first. Timing comes from the simulator's listing data."""
+@@ -532,11 +532,17 @@ class Service:
+ 
+     # ------------------------------------------------------------ views for the two web pages
+ 
+-    def owner_view(self, token: str) -> dict:
++    def display_language(self, owner_language: str, requested: str | None = None) -> str:
++        """English or the owner's own language, for showing a message. What was sent is always the owner's language."""
++        if requested in ("en", owner_language):
++            return requested
++        return owner_language if config.DISPLAY_LANGUAGE == "owner" else "en"
++
++    def owner_view(self, token: str, lang: str | None = None) -> dict:
+         case = self._case_by_token(token)
+         if not case:
+             raise KeyError("Unknown link")
+-        lang = case["language"]
++        lang = self.display_language(case["language"], lang)
+         eid = case["entity_id"]
+         items = []
+         for item in self._items(case["id"]):
+@@ -552,6 +558,7 @@ class Service:
+         written = any(i["write_status"] == "WRITTEN" for i in items)
+         listings = [{"name": x["name"], "eta": messages.eta_label(x["seconds"], lang)} for x in self.where_it_shows(eid)] if written else []
+         return {"business": self.engine.entities[eid]["name"], "first_name": self._first_name(eid), "language": lang,
++                "owner_language": case["language"], "language_names": messages.LANGUAGE_NAMES,
+                 "ui": messages.UI[lang], "status": case["status"], "expired": self._expired(case), "items": items,
+                 "listings": listings, "standing": prefs["standing"], "opted_out": prefs["opted_out"]}
+ 
+diff --git a/connect/static/console.html b/connect/static/console.html
+index 6c0e2fc..f0afac5 100644
+--- a/connect/static/console.html
++++ b/connect/static/console.html
+@@ -24,6 +24,7 @@
+     <main id="detail" class="detail"></main>
+     <aside class="phone-wrap" aria-label="Owner's phone">
+       <div class="phone">
++        <div id="phone-lang" class="phone-tabs phone-lang" hidden></div>
+         <div class="phone-tabs">
+           <button id="tab-message" class="on">Message</button>
+           <button id="tab-page">Approval page</button>
+diff --git a/connect/static/console.js b/connect/static/console.js
+index 9d83ecc..55281b0 100644
+--- a/connect/static/console.js
++++ b/connect/static/console.js
+@@ -8,6 +8,8 @@ let lastPayload = "";
+ let quietResult = {};
+ let phoneLink = null;
+ let phoneTab = "message";
++let phoneLang = "en"; // "en" or "owner": the demo shows English, with a switch to what the owner really gets.
++const LANGUAGE_NAMES = {fi: "Suomi", sv: "Svenska", nb: "Norsk", en: "English"};
+ let shownMessages = 0;
+ 
+ function el(tag, props = {}, ...children) {
+@@ -136,7 +138,11 @@ function contactStep(biz, kase) {
+   }
+   return step(3, "Contact", header, true,
+     el("p", {cls: "sub", textContent: "The message is on the phone. It states the suggestion and the reason."}),
+-    firstMessage && firstMessage.language !== "en" ? el("details", {}, el("summary", {textContent: "English translation, for reviewers"}), el("pre", {cls: "msg", textContent: firstMessage.body_en})) : null);
++    firstMessage && firstMessage.language !== "en"
++      ? el("p", {cls: "sub", textContent: phoneLang === "en"
++          ? `Sent in ${LANGUAGE_NAMES[firstMessage.language] || firstMessage.language}, the owner's language. The phone shows the English version; switch above the phone.`
++          : "The phone shows what the owner really receives."})
++      : null);
+ }
+ 
+ function decisionText(item) {
+@@ -230,11 +236,14 @@ function renderPhone() {
+   } else {
+     screen.replaceChildren(...sent.flatMap((m) => [
+       el("div", {cls: "bubble-meta", textContent: `${m.channel} · ${m.kind.replaceAll("_", " ").toLowerCase()}`}),
+-      el("div", {cls: "bubble"}, ...linkedText(m.body, kase.link))]));
++      el("div", {cls: "bubble"}, ...linkedText(phoneLang === "en" ? (m.body_en || m.body) : m.body, kase.link))]));
+     if (sent.length !== shownMessages) screen.scrollTop = screen.scrollHeight;
+   }
+   shownMessages = sent.length;
+-  const link = kase?.status !== "DETECTED" && kase?.link ? kase.link : null;
++  renderLanguageSwitch(biz);
++  const ownerLang = kase?.language || biz?.language || "en";
++  const base = kase?.status !== "DETECTED" && kase?.link ? kase.link : null;
++  const link = base ? `${base}?lang=${phoneLang === "en" ? "en" : ownerLang}` : null;
+   if (link !== phoneLink) {
+     phoneLink = link;
+     $("phone-page").src = link || "about:blank";
+@@ -242,6 +251,16 @@ function renderPhone() {
+   if (!link && phoneTab === "page") showTab("message");
+ }
+ 
++function renderLanguageSwitch(biz) {
++  const box = $("phone-lang");
++  const own = biz?.language;
++  box.hidden = !own || own === "en";
++  if (box.hidden) return;
++  const choice = (code, label) => el("button", {cls: phoneLang === code ? "on" : "", textContent: label,
++    on: () => { phoneLang = code; renderPhone(); renderDetail(); }});
++  box.replaceChildren(choice("en", "English"), choice("owner", `${LANGUAGE_NAMES[own] || own} (owner's language)`));
++}
++
+ function showTab(tab) {
+   phoneTab = tab;
+   $("tab-message").classList.toggle("on", tab === "message");
+diff --git a/connect/static/owner.css b/connect/static/owner.css
+index 932d83f..e167f23 100644
+--- a/connect/static/owner.css
++++ b/connect/static/owner.css
+@@ -132,3 +132,6 @@ label.check input { width: 22px; height: 22px; }
+ }
+ main[inert] { opacity: .6; }
+ .center { text-align: center; margin-top: 40vh; color: var(--muted); }
++.lang { display: flex; justify-content: flex-end; gap: 4px; margin: 0 0 8px; }
++.lang button { padding: 4px 10px; font-size: 12px; border-radius: 999px; background: transparent; color: inherit; opacity: 0.7; }
++.lang button.on { opacity: 1; font-weight: 600; border-color: currentColor; }
+diff --git a/connect/static/owner.js b/connect/static/owner.js
+index 87240d9..fe1b6f8 100644
+--- a/connect/static/owner.js
++++ b/connect/static/owner.js
+@@ -6,6 +6,9 @@ let view = null;
+ let open = {}; // Which card is showing its edit or decline form: {itemId: "edit" | "decline"}.
+ let hideOffer = false;
+ let busy = false;
++// Display language: English for the demo, or the owner's own language. ?lang= in the page URL picks one.
++let lang = new URLSearchParams(location.search).get("lang");
++const withLang = (url) => (lang ? `${url}?lang=${encodeURIComponent(lang)}` : url);
+ 
+ function el(tag, props = {}, ...children) {
+   const node = document.createElement(tag);
+@@ -27,7 +30,7 @@ async function post(path, body) {
+   app.inert = true;
+   let errorText = null;
+   try {
+-    const response = await fetch(`${api}${path}`, {
++    const response = await fetch(withLang(`${api}${path}`), {
+       method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body),
+     });
+     const data = await response.json();
+@@ -148,6 +151,19 @@ function card(item, multiple) {
+         on: () => { open[item.id] = "decline"; render(); }})) : null);
+ }
+ 
++function languageSwitch() {
++  // Only when the owner's language isn't English: a demo switch between English and what the owner really gets.
++  if (!view.owner_language || view.owner_language === "en") return null;
++  const choice = (code) => el("button", {type: "button", cls: view.language === code ? "on" : "",
++    textContent: view.language_names[code], ariaPressed: String(view.language === code),
++    on: () => { if (view.language !== code) { lang = code; load(); } }});
++  return el("div", {cls: "lang", role: "group", ariaLabel: "Language"}, choice("en"), choice(view.owner_language));
++}
++
++function load() {
++  return fetch(withLang(api)).then((r) => (r.ok ? r.json() : Promise.reject())).then((data) => { view = data; render(); });
++}
++
+ function render() {
+   if (!view) return;
+   const ui = view.ui;
+@@ -160,7 +176,7 @@ function render() {
+   const pending = pendingItems();
+   const written = view.items.some((i) => i.write_status === "WRITTEN");
+   const allDeclined = !pending.length && !written && !view.items.some((i) => i.write_status === "FAILED");
+-  const nodes = [el("header", {cls: "head"},
++  const nodes = [languageSwitch(), el("header", {cls: "head"},
+     el("p", {textContent: view.business}),
+     el("h1", {textContent: ui.title}),
+     el("p", {textContent: ui.no_login}))];
+@@ -202,5 +218,4 @@ function render() {
+   app.replaceChildren(...nodes);
+ }
+ 
+-fetch(api).then((r) => (r.ok ? r.json() : Promise.reject())).then((data) => { view = data; render(); })
+-  .catch(() => app.replaceChildren(el("p", {cls: "center", textContent: "This link is no longer valid."})));
++load().catch(() => app.replaceChildren(el("p", {cls: "center", textContent: "This link is no longer valid."})));
+diff --git a/connect/web.py b/connect/web.py
+index 02b5f49..1da7b6d 100644
+--- a/connect/web.py
++++ b/connect/web.py
+@@ -5,7 +5,7 @@ import json
+ import re
+ from http.server import BaseHTTPRequestHandler
+ from pathlib import Path
+-from urllib.parse import urlparse
++from urllib.parse import parse_qs, urlparse
+ 
+ from .service import Service
+ 
+@@ -53,6 +53,11 @@ def make_handler(service: Service):
+                 raise ValueError("Send JSON")
+             return json.loads(self.rfile.read(length).decode() or "{}") if length else {}
+ 
++        def _lang(self) -> str | None:
++            """The display language asked for with ?lang=, if any. The service only accepts English or the owner's own."""
++            values = parse_qs(urlparse(self.path).query).get("lang")
++            return values[0] if values else None
++
+         def _is_local(self) -> bool:
+             return self.client_address[0] in LOCALHOST
+ 
+@@ -81,7 +86,7 @@ def make_handler(service: Service):
+                 return self._file(path[1:])
+             match = re.fullmatch(r"/api/o/([\w-]+)", path)
+             if match:
+-                return self._json(200, service.owner_view(match.group(1)))
++                return self._json(200, service.owner_view(match.group(1), self._lang()))
+             if not self._is_local():
+                 return self._json(404, {"error": "Not found"})
+             if path in PAGES:
+@@ -101,11 +106,12 @@ def make_handler(service: Service):
+             match = re.fullmatch(r"/api/o/([\w-]+)/(decide|standing|undo)", path)
+             if match:
+                 token, action = match.groups()
++                lang = self._lang()
+                 if action == "decide":
+-                    return self._json(200, service.decide(token, body.get("decisions", [])))
++                    return self._json(200, service.decide(token, body.get("decisions", []), lang=lang))
+                 if action == "standing":
+-                    return self._json(200, service.set_standing(token, bool(body.get("enabled"))))
+-                return self._json(200, service.undo(token, int(body.get("item", 0))))
++                    return self._json(200, service.set_standing(token, bool(body.get("enabled")), lang))
++                return self._json(200, service.undo(token, int(body.get("item", 0)), lang))
+             if not self._is_local():
+                 return self._json(404, {"error": "Not found"})
+             if "application/json" not in (self.headers.get("Content-Type") or ""):
+diff --git a/tests/test_chain.py b/tests/test_chain.py
+index ed98258..3a862f8 100644
+--- a/tests/test_chain.py
++++ b/tests/test_chain.py
+@@ -286,6 +286,14 @@ class ChainTest(unittest.TestCase):
+         with self.assertRaises(PermissionError):
+             self.approve_all(case)
+ 
++    def test_demo_shows_english_with_a_switch_to_the_owners_language(self):
++        token = self.open_case("FI-D0001")["token"]
++        self.assertEqual(self.service.owner_view(token)["language"], "en")
++        finnish = self.service.owner_view(token, "fi")
++        self.assertEqual((finnish["language"], finnish["owner_language"]), ("fi", "fi"))
++        self.assertEqual(self.service.owner_view(token, "sv")["language"], "en")  # Only English or the owner's own.
++        self.assertEqual(self.service._case_by_token(token)["language"], "fi")  # What's sent doesn't change.
++
+     def test_owner_language_comes_from_the_contact_record(self):
+         self.assertEqual(self.service._language("FI-D0010"), "sv")
+         case = self.open_case("FI-D0010")

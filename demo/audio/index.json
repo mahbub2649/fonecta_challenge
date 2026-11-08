@@ -1,0 +1,389 @@
+{
+ "d475974f072e": {
+  "file": "f33-yes-d475974f.mp3",
+  "clip": "f33-yes",
+  "request": {
+   "text": "Stay open till midnight? ... Yes.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "64343b0a476c": {
+  "file": "sfx08-tap-64343b0a.mp3",
+  "clip": "sfx08-tap",
+  "request": {
+   "text": "A single soft, satisfying smartphone button tap with a gentle confirmation click",
+   "duration_seconds": 1
+  },
+  "path": "/sound-generation"
+ },
+ "fbf361243859": {
+  "file": "sfx09-music-bed-fbf36124.mp3",
+  "clip": "sfx09-music-bed",
+  "request": {
+   "text": "Calm, warm, modern ambient piano and soft pads, gentle and optimistic corporate background music, no drums, loopable",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
+ },
+ "ac3042368118": {
+  "file": "fx-handle-rattle-ac304236.mp3",
+  "clip": "fx-handle-rattle",
+  "request": {
+   "text": "A locked wooden shop door: the handle is pulled and rattled twice, the door does not open, close up, quiet night",
+   "duration_seconds": 3
+  },
+  "path": "/sound-generation"
+ },
+ "935ad2f4c4a2": {
+  "file": "fx-door-bell-935ad2f4.mp3",
+  "clip": "fx-door-bell",
+  "request": {
+   "text": "A small brass shop door bell rings as a cafe door opens, warm murmur of people inside",
+   "duration_seconds": 3
+  },
+  "path": "/sound-generation"
+ },
+ "52e59a622cd3": {
+  "file": "g1-map-52e59a62.mp3",
+  "clip": "g1-map",
+  "request": {
+   "text": "Christmas Eve. The map says open till six.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "0b8df54bec66": {
+  "file": "g2-door-0b8df54b.mp3",
+  "clip": "g2-door",
+  "request": {
+   "text": "The door says otherwise.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "7620d667fd0d": {
+  "file": "g3-aleksi-7620d667.mp3",
+  "clip": "g3-aleksi",
+  "request": {
+   "text": "Aleksi always closes early on Christmas Eve.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "026ad09233c1": {
+  "file": "g4-noticed-026ad092.mp3",
+  "clip": "g4-noticed",
+  "request": {
+   "text": "This year, Connect noticed. One tap, and it's fixed.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "2314c2afdbf5": {
+  "file": "g5-updated-2314c2af.mp3",
+  "clip": "g5-updated",
+  "request": {
+   "text": "Updated everywhere people look.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.35,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "30cc4961ece8": {
+  "file": "g6-summer-30cc4961.mp3",
+  "clip": "g6-summer",
+  "request": {
+   "text": "Summer. A hot evening... and a concert in the park.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.25,
+    "similarity_boost": 0.75,
+    "style": 0.15,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "6eae18de4278": {
+  "file": "g7-sanna-6eae18de.mp3",
+  "clip": "g7-sanna",
+  "request": {
+   "text": "Sanna usually closes at ten.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "52f17d33831b": {
+  "file": "fx-chime-52f17d33.mp3",
+  "clip": "fx-chime",
+  "request": {
+   "text": "A soft, gentle, warm phone notification: a single mellow marimba note, quiet and pleasant, no vibration",
+   "duration_seconds": 1.5
+  },
+  "path": "/sound-generation"
+ },
+ "ce8869a2c367": {
+  "file": "h9-xmas-open-ce8869a2.mp3",
+  "clip": "h9-xmas-open",
+  "request": {
+   "text": "This Christmas Eve, the door is open.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "365329bceb88": {
+  "file": "h10-summer-open-365329bc.mp3",
+  "clip": "h10-summer-open",
+  "request": {
+   "text": "And on summer nights, the terrace stays open late.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.1,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "9aa9558d3a45": {
+  "file": "q1-demo-9aa9558d.mp3",
+  "clip": "q1-demo",
+  "request": {
+   "text": "Now for a quick demonstration.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "a0e1dcebcf1e": {
+  "file": "q2-detect-a0e1dceb.mp3",
+  "clip": "q2-detect",
+  "request": {
+   "text": "It finds two days that will show the wrong hours, with the evidence, and how sure it is.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "4a850bfed6a3": {
+  "file": "q3-message-4a850bfe.mp3",
+  "clip": "q3-message",
+  "request": {
+   "text": "One message goes out, in the owner's own language. Here, Finnish.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "24fc1c633724": {
+  "file": "q4-approve-24fc1c63.mp3",
+  "clip": "q4-approve",
+  "request": {
+   "text": "The link opens a page with no login. Each day shows what Google says now, the suggestion and why. Approve, edit or decline.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "e09d21fbd398": {
+  "file": "q5-apply-e09d21fb.mp3",
+  "clip": "q5-apply",
+  "request": {
+   "text": "Approved. Connect writes it to Yext, checks it saved, and shows where it goes live: Google, Bing, Apple Maps and more. Then it offers to handle holidays from now on.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "b631b98730ba": {
+  "file": "q6-standing-b631b987.mp3",
+  "clip": "q6-standing",
+  "request": {
+   "text": "The owner says yes. Next time, holidays just update, with a one-tap undo.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.45,
+    "similarity_boost": 0.75,
+    "style": 0.05,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "35527b3b4f65": {
+  "file": "music-a-long-35527b3b.mp3",
+  "clip": "music-a-long",
+  "request": {
+   "text": "Hopeful, uplifting instrumental music: gentle piano melody with soft strings slowly building, warm and forward-looking, cinematic, no drums, no vocals",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
+ },
+ "889191087f3e": {
+  "file": "w1-next-88919108.mp3",
+  "clip": "w1-next",
+  "request": {
+   "text": "So... what's next?",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "38104a86b11b": {
+  "file": "w2-signals-38104a86.mp3",
+  "clip": "w2-signals",
+  "request": {
+   "text": "Connect already sees how every owner replies: how fast, what they approve, who hands over their holidays. Over half of last year's pilot messages got no reply.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "d116feff90b8": {
+  "file": "w3-churn-d116feff.mp3",
+  "clip": "w3-churn",
+  "request": {
+   "text": "Owners who go quiet get less from Connect, and they're the ones who leave. We can spot them early.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "0d84f249deaf": {
+  "file": "w4-revenue-0d84f249.mp3",
+  "clip": "w4-revenue",
+  "request": {
+   "text": "Then show them the visits we protected, and offer paid auto-updates. A cost, turned into revenue.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.4,
+    "similarity_boost": 0.75,
+    "style": 0.08,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "c1adaaea48b0": {
+  "file": "w5-connect-c1adaaea.mp3",
+  "clip": "w5-connect",
+  "request": {
+   "text": "Let's connect.",
+   "model_id": "eleven_multilingual_v2",
+   "voice_settings": {
+    "stability": 0.3,
+    "similarity_boost": 0.75,
+    "style": 0.2,
+    "use_speaker_boost": true
+   }
+  },
+  "path": "/text-to-speech/CwhRBWXzGAHq8TQ4Fs17"
+ },
+ "60038043177d": {
+  "file": "story-a-winter-60038043.mp3",
+  "clip": "story-a-winter",
+  "request": {
+   "text": "Gentle instrumental music: sparse, slightly wistful felt piano on a quiet winter evening, tender and intimate, slow, soft, no strings, no drums, no vocals",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
+ },
+ "b1ed8117711f": {
+  "file": "story-a-warm-b1ed8117.mp3",
+  "clip": "story-a-warm",
+  "request": {
+   "text": "Gentle instrumental music: warm felt piano joined by soft strings, slowly opening up, hopeful and joyful summer warmth, cinematic, no drums, no vocals",
+   "duration_seconds": 22
+  },
+  "path": "/sound-generation"
+ }
+}

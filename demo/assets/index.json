@@ -1,0 +1,340 @@
+{
+ "ebc94261cf14": {
+  "file": "ref-aleksi-ebc94261.jpg",
+  "scene": "ref-aleksi",
+  "model": "p-image",
+  "input": {
+   "prompt": "Photorealistic cinematic portrait of a fictional Finnish cafe owner, a man about 40 with dark blond hair and a short beard, warm friendly eyes, wearing a dark green apron over a grey shirt, standing behind a wooden cafe counter with an espresso machine, soft warm morning light, shallow depth of field, 50mm, natural skin texture, film still.",
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 9.4
+ },
+ "3f1a33908914": {
+  "file": "ref-emma-3f1a3390.jpg",
+  "scene": "ref-emma",
+  "model": "p-image",
+  "input": {
+   "prompt": "Photorealistic cinematic portrait of a fictional young woman about 30 with long dark hair, wearing a cream knitted hat and scarf and a camel winter coat, standing in a snowy Helsinki street at blue hour, snowflakes in the air, warm street lights behind her, shallow depth of field, 50mm, natural skin texture, film still.",
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 6.3
+ },
+ "036a51edd437": {
+  "file": "ref-sanna-036a51ed.jpg",
+  "scene": "ref-sanna",
+  "model": "p-image",
+  "input": {
+   "prompt": "Photorealistic cinematic portrait of a fictional Finnish woman about 35, owner of a seaside summer terrace restaurant, sun-kissed skin, light brown hair tied up loosely, a few freckles, a relaxed warm smile, wearing a white linen shirt with rolled sleeves and a navy apron, standing on a wooden terrace by the sea in Helsinki on a hot July afternoon, golden sunlight, sea glitter and sailboats softly out of focus behind her, shallow depth of field, 50mm, natural skin texture, film still.",
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 3.8
+ },
+ "83f68dc50b82": {
+  "file": "s11-emma-walk-83f68dc5.jpg",
+  "scene": "s11-emma-walk",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "The woman from the first image walks along the snowy street towards the dark wooden cafe from the second image, seen from behind at a three-quarter angle, blue hour, falling snow, footprints, wide shot. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-emma-3f1a3390.jpg",
+    "@demo/assets/hook-wide-dark-2f135d95.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 8.3
+ },
+ "1afbf2e79c6d": {
+  "file": "s13-emma-door-1afbf2e7.jpg",
+  "scene": "s13-emma-door",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Same scene as the second image, but the person at the cafe door is the woman from the first image (cream knitted hat, camel coat, long dark hair), her gloved hand on the locked door handle, looking up at the dark windows, disappointed. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-emma-3f1a3390.jpg",
+    "@demo/assets/hook-wide-dark-2f135d95.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 8.0
+ },
+ "66ecb2b508d3": {
+  "file": "s21-aleksi-counter-66ecb2b5.jpg",
+  "scene": "s21-aleksi-counter",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "The same man behind the counter of his busy cozy cafe on a December morning, handing a cup of coffee to a customer, small Christmas decorations, steam from the espresso machine, his smartphone lighting up on the counter beside him. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-aleksi-ebc94261.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 6.1
+ },
+ "06448ad16e06": {
+  "file": "s22-aleksi-nod-06448ad1.jpg",
+  "scene": "s22-aleksi-nod",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "The same man behind his cafe counter, holding a smartphone in one hand and reading it, a slight warm smile, about to nod approvingly, medium close-up, the phone screen faces away from the camera. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-aleksi-ebc94261.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.7
+ },
+ "ff123cc78750": {
+  "file": "s23-aleksi-serve-ff123cc7.jpg",
+  "scene": "s23-aleksi-serve",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "The same man slipping his smartphone into his apron pocket and turning with a friendly smile towards the next customer at the counter, busy cozy cafe in December. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-aleksi-ebc94261.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 7.2
+ },
+ "7414c2cf694d": {
+  "file": "s31-summer-park-7414c2cf.jpg",
+  "scene": "s31-summer-park",
+  "model": "p-image",
+  "input": {
+   "prompt": "Wide shot of a Helsinki seaside park on a hot July afternoon, an open-air concert stage being set up on the grass, people relaxing on picnic blankets, sea glitter and sailboats, and a wooden summer terrace restaurant by the water with umbrellas, warm golden light, lens flare. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 4.7
+ },
+ "4dd463faa6c5": {
+  "file": "v11-emma-walk-4dd463fa.mp4",
+  "scene": "v11-emma-walk",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s11-emma-walk-83f68dc5.jpg",
+   "prompt": "The woman in the cream knitted hat walks slowly along the snowy street towards the cafe, footprints in fresh snow, snow falling, street lamps glowing, the camera follows gently behind her. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
+   "duration": 7,
+   "resolution": "768p",
+   "mode": "speed"
+  },
+  "seconds": 27.6
+ },
+ "666240a5a733": {
+  "file": "v21-aleksi-counter-666240a5.mp4",
+  "scene": "v21-aleksi-counter",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s21-aleksi-counter-66ecb2b5.jpg",
+   "prompt": "The cafe owner hands a cup of coffee to a customer with a friendly smile, steam rises from the espresso machine, the cafe is busy, then his smartphone on the counter lights up and he glances down at it. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
+   "duration": 10,
+   "resolution": "768p",
+   "mode": "speed"
+  },
+  "seconds": 21.7
+ },
+ "1731fe6d7478": {
+  "file": "v22-aleksi-nod-1731fe6d.mp4",
+  "scene": "v22-aleksi-nod",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s22-aleksi-nod-06448ad1.jpg",
+   "prompt": "The cafe owner reads the message on his smartphone, a slight warm smile spreads across his face, he gives a small approving nod and taps the screen once with his thumb. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
+   "duration": 6,
+   "resolution": "768p",
+   "mode": "speed"
+  },
+  "seconds": 22.2
+ },
+ "1accc75cbbaa": {
+  "file": "v23-aleksi-serve-1accc75c.mp4",
+  "scene": "v23-aleksi-serve",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s23-aleksi-serve-ff123cc7.jpg",
+   "prompt": "The cafe owner slips his smartphone into his apron pocket and turns to the next customer at the counter with a friendly smile, the busy cafe moves around him. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "speed"
+  },
+  "seconds": 16.1
+ },
+ "b7afd6d5ab12": {
+  "file": "v31-summer-park-b7afd6d5.mp4",
+  "scene": "v31-summer-park",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s31-summer-park-7414c2cf.jpg",
+   "prompt": "A hot summer afternoon in a seaside park: people relax on the grass, a band sets up on the open-air stage, the sea glitters, sailboats drift, a slow sweeping pan across the scene towards the terrace by the water. Cinematic, photorealistic, natural human motion, subtle slow camera movement, shallow depth of field.",
+   "duration": 7,
+   "resolution": "768p",
+   "mode": "speed"
+  },
+  "seconds": 29.8
+ },
+ "011beffa61e8": {
+  "file": "s43-terrace-night-011beffa.jpg",
+  "scene": "s43-terrace-night",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "The same woman, seen from a distance, carrying a tray of drinks across her busy seaside summer terrace at dusk after a concert. Guests sit at wooden tables laughing and talking with each other, string lights glowing, the last pink light over the sea. Candid documentary feel: nobody looks at the camera, natural poses, warm atmosphere. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-sanna-036a51ed.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 6.6
+ },
+ "72eec42548a4": {
+  "file": "v13b-emma-door-72eec425.mp4",
+  "scene": "v13b-emma-door",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s13-emma-door-1afbf2e7.jpg",
+   "prompt": "The woman grips the door handle and tugs it towards herself twice. The door is locked: it does not move at all and stays firmly shut. She lets go of the handle, steps back half a step and looks up at the dark windows, disappointed, her breath visible in the cold. Snow falling. Cinematic, photorealistic, natural human motion, steady camera, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 26.9
+ },
+ "65f6e2590e50": {
+  "file": "v43-terrace-night-65f6e259.mp4",
+  "scene": "v43-terrace-night",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s43-terrace-night-011beffa.jpg",
+   "prompt": "The woman walks to the side through her busy terrace carrying the tray of drinks and sets them down at a table of laughing guests. Guests chat, laugh and raise their glasses to each other, string lights glow, the last pink light over the sea. Candid, nobody looks at the camera. Cinematic, photorealistic, natural human motion, steady camera, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 21.6
+ },
+ "4588183eeac3": {
+  "file": "s34-sanna-shade-4588183e.jpg",
+  "scene": "s34-sanna-shade",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "The same woman standing at a wooden table in the soft shade of a large beige umbrella on her seaside terrace on a hot summer evening, her smartphone lying face down on the table in front of her, a cloth in her hand. Soft, even, matte light on her face, no lens flare, no glare, no sparkling reflections, the sea calm and softly out of focus behind her. Medium shot. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/ref-sanna-036a51ed.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 6.4
+ },
+ "68793a58aaf9": {
+  "file": "v34-sanna-take-68793a58.mp4",
+  "scene": "v34-sanna-take",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s34-sanna-shade-4588183e.jpg",
+   "prompt": "The woman wipes the table once, then the phone lying on the table lights up. She puts the cloth down, picks up the phone and reads the message, a warm smile spreads across her face, she nods once and, near the end, taps the screen with her thumb. Soft even shade light under the umbrella, no glare, no lens flare, no light reflecting on her face; the phone screen faces away from the camera. Steady camera, cinematic, photorealistic, natural human motion.",
+   "duration": 8,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 26.9
+ },
+ "d0d3030d0268": {
+  "file": "ref-linnea-d0d3030d.jpg",
+  "scene": "ref-linnea",
+  "model": "p-image",
+  "input": {
+   "prompt": "Photorealistic cinematic portrait of a fictional Finnish woman around 30, shoulder-length light brown hair, natural make-up, a calm confident smile, wearing a cream knitted sweater, standing at a standing desk in a bright modern Nordic office, large windows with a soft view of the Helsinki skyline in late afternoon light, plants, a laptop and a large monitor beside her (screen out of view), shallow depth of field, 50mm, natural skin texture, film still.",
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 4.0
+ },
+ "788100d4fd1c": {
+  "file": "n1-wide-788100d4.jpg",
+  "scene": "n1-wide",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Wide shot of the same woman working at a height-adjustable standing desk in a bright modern Nordic office, seen from the side at a three-quarter angle, a large monitor and a laptop in front of her facing her (screens turned away from the camera), a cup of coffee on the desk, large windows behind with the Helsinki skyline at dusk, plants, calm and focused. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, warm late-afternoon light, 16:9.",
+   "images": [
+    "@demo/assets/ref-linnea-d0d3030d.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.5
+ },
+ "efb9a15dd34b": {
+  "file": "n7b-wide-end-efb9a15d.jpg",
+  "scene": "n7b-wide-end",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Wide shot of the same woman standing in her bright office next to her standing desk, holding a cup of coffee in both hands, turned towards the large windows and looking out at the Helsinki skyline at dusk, a relaxed satisfied smile, her monitor and laptop on the desk beside her, plants, calm warm atmosphere. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, warm late-afternoon light, 16:9. Only one person in the image. No mirrors, no reflections of people, no duplicate figures.",
+   "images": [
+    "@demo/assets/ref-linnea-d0d3030d.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.7
+ },
+ "ff75bffc8fd8": {
+  "file": "vn7-end-ff75bffc.mp4",
+  "scene": "vn7-end",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/n7b-wide-end-efb9a15d.jpg",
+   "prompt": "The woman takes a slow sip of her coffee and looks out of the window at the city at dusk, smiling, content; slow gentle camera pull-back. Only one person. Cinematic, photorealistic, natural human motion, smooth camera, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 22.0
+ },
+ "45ecdead1168": {
+  "file": "vn1b-wide-45ecdead.mp4",
+  "scene": "vn1b-wide",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/n1-wide-788100d4.jpg",
+   "prompt": "Slow, smooth dolly-in towards the woman as she types on her laptop and glances up at her monitor, focused; city lights slowly come on outside at dusk. The coffee cup on the desk is still: no steam, no smoke, nothing rising from it. Only one person. Cinematic, photorealistic, natural human motion, smooth camera, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 32.5
+ },
+ "1b3c4c5cfcc3": {
+  "file": "s44b-emma-door-lit-1b3c4c5c.jpg",
+  "scene": "s44b-emma-door-lit",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Keep the same framing, the same woman and her pose with her gloved hand on the door handle, and keep the door closed. Change it to Christmas Eve around noon: soft snowy daylight, the cafe now warmly lit inside with people sitting at tables, and a small sign on the glass reading 'Avoinna'. Change her expression to a warm, happy smile. Photorealistic cinematic film still, 35mm, shallow depth of field, natural skin, 16:9.",
+   "images": [
+    "@demo/assets/s13-emma-door-1afbf2e7.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.7
+ },
+ "adf18ccaccda": {
+  "file": "s44c-emma-door-nosign-adf18cca.jpg",
+  "scene": "s44c-emma-door-nosign",
+  "model": "p-image-edit",
+  "input": {
+   "prompt": "Remove the small 'Avoinna' sign from the glass door completely, leaving plain clear glass with the warm cafe visible behind it. Keep everything else exactly the same: the woman, her smile, her gloved hand on the door handle, the closed door, the lighting and the snowy street.",
+   "images": [
+    "@demo/assets/s44b-emma-door-lit-1b3c4c5c.jpg"
+   ],
+   "aspect_ratio": "16:9"
+  },
+  "seconds": 5.4
+ },
+ "1f21a9dc5aff": {
+  "file": "v44b-emma-door-opens-1f21a9dc.mp4",
+  "scene": "v44b-emma-door-opens",
+  "model": "p-video-2-pro",
+  "input": {
+   "image": "@demo/assets/s44c-emma-door-nosign-adf18cca.jpg",
+   "prompt": "The smiling woman pulls the door handle; the closed door swings open towards her, warm light spills out onto the snowy street, and she steps inside the cozy cafe. The door only opens once she pulls it. No signs or text appear on the glass. Snow falling gently. Only one door moves. Steady camera, cinematic, photorealistic, natural human motion, realistic physics.",
+   "duration": 5,
+   "resolution": "768p",
+   "mode": "quality"
+  },
+  "seconds": 21.4
+ }
+}
