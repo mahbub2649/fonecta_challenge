@@ -64,13 +64,16 @@ All model training and testing ran on this one machine:
 | Python | 3.14.4 |
 | Libraries | LightGBM 4.7.0, scikit-learn 1.9.1, pandas 3.1.1, NumPy 2.5.4, PyTorch 2.15.0 with CUDA 13.2, TabICL 2.2.0, seaborn 0.13.2 |
 
-The web app and tests don't use the GPU or any of those libraries. They use only Python's standard library, and are written for Python 3.9 or newer, so `requirements.txt` has nothing to install.
+The web app and tests don't use the GPU. The app and the scorer use only Python's standard library, and are written for Python 3.9 or newer. The tests also need NumPy, which `requirements.txt` installs.
 
 ### 1. Getting the code
 
 ```bash
 git clone https://github.com/mahbub2649/fonecta_challenge.git
 cd fonecta_challenge
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 The challenge data package is already in `fonecta_data/`, so the app runs straight after cloning. For a copy kept somewhere else, we set `CONNECT_DATA_DIR` to its `FONECTA_CONNECT_SUGGESTS_2026` folder.
@@ -135,7 +138,7 @@ curl -s -X POST -H "$J" \
 
 ### 5. Testing and scoring
 
-We run the tests and score our predictions with these two commands. Neither needs anything installed:
+We run the tests and score our predictions with these two commands, after installing the requirements in step 1:
 
 ```bash
 python3 -m unittest discover tests

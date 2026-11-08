@@ -5,11 +5,14 @@
 Connect spots discrepencies in publicly available business information and provides the owner a ready-made suggestion with the reason. The owner answers with one tap, in their own words or by voice, with no login. Our predictions score **68.62** on the organisers' `evaluate.py` for 2026, against the baseline's 54.49. All data is synthetic: "Connect Suggests simulator, Since AI ry 2026".
 
 ## Run it
-We need only Python 3.9 or newer for the app and tests, with nothing to install:
+We use Python 3.9 or newer, and install the requirements in a virtual environment:
 
 ```bash
 git clone https://github.com/mahbub2649/fonecta_challenge.git
 cd fonecta_challenge
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ./run_webui.sh
 ```
 

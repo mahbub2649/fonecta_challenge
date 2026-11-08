@@ -1,2 +1,4 @@
-# The web app and tests use only the Python standard library, so there's nothing to install.
-# To rebuild the model: pip install -r model/requirements.txt
+# For the tests. The web app and the scorer use only Python's standard library.
+numpy
+
+# To rebuild the model, also run: pip install -r model/requirements.txt
